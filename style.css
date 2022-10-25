@@ -17,7 +17,7 @@
 /* Making the scrollbar smooth. */
 html {
   scroll-behavior: smooth;
-  background: url(images/Mountain.jpg) no-repeat;
+  background: url(res/images/Mountain.jpg) no-repeat;
 }
 
 /* Setting the background color to the kiwi-back variable, the color to the kiwi-fore variable,
@@ -42,7 +42,7 @@ p {
 .container {
   min-height: 100vh;
   width: 100%;
-  background: url(images/Mountain.jpg) no-repeat;
+  background: url(res/images/Mountain.jpg) no-repeat;
   padding-left: 10%;
   padding-right: 10%;
   margin-bottom: 5%;
@@ -199,6 +199,6 @@ margin-bottom to -10px, and the color to the kiwi-green variable. */
 
 .content ul li b {
   font-weight: 400;
-  color: var(--kiwi-lime);
+  color: var(--kiwi-pink);
 }
 /** Body **/
