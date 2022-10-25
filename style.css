@@ -5,23 +5,19 @@
 
 /** Global **/
 :root {
+  --kiwi-lime: #8BC34A;
   --kiwi-green: #2a862a;
   --kiwi-brown: #a07454;
-}
-
-[data-theme="dark"] {
+  --kiwi-blue: #1995ff;
+  --kiwi-pink: #ea3381;
   --kiwi-back: #181b1e;
   --kiwi-fore: #f2f8fd;
-}
-
-[data-theme="light"] {
-  --kiwi-back: #f2f8fd;
-  --kiwi-fore: #181b1e;
 }
 
 /* Making the scrollbar smooth. */
 html {
   scroll-behavior: smooth;
+  background: url(images/Mountain.jpg) no-repeat;
 }
 
 /* Setting the background color to the kiwi-back variable, the color to the kiwi-fore variable,
@@ -46,6 +42,7 @@ p {
 .container {
   min-height: 100vh;
   width: 100%;
+  background: url(images/Mountain.jpg) no-repeat;
   padding-left: 10%;
   padding-right: 10%;
   margin-bottom: 5%;
@@ -58,6 +55,16 @@ p {
 	cursor: point;
 }
 
+ul {
+  list-style-type: disc;
+}
+
+a {
+  text-decoration: underline;
+  text-shadow: none;
+  color: var(--kiwi-fore);
+  transition: all 0.3s ease-in-out;
+}
 /** Navigation Bar **/
 
 /* Making the navbar take up the entire width of the page. */
@@ -104,6 +111,13 @@ nav ul li a:hover {
   transition: all 0.3s ease-in-out;
 }
 
+.navbar.filled {
+  background-color: var(--kiwi-back);
+  border-bottom: 3px solid;
+  border-image: linear-gradient(45deg, var(--kiwi-green), var(--kiwi-brown)) 10;
+  transition: all 0.3s ease-in-out;
+}
+
 /* Setting the margin-top of the navbar to 5px. */
 .navbar a {
   margin-top: 5px;
@@ -137,7 +151,7 @@ margin-bottom to -10px, and the color to the kiwi-green variable. */
   font-weight: 500;
   margin-top: 18px;
   margin-bottom: -10px;
-  color: var(--kiwi-green);
+  color: var(--kiwi-blue);
 }
 
 /* Styling the paragraph in the header. */
@@ -146,7 +160,7 @@ margin-bottom to -10px, and the color to the kiwi-green variable. */
   font-weight: 400;
   margin-top: 10px;
   margin-bottom: 10px;
-  color: var(--kiwi-brown);
+  color: var(--kiwi-fore);
 }
 
 /** Content **/
@@ -156,6 +170,35 @@ margin-bottom to -10px, and the color to the kiwi-green variable. */
   margin-right: 8%;
   margin-top: 3%;
   margin-bottom: 3%;
+  border-top: 1px solid var(--kiwi-green);
 }
 
+.content h2 {
+  font-size: 32px;
+  font-weight: 400;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: var(--kiwi-blue);
+}
+
+.content p {
+  font-size: 18px;
+  font-weight: 400;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.content ul {
+  font-size: 18px;
+  font-weight: 200;
+  margin-top: 5px;
+  margin-left: 5%;
+  margin-right: 5%;
+  color: var(--kiwi-fore);
+}
+
+.content ul li b {
+  font-weight: 400;
+  color: var(--kiwi-lime);
+}
 /** Body **/

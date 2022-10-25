@@ -9,9 +9,18 @@
     <meta property="og:description" content="Kiwifan1's Home Page" />
     <meta property="og:image" content="./images/kiwi-running.png" />
     <!-- Change to url later -->
-
-    <link rel="icon" href="images/kiwi-running.png" />
+    <link rel="icon" href="./images/kiwi-running.png" />
     <link rel="stylesheet" href="style.css" />
+    <script src="./js/jquery-3.6.0.min.js"></script>
+    <script>
+      $(window).scroll(function () {
+        if ($(document).scrollTop() > 50) {
+          $(".navbar").addClass("filled");
+        } else {
+          $(".navbar").removeClass("filled");
+        }
+      });
+    </script>
   </head>
 
   <header>
@@ -21,11 +30,10 @@
       /></a>
       <nav>
         <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/about">About</a></li>
-          <li><a href="/contact">Contact</a></li>
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./about/about.html">About</a></li>
+          <li><a href="./links/links.html">Links</a></li>
           <li><a href="/resume">Resume</a></li>
-          <li><a href="/schedule">Schedule</a></li>
         </ul>
       </nav>
     </div>
@@ -58,7 +66,12 @@
         </p>
       </div>
       <div class="content">
-        <h2></h2>
+        <h2>What's On This Website?</h2>
+        <p>
+          Good Question. I've decided to put some of the main things I'd like
+          people to see such as my resume, other places you might see me, and
+          things that I've done!
+        </p>
       </div>
     </div>
   </body>
