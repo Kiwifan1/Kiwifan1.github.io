@@ -5,24 +5,56 @@
     <title>Kiwifan1 | Home</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:title" content="Kiwifan1 | Home" />
+    <meta property="og:description" content="Kiwifan1's Home Page" />
+    <meta property="og:image" content="./res/images/kiwi-running.png" />
+    <!-- Change to url later -->
+    <link rel="icon" href="./res/images/kiwi-running.png" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="./js/jquery-3.6.0.min.js"></script>
+    <script>
+      $(window).scroll(function () {
+        if ($(document).scrollTop() > 50) {
+          $(".navbar").addClass("filled");
+        } else {
+          $(".navbar").removeClass("filled");
+        }
+      });
+    </script>
   </head>
 
   <header>
     <div class="navbar">
+      <a style="margin: 0" href="./index.html"
+        ><img src="./res/images/kiwi-running.png" class="logo" alt="kiwi-run"
+      /></a>
       <nav>
         <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/about">About</a></li>
-          <li><a href="/contact">Contact</a></li>
-          <li><a href="/resume">Resume</a></li>
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./about/about.html">About</a></li>
+          <li><a href="./links/links.html">Links</a></li>
+          <li><a href="./resume/resume.html">Resume</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
   <body>
+    <!-- Background Animation
+    <ul class="circles">
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul> -->
     <div class="container">
-      <div class="content-header">
+      <div class="head-content-centered">
         <h1>Welcome to my Website!</h1>
         <p>This is the official website of Kiwifan1, also known as Joshua</p>
         <p>
@@ -35,15 +67,23 @@
             href="https://github.com/Kiwifan1/Kiwifan1.github.io"
             tabindex="_blank"
             rel="noopener"
-          >GitHub</a>
+            >GitHub</a
+          >
         </p>
       </div>
       <div class="content">
+        <h2>Who am I?</h2>
         <p>
-          Hi, I'm Joshua, a student at Gonzaga University. I'm a Computer
-          Science major with a double concentration in Software Security and
-          Data Science. I'm also a member of the Gonzaga University Honors
-          Program.
+          Hi, I'm Joshua. I'm a Computer Science major with a double
+          concentration in Software Security and Data Science.
+        </p>
+      </div>
+      <div class="content">
+        <h2>What's On This Website?</h2>
+        <p>
+          Good Question. I've decided to put some of the main things I'd like
+          people to see such as my resume, other places you might see me, and
+          things that I've done!
         </p>
       </div>
     </div>

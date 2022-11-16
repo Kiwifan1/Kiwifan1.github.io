@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:title" content="Kiwifan1 | Resume" />
+    <meta property="og:description" content="Kiwifan1's Resume" />
+    <meta property="og:image" content="../res/images/kiwi-running.png" />
+    <!-- Change to url later -->
+    <link rel="icon" href="../res/images/kiwi-running.png" />
+    <link rel="stylesheet" href="../style.css" />
+    <title>Kiwifan1 | Resume</title>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>
+      $(window).scroll(function () {
+        if ($(document).scrollTop() > 50) {
+          $(".navbar").addClass("filled");
+        } else {
+          $(".navbar").removeClass("filled");
+        }
+      });
+    </script>
+  </head>
+
+  <header>
+    <div class="navbar">
+      <a style="margin: 0" href="../index.html"
+        ><img src="../res/images/kiwi-running.png" class="logo" alt="kiwi-run"
+      /></a>
+      <nav>
+        <ul>
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="../about/about.html">About</a></li>
+          <li><a href="../links/links.html">Links</a></li>
+          <li><a href="../resume/resume.html">Resume</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <body>
+    <!-- Background Animation -->
+    <!-- <ul class="circles">
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul> -->
+    <div class="container">
+      <div class="head-content-centered">
+        <h1>Resume</h1>
+      </div>
+      <div class="content">
+        <iframe
+          src="../res/files/resume.pdf"
+          width="100%"
+          height="1000px"
+          title="resume"
+        ></iframe>
+      </div>
+    </div>
+  </body>
+</html>

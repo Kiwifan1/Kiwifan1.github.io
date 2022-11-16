@@ -1,0 +1,316 @@
+@import url("https://fonts.googleapis.com/css?family=Exo:400,700");
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/** Global **/
+:root {
+  --kiwi-lime: #8bc34a;
+  --kiwi-green: #2a862a;
+  --kiwi-brown: #a07454;
+  --kiwi-blue: #1995ff;
+  --kiwi-pink: #ea3381;
+  --kiwi-back: #181b1e;
+  --kiwi-fore: #f2f8fd;
+}
+
+/* Making the scrollbar smooth. */
+html {
+  scroll-behavior: smooth;
+  background: -webkit-linear-gradient(to left, #8f94fb, #4e54c8) repeat;
+  /* background: url(res/images/Mountain.jpg) no-repeat; */
+}
+
+/* Setting the background color to the kiwi-back variable, the color to the kiwi-fore variable,
+and the transition to all 0.3s ease-in-out. */
+body {
+  background-color: var(--kiwi-back);
+  color: var(--kiwi-fore);
+  transition: all 0.3s ease-in-out;
+  font-family: "Exo", sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+
+/* Setting the font weight to 100, the color to the kiwi-fore variable, and the transition to all 0.3s
+ease-in-out. */
+p {
+  font-weight: 100;
+  color: var(--kiwi-fore);
+  transition: all 0.3s ease-in-out;
+}
+
+.circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.circles li {
+  position: absolute;
+  display: block;
+  list-style: none;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  animation: animate 25s linear infinite;
+  bottom: -150px;
+}
+
+.circles li:nth-child(1) {
+  left: 25%;
+  width: 80px;
+  height: 80px;
+  animation-delay: 0s;
+}
+
+.circles li:nth-child(2) {
+  left: 10%;
+  width: 20px;
+  height: 20px;
+  animation-delay: 2s;
+  animation-duration: 12s;
+}
+
+.circles li:nth-child(3) {
+  left: 70%;
+  width: 20px;
+  height: 20px;
+  animation-delay: 4s;
+}
+
+.circles li:nth-child(4) {
+  left: 40%;
+  width: 60px;
+  height: 60px;
+  animation-delay: 0s;
+  animation-duration: 18s;
+}
+
+.circles li:nth-child(5) {
+  left: 65%;
+  width: 20px;
+  height: 20px;
+  animation-delay: 0s;
+}
+
+.circles li:nth-child(6) {
+  left: 75%;
+  width: 110px;
+  height: 110px;
+  animation-delay: 3s;
+}
+
+.circles li:nth-child(7) {
+  left: 35%;
+  width: 150px;
+  height: 150px;
+  animation-delay: 7s;
+}
+
+.circles li:nth-child(8) {
+  left: 50%;
+  width: 25px;
+  height: 25px;
+  animation-delay: 15s;
+  animation-duration: 45s;
+}
+
+.circles li:nth-child(9) {
+  left: 20%;
+  width: 15px;
+  height: 15px;
+  animation-delay: 2s;
+  animation-duration: 35s;
+}
+
+.circles li:nth-child(10) {
+  left: 85%;
+  width: 150px;
+  height: 150px;
+  animation-delay: 0s;
+  animation-duration: 11s;
+}
+
+@keyframes animate {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+    border-radius: 0;
+  }
+
+  100% {
+    transform: translateY(-1000px) rotate(720deg);
+    opacity: 0;
+    border-radius: 50%;
+  }
+}
+
+.container {
+  
+  min-height: 100vh;
+  width: 100%;
+  /* background: url(res/images/Mountain.jpg) no-repeat; */
+  padding-left: 10%;
+  padding-right: 10%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.logo {
+  width: 80px;
+  cursor: point;
+}
+
+ul {
+  list-style-type: disc;
+}
+
+a {
+  text-decoration: underline;
+  text-shadow: none;
+  color: var(--kiwi-fore);
+  transition: all 0.3s ease-in-out;
+}
+/** Navigation Bar **/
+
+/* Making the navbar take up the entire width of the page. */
+nav {
+  flex: 1;
+}
+
+/* Displays navbar as one row */
+nav ul li {
+  display: inline-block;
+  list-style: none;
+  margin: 0px 10px;
+}
+
+/* Styling of navbar elements */
+nav ul li a {
+  text-decoration: none;
+  color: var(--kiwi-fore);
+  border-bottom: 0px solid;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Styling of navbar elements when hovered over */
+nav ul li a:hover {
+  color: var(--kiwi-green);
+  text-shadow: 0px 0px 5px var(--kiwi-green);
+  border-bottom: 2px solid var(--kiwi-green);
+  transition: all 0.3s ease-in-out;
+}
+
+.navbar {
+  width: 100%;
+  height: 12vh;
+  margin: auto;
+  display: flex;
+  z-index: 2;
+  align-items: center;
+  position: fixed;
+  background-color: none;
+  flex-direction: column;
+  padding-bottom: 2vh;
+  border-bottom: 0px solid;
+  border-image: linear-gradient(45deg, var(#ea3381), var(#1995ff)) 10;
+  transition: all 0.3s ease-in-out;
+}
+
+.navbar.filled {
+  background-color: var(--kiwi-back);
+  border-bottom: 3px solid;
+  border-image: linear-gradient(45deg, var(--kiwi-green), var(--kiwi-brown)) 10;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Setting the margin-top of the navbar to 5px. */
+.navbar a {
+  margin-top: 5px;
+}
+
+/* Setting the background color to the kiwi-back variable, and the border-bottom to 3px solid. */
+/* .navbar.filled {
+  background-color: var(--kiwi-back);
+  border-bottom: 3px solid;
+} */
+
+/** Header **/
+
+/* Setting the padding-top to 15vh, and the margin-left to 7%. */
+.head-content {
+  padding-top: 15vh;
+  margin-left: 7%;
+}
+
+/* Centering the content in the header. */
+.head-content-centered {
+  padding-top: 15vh;
+  align-items: center;
+  text-align: center;
+}
+
+/* Setting the font size to 42px, the font weight to 500, the margin-top to 18px, the
+margin-bottom to -10px, and the color to the kiwi-green variable. */
+.head-content-centered h1 {
+  font-size: 42px;
+  font-weight: 500;
+  margin-top: 18px;
+  margin-bottom: -10px;
+  color: var(--kiwi-blue);
+}
+
+/* Styling the paragraph in the header. */
+.head-content-centered p {
+  font-size: 18px;
+  font-weight: 400;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: var(--kiwi-fore);
+}
+
+/** Content **/
+
+.content {
+  margin-left: 8%;
+  margin-right: 8%;
+  margin-top: 3%;
+  margin-bottom: 3%;
+  border-top: 1px solid var(--kiwi-green);
+}
+
+.content h2 {
+  font-size: 32px;
+  font-weight: 400;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: var(--kiwi-blue);
+}
+
+.content p {
+  font-size: 18px;
+  font-weight: 400;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.content ul {
+  font-size: 18px;
+  font-weight: 200;
+  margin-top: 5px;
+  margin-left: 5%;
+  margin-right: 5%;
+  color: var(--kiwi-fore);
+}
+
+.content ul li b {
+  font-weight: 400;
+  color: var(--kiwi-pink);
+}
+/** Body **/
