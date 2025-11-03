@@ -29,8 +29,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Copy index.html to 404.html for SPA routing
-        run: cp dist/browser/index.html dist/browser/404.html
+      - name: Prepare for deployment
+        run: |
+          cp dist/browser/index.html dist/browser/404.html
+          touch dist/browser/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

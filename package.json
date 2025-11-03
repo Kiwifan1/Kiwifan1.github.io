@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "deploy": "npm run build && cp dist/browser/index.html dist/browser/404.html"
+    "deploy": "npm run build && cp dist/browser/index.html dist/browser/404.html && touch dist/browser/.nojekyll"
   },
   "prettier": {
     "printWidth": 100,
