@@ -1,0 +1,16 @@
+<header>
+  <div class="navbar" [class.filled]="scrolled">
+    <a style="margin: 0" routerLink="/">
+      <img src="/res/images/kiwi-running.png" class="logo" alt="kiwi-run" />
+    </a>
+    <nav>
+      <ul>
+        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
+        <li><a routerLink="/about" routerLinkActive="active">About</a></li>
+        <li><a routerLink="/links" routerLinkActive="active">Links</a></li>
+        <li><a routerLink="/resume" routerLinkActive="active">Resume</a></li>
+        <li><a routerLink="/tools" routerLinkActive="active">Tools</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
