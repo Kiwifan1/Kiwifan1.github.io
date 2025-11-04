@@ -1,0 +1,141 @@
+<div class="container">
+  <div class="head-content-centered">
+    <h1>Mekanism Fission Reactor Calculator</h1>
+    <p>Calculate materials, power output, and water recycling requirements</p>
+  </div>
+
+  <div class="content">
+    <h2>Reactor Configuration</h2>
+    
+    <div class="calculator-form">
+      <div class="form-group">
+        <label for="fuelAssemblies">
+          <strong>Number of Fuel Assemblies:</strong>
+        </label>
+        <input
+          type="number"
+          id="fuelAssemblies"
+          [(ngModel)]="fuelAssemblies"
+          min="1"
+          max="100"
+          class="form-input"
+        />
+        <p class="form-help">The number of fuel assemblies in your reactor (1-100)</p>
+      </div>
+
+      <div class="form-group">
+        <label for="burnRate">
+          <strong>Burn Rate:</strong>
+        </label>
+        <input
+          type="number"
+          id="burnRate"
+          [(ngModel)]="burnRate"
+          min="0.1"
+          max="10"
+          step="0.1"
+          class="form-input"
+        />
+        <p class="form-help">Reactor burn rate (0.1-10 mB/t per assembly)</p>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input
+            type="checkbox"
+            [(ngModel)]="enableWaterRecycling"
+            class="form-checkbox"
+          />
+          <strong>Enable Water Recycling System</strong>
+        </label>
+        <p class="form-help">Calculate required fluid pipes and saturating condensers</p>
+      </div>
+
+      <div class="button-group">
+        <button (click)="calculate()" class="btn btn-primary">Calculate</button>
+        <button (click)="reset()" class="btn btn-secondary">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  @if (results) {
+    <div class="content">
+      <h2>Results</h2>
+      
+      <div class="results-grid">
+        <div class="result-card">
+          <h3>Reactor Components</h3>
+          <ul class="result-list">
+            <li>
+              <span class="result-label">Fuel Assemblies:</span>
+              <span class="result-value">{{ results.fuelAssemblies }}</span>
+            </li>
+            <li>
+              <span class="result-label">Control Rods:</span>
+              <span class="result-value">{{ results.controlRods }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="result-card">
+          <h3>Power & Production</h3>
+          <ul class="result-list">
+            <li>
+              <span class="result-label">Steam Production:</span>
+              <span class="result-value">{{ results.steamProduction }} mB/t</span>
+            </li>
+            <li>
+              <span class="result-label">Power Generation:</span>
+              <span class="result-value">{{ results.powerGeneration }} RF/t</span>
+            </li>
+            <li>
+              <span class="result-label">Water Consumption:</span>
+              <span class="result-value">{{ results.waterConsumption }} mB/t</span>
+            </li>
+          </ul>
+        </div>
+
+        @if (enableWaterRecycling) {
+          <div class="result-card">
+            <h3>Water Recycling System</h3>
+            <ul class="result-list">
+              <li>
+                <span class="result-label">Ultimate Fluid Pipes:</span>
+                <span class="result-value">{{ results.ultimateFluidPipes }}</span>
+              </li>
+              <li>
+                <span class="result-label">Saturating Condensers:</span>
+                <span class="result-value">{{ results.saturatingCondensers }}</span>
+              </li>
+            </ul>
+            <p class="form-help">
+              These components will recycle steam back to water for continuous operation
+            </p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="content">
+    <h2>About This Calculator</h2>
+    <p>
+      This calculator helps you plan your Mekanism fission reactor setup. It calculates:
+    </p>
+    <ul>
+      <li><strong>Reactor Components:</strong> Number of fuel assemblies and control rods needed</li>
+      <li><strong>Power Output:</strong> Expected RF/t generation from your reactor</li>
+      <li><strong>Steam Production:</strong> Amount of steam produced for turbine power generation</li>
+      <li><strong>Water Recycling:</strong> Required ultimate fluid pipes and saturating condensers for complete water recycling</li>
+    </ul>
+    <p>
+      When water recycling is enabled, the calculator determines the minimum number of
+      saturating condensers needed to convert all produced steam back into water, and the
+      number of ultimate fluid pipes required to transport the fluids efficiently.
+    </p>
+  </div>
+
+  <div class="content">
+    <p><a routerLink="/tools/minecraft">← Back to Minecraft Tools</a></p>
+  </div>
+</div>
