@@ -137,20 +137,13 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="rotorBlades">
-          <strong>Rotor Blades:</strong>
+      <div class="form-group info-group">
+        <label>
+          <strong>Rotor Blades (Auto-calculated):</strong>
         </label>
-        <input
-          type="number"
-          id="rotorBlades"
-          [(ngModel)]="rotorBlades"
-          min="1"
-          [max]="getMaxRotors()"
-          class="form-input"
-        />
+        <div class="info-value">{{ getCalculatedRotors() }} blades</div>
         <p class="form-help">
-          Number of rotor blades (max {{ getMaxRotors() }} for height)
+          Rotor blades automatically fill the turbine height (height - 2)
         </p>
       </div>
 

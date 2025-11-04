@@ -68,7 +68,6 @@ export class MekanismFission {
   // Input parameters - Turbine
   turbineHeight: number = 9;
   turbineWidth: number = 5;
-  rotorBlades: number = 4;
   electromagneticCoils: number = 8;
   
   // Input parameters - Other
@@ -95,8 +94,8 @@ export class MekanismFission {
     const steamProduction = (totalHeat / this.HEAT_TO_STEAM_RATIO) * coolantMultiplier;
     
     // Calculate turbine capacity and power generation
-    const maxTurbineRotors = validatedTurbineHeight - 2; // One rotor per height level minus top/bottom
-    const actualRotors = Math.min(this.rotorBlades, maxTurbineRotors);
+    // Rotor blades automatically fill the entire height (height - 2 for top/bottom blocks)
+    const actualRotors = validatedTurbineHeight - 2;
     const turbineCapacity = actualRotors * this.ROTOR_STEAM_CAPACITY;
     
     // Limit steam to turbine capacity
@@ -174,7 +173,6 @@ export class MekanismFission {
     this.coolantType = 'water';
     this.turbineHeight = 9;
     this.turbineWidth = 5;
-    this.rotorBlades = 4;
     this.electromagneticCoils = 8;
     this.enableWaterRecycling = false;
     this.results = null;
@@ -184,14 +182,14 @@ export class MekanismFission {
     return (this.reactorWidth - 2) * (this.reactorHeight - 2) * (this.reactorLength - 2);
   }
   
-  getMaxRotors(): number {
-    return Math.min(this.turbineHeight, this.MAX_TURBINE_HEIGHT) - 2;
-  }
-  
   getMaxCoils(): number {
     const height = Math.min(this.turbineHeight, this.MAX_TURBINE_HEIGHT);
     const width = Math.min(this.turbineWidth, this.MAX_TURBINE_WIDTH);
     const perimeter = 2 * (width - 2) + 2 * (width - 2);
     return perimeter * (height - 2);
+  }
+  
+  getCalculatedRotors(): number {
+    return Math.min(this.turbineHeight, this.MAX_TURBINE_HEIGHT) - 2;
   }
 }

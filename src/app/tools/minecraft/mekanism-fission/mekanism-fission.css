@@ -58,6 +58,23 @@
   margin-top: 5px;
 }
 
+.info-group {
+  background-color: rgba(42, 134, 42, 0.05);
+  border: 1px solid var(--kiwi-green);
+  border-radius: 5px;
+  padding: 15px;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: var(--kiwi-lime);
+  font-weight: 600;
+  padding: 10px;
+  background-color: rgba(42, 134, 42, 0.1);
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
 .checkbox-group label {
   display: flex;
   align-items: center;
