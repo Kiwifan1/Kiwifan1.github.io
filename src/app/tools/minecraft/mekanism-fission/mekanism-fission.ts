@@ -23,7 +23,7 @@ export class MekanismFission {
   // Mekanism reactor constants
   private readonly BASE_HEAT_PER_ASSEMBLY = 1000000; // 1 MJ/t per assembly at burn rate 1
   private readonly HEAT_TO_STEAM_RATIO = 10000; // Heat units per mB of steam produced
-  private readonly STEAM_TO_RF_RATIO = 6.4; // Industrial turbine: RF/t per mB/t of steam
+  private readonly STEAM_TO_FE_RATIO = 6.4; // Industrial turbine: FE/t per mB/t of steam
   private readonly CONDENSER_CAPACITY = 1000; // mB/t of steam each saturating condenser processes
   private readonly PIPE_CAPACITY = 25600; // mB/t each ultimate fluid pipe can transport
   private readonly MIN_PIPES = 2; // Minimum pipes needed for proper flow
@@ -44,7 +44,7 @@ export class MekanismFission {
     const steamProduction = totalHeat / this.HEAT_TO_STEAM_RATIO;
     
     // Calculate power generation from turbines
-    const powerGeneration = steamProduction * this.STEAM_TO_RF_RATIO;
+    const powerGeneration = steamProduction * this.STEAM_TO_FE_RATIO;
     
     // Calculate water consumption (equal to steam production)
     const waterConsumption = steamProduction;
