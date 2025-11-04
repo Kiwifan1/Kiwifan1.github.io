@@ -59,20 +59,13 @@
 
       <h3>Reactor Settings</h3>
 
-      <div class="form-group">
-        <label for="fuelAssemblies">
-          <strong>Number of Fuel Assemblies:</strong>
+      <div class="form-group info-group">
+        <label>
+          <strong>Fuel Assemblies (Auto-calculated):</strong>
         </label>
-        <input
-          type="number"
-          id="fuelAssemblies"
-          [(ngModel)]="fuelAssemblies"
-          min="1"
-          [max]="getMaxFuelAssemblies()"
-          class="form-input"
-        />
+        <div class="info-value">{{ getCalculatedFuelAssemblies() }} assemblies</div>
         <p class="form-help">
-          Fuel assemblies in reactor (1-{{ getMaxFuelAssemblies() }} based on dimensions)
+          Fuel assemblies fill the entire reactor interior volume ((width-2) × (height-2) × (length-2))
         </p>
       </div>
 
@@ -101,6 +94,59 @@
           <option value="sodium">Sodium (5x steam production)</option>
         </select>
         <p class="form-help">Choose reactor coolant type</p>
+      </div>
+
+      <h3 *ngIf="coolantType === 'sodium'">Boiler Configuration</h3>
+
+      <div *ngIf="coolantType === 'sodium'">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="boilerWidth">
+              <strong>Boiler Width:</strong>
+            </label>
+            <input
+              type="number"
+              id="boilerWidth"
+              [(ngModel)]="boilerWidth"
+              min="3"
+              max="18"
+              class="form-input"
+            />
+            <p class="form-help">Boiler width (3-18 blocks)</p>
+          </div>
+
+          <div class="form-group">
+            <label for="boilerHeight">
+              <strong>Boiler Height:</strong>
+            </label>
+            <input
+              type="number"
+              id="boilerHeight"
+              [(ngModel)]="boilerHeight"
+              min="4"
+              max="18"
+              class="form-input"
+            />
+            <p class="form-help">Boiler height (4-18 blocks)</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="superheatingElements">
+            <strong>Superheating Elements:</strong>
+          </label>
+          <input
+            type="number"
+            id="superheatingElements"
+            [(ngModel)]="superheatingElements"
+            min="1"
+            [max]="getMaxSuperheaters()"
+            class="form-input"
+          />
+          <p class="form-help">
+            Number of superheating elements (each processes 100,000 mB/t sodium)
+          </p>
+        </div>
       </div>
 
       <h3>Turbine Configuration</h3>
@@ -231,6 +277,10 @@
         <div class="result-card">
           <h3>Power & Production</h3>
           <ul class="result-list">
+            <li *ngIf="results.sodiumProduction > 0">
+              <span class="result-label">Sodium Production:</span>
+              <span class="result-value">{{ results.sodiumProduction }} mB/t</span>
+            </li>
             <li>
               <span class="result-label">Steam Production:</span>
               <span class="result-value">{{ results.steamProduction }} mB/t</span>
@@ -292,6 +342,33 @@
           </ul>
         </div>
 
+        @if (results.boilersNeeded > 0) {
+          <div class="result-card">
+            <h3>Boiler Components (Sodium Cooling)</h3>
+            <ul class="result-list">
+              <li>
+                <span class="result-label">Boilers Needed:</span>
+                <span class="result-value">{{ results.boilersNeeded }}</span>
+              </li>
+              <li>
+                <span class="result-label">Superheating Elements:</span>
+                <span class="result-value">{{ results.superheatingElements }}</span>
+              </li>
+              <li>
+                <span class="result-label">Water Capacity (per boiler):</span>
+                <span class="result-value">{{ results.boilerWaterCapacity }} mB</span>
+              </li>
+              <li>
+                <span class="result-label">Steam Capacity (per boiler):</span>
+                <span class="result-value">{{ results.boilerSteamCapacity }} mB</span>
+              </li>
+            </ul>
+            <p class="form-help">
+              Boilers convert superheated sodium from reactor into steam for turbines
+            </p>
+          </div>
+        }
+
         @if (enableWaterRecycling) {
           <div class="result-card">
             <h3>Water Recycling System</h3>
@@ -320,12 +397,16 @@
       This calculator helps you plan your Mekanism fission reactor setup. It calculates:
     </p>
     <ul>
-      <li><strong>Reactor Components:</strong> Number of fuel assemblies and control rods needed</li>
-      <li><strong>Power Output:</strong> Expected FE/t generation from your reactor</li>
-      <li><strong>Steam Production:</strong> Amount of steam produced for turbine power generation</li>
-      <li><strong>Water Recycling:</strong> Required ultimate fluid pipes and saturating condensers for complete water recycling</li>
+      <li><strong>Reactor Components:</strong> Auto-calculated fuel assemblies based on reactor size, control rods, and construction materials</li>
+      <li><strong>Coolant Systems:</strong> Water cooling (direct steam) or Sodium cooling (requires thermoelectric boiler)</li>
+      <li><strong>Boiler Requirements:</strong> Number of boilers and superheating elements needed for sodium cooling</li>
+      <li><strong>Turbine Setup:</strong> Number of turbines needed when reactor output exceeds single turbine capacity</li>
+      <li><strong>Power Output:</strong> Expected power generation with selectable units (FE/RF/AE)</li>
+      <li><strong>Water Recycling:</strong> Required ultimate fluid pipes and saturating condensers for continuous operation</li>
     </ul>
     <p>
+      <strong>Fuel assemblies</strong> are automatically calculated to fill the entire reactor interior volume.
+      For <strong>sodium cooling</strong>, a thermoelectric boiler is required to convert superheated sodium into steam.
       When water recycling is enabled, the calculator determines the minimum number of
       saturating condensers needed to convert all produced steam back into water, and the
       number of ultimate fluid pipes required to transport the fluids efficiently.

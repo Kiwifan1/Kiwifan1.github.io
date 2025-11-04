@@ -7,6 +7,7 @@ interface ReactorResults {
   fuelAssemblies: number;
   controlRods: number;
   steamProduction: number;
+  sodiumProduction: number;
   powerGeneration: number;
   waterConsumption: number;
   ultimateFluidPipes: number;
@@ -24,6 +25,10 @@ interface ReactorResults {
   maxSteamFlow: number;
   turbinesNeeded: number;
   steamPerTurbine: number;
+  boilersNeeded: number;
+  superheatingElements: number;
+  boilerWaterCapacity: number;
+  boilerSteamCapacity: number;
 }
 
 interface BuildMaterials {
@@ -54,6 +59,11 @@ export class MekanismFission {
   private readonly PIPE_CAPACITY = 25600; // mB/t each ultimate fluid pipe can transport
   private readonly MIN_PIPES = 2; // Minimum pipes needed for proper flow
   
+  // Boiler constants (per FTB Wiki)
+  private readonly SUPERHEATER_CAPACITY = 100000; // mB/t per superheating element
+  private readonly BOILER_WATER_MULTIPLIER = 16000; // mB per block in water tank
+  private readonly BOILER_STEAM_MULTIPLIER = 160000; // mB per block in steam tank
+  
   // Turbine constants (per FTB Wiki - from config/Mekanism/generators.toml)
   private readonly TURBINE_BLADES_PER_COIL = 4; // turbineBladesPerCoil = 4
   private readonly MAX_ROTOR_SHAFTS = 10; // Maximum rotor shafts per FTB Wiki
@@ -77,9 +87,13 @@ export class MekanismFission {
   reactorWidth: number = 3;
   reactorHeight: number = 4;
   reactorLength: number = 3;
-  fuelAssemblies: number = 1;
   burnRate: number = 1;
   coolantType: string = 'water';
+  
+  // Input parameters - Boiler (for sodium cooling)
+  boilerWidth: number = 5;
+  boilerHeight: number = 9;
+  superheatingElements: number = 4;
   
   // Input parameters - Turbine
   turbineHeight: number = 9;
@@ -98,21 +112,49 @@ export class MekanismFission {
     const validatedTurbineHeight = Math.min(this.turbineHeight, this.MAX_TURBINE_HEIGHT);
     const validatedTurbineWidth = Math.min(this.turbineWidth, this.MAX_TURBINE_WIDTH);
     
-    // Calculate reactor interior volume
+    // AUTO-CALCULATE fuel assemblies based on reactor interior volume
+    // Per Mekanism specs: 1 fuel assembly per interior block
     const reactorInteriorVolume = (this.reactorWidth - 2) * (this.reactorHeight - 2) * (this.reactorLength - 2);
-    const maxFuelAssemblies = reactorInteriorVolume;
-    const actualFuelAssemblies = Math.min(this.fuelAssemblies, maxFuelAssemblies);
+    const actualFuelAssemblies = reactorInteriorVolume; // Use all available space
     
     // Calculate total fuel burn rate (per FTB Wiki formula)
     const totalBurnRate = actualFuelAssemblies * this.burnRate;
     
-    // Calculate steam production: 20,000 mB/t per 1 mB/t fuel burned (per FTB Wiki)
-    const steamProduction = totalBurnRate * this.STEAM_PER_MB_FUEL;
+    // Calculate steam and coolant based on cooling type
+    let steamProduction: number;
+    let sodiumProduction = 0;
+    let waterConsumption: number;
+    let boilersNeeded = 0;
+    let boilerWaterCapacity = 0;
+    let boilerSteamCapacity = 0;
     
-    // Calculate water/coolant consumption based on coolant type
-    const waterConsumption = this.coolantType === 'water' 
-      ? totalBurnRate * this.WATER_PER_MB_FUEL 
-      : totalBurnRate * this.SODIUM_PER_MB_FUEL;
+    if (this.coolantType === 'water') {
+      // Water cooling: Direct steam production
+      steamProduction = totalBurnRate * this.STEAM_PER_MB_FUEL;
+      waterConsumption = totalBurnRate * this.WATER_PER_MB_FUEL;
+    } else {
+      // Sodium cooling: Produces superheated sodium, needs boiler to convert to steam
+      sodiumProduction = totalBurnRate * this.SODIUM_PER_MB_FUEL;
+      steamProduction = totalBurnRate * this.STEAM_PER_MB_FUEL; // Same steam output after boiler conversion
+      waterConsumption = totalBurnRate * this.WATER_PER_MB_FUEL; // Water consumed by boiler
+      
+      // Calculate boiler requirements
+      // Max boil rate per boiler = superheaters × 100,000 mB/t
+      const maxBoilRatePerBoiler = this.superheatingElements * this.SUPERHEATER_CAPACITY;
+      boilersNeeded = Math.ceil(sodiumProduction / maxBoilRatePerBoiler);
+      
+      // Calculate boiler capacities (simplified, assumes user sizes boiler appropriately)
+      const boilerInteriorWidth = this.boilerWidth - 2;
+      const boilerInteriorHeight = this.boilerHeight - 2;
+      const boilerVolume = boilerInteriorWidth * boilerInteriorWidth * boilerInteriorHeight;
+      
+      // Water tank is bottom half, steam tank is top half (simplified)
+      const waterTankVolume = Math.floor(boilerVolume / 2) - this.superheatingElements;
+      const steamTankVolume = Math.floor(boilerVolume / 2);
+      
+      boilerWaterCapacity = waterTankVolume * this.BOILER_WATER_MULTIPLIER;
+      boilerSteamCapacity = steamTankVolume * this.BOILER_STEAM_MULTIPLIER;
+    }
     
     // Calculate turbine components per FTB Wiki formulas
     // Rotor column: The length cannot exceed 2 × TurbineWidth - 1 (interior width)
@@ -209,6 +251,7 @@ export class MekanismFission {
       fuelAssemblies: actualFuelAssemblies,
       controlRods: actualFuelAssemblies,
       steamProduction: Math.round(steamProduction * 100) / 100,
+      sodiumProduction: Math.round(sodiumProduction * 100) / 100,
       powerGeneration: Math.round(powerGeneration * 100) / 100,
       waterConsumption: Math.round(waterConsumption * 100) / 100,
       ultimateFluidPipes: ultimateFluidPipes,
@@ -226,6 +269,10 @@ export class MekanismFission {
       maxSteamFlow: Math.round(maxSteamFlowPerTurbine * 100) / 100,
       turbinesNeeded: turbinesNeeded,
       steamPerTurbine: Math.round(steamPerTurbine * 100) / 100,
+      boilersNeeded: boilersNeeded,
+      superheatingElements: this.superheatingElements,
+      boilerWaterCapacity: Math.round(boilerWaterCapacity * 100) / 100,
+      boilerSteamCapacity: Math.round(boilerSteamCapacity * 100) / 100,
     };
   }
 
@@ -233,9 +280,11 @@ export class MekanismFission {
     this.reactorWidth = 3;
     this.reactorHeight = 4;
     this.reactorLength = 3;
-    this.fuelAssemblies = 1;
     this.burnRate = 1;
     this.coolantType = 'water';
+    this.boilerWidth = 5;
+    this.boilerHeight = 9;
+    this.superheatingElements = 4;
     this.turbineHeight = 9;
     this.turbineWidth = 5;
     this.electromagneticCoils = 8;
@@ -244,8 +293,14 @@ export class MekanismFission {
     this.results = null;
   }
   
-  getMaxFuelAssemblies(): number {
+  getCalculatedFuelAssemblies(): number {
+    // Auto-calculated based on reactor interior volume
     return (this.reactorWidth - 2) * (this.reactorHeight - 2) * (this.reactorLength - 2);
+  }
+  
+  getMaxSuperheaters(): number {
+    // Simplified: assumes reasonable boiler size
+    return Math.floor(((this.boilerWidth - 2) * (this.boilerWidth - 2)) / 2);
   }
   
   getMaxCoils(): number {
