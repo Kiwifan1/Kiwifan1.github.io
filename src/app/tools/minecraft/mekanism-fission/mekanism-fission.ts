@@ -20,6 +20,14 @@ interface ReactorResults {
   styleUrl: './mekanism-fission.css',
 })
 export class MekanismFission {
+  // Mekanism reactor constants
+  private readonly BASE_HEAT_PER_ASSEMBLY = 1000000; // 1 MJ/t per assembly at burn rate 1
+  private readonly HEAT_TO_STEAM_RATIO = 10000; // Heat units per mB of steam produced
+  private readonly STEAM_TO_RF_RATIO = 6.4; // Industrial turbine: RF/t per mB/t of steam
+  private readonly CONDENSER_CAPACITY = 1000; // mB/t of steam each saturating condenser processes
+  private readonly PIPE_CAPACITY = 25600; // mB/t each ultimate fluid pipe can transport
+  private readonly MIN_PIPES = 2; // Minimum pipes needed for proper flow
+
   // Input parameters
   fuelAssemblies: number = 1;
   burnRate: number = 1;
@@ -29,21 +37,14 @@ export class MekanismFission {
   results: ReactorResults | null = null;
 
   calculate(): void {
-    // Mekanism fission reactor calculations
-    // Base values per fuel assembly at burn rate 1
-    const baseHeatPerAssembly = 1000000; // 1 MJ/t per assembly at burn rate 1
-    const baseSteamPerMB = 10; // Steam production ratio
-    const waterToSteamRatio = 1; // 1 mB water = 1 mB steam
-    
     // Calculate total heat production
-    const totalHeat = this.fuelAssemblies * baseHeatPerAssembly * this.burnRate;
+    const totalHeat = this.fuelAssemblies * this.BASE_HEAT_PER_ASSEMBLY * this.burnRate;
     
     // Calculate steam production (in mB/t)
-    const steamProduction = totalHeat / 10000; // Conversion from heat to steam
+    const steamProduction = totalHeat / this.HEAT_TO_STEAM_RATIO;
     
     // Calculate power generation from turbines
-    // Assuming industrial turbine: 1 mB/t steam = ~6.4 RF/t
-    const powerGeneration = steamProduction * 6.4;
+    const powerGeneration = steamProduction * this.STEAM_TO_RF_RATIO;
     
     // Calculate water consumption (equal to steam production)
     const waterConsumption = steamProduction;
@@ -53,16 +54,15 @@ export class MekanismFission {
     let saturatingCondensers = 0;
     
     if (this.enableWaterRecycling) {
-      // Each saturating condenser produces 1000 mB/t of water from steam
-      saturatingCondensers = Math.ceil(steamProduction / 1000);
+      // Each saturating condenser processes a fixed amount of steam per tick
+      saturatingCondensers = Math.ceil(steamProduction / this.CONDENSER_CAPACITY);
       
       // Ultimate fluid pipes: need enough to transport the steam
-      // Each ultimate fluid pipe can transport 25600 mB/t
-      ultimateFluidPipes = Math.ceil(steamProduction / 25600);
+      ultimateFluidPipes = Math.ceil(steamProduction / this.PIPE_CAPACITY);
       
-      // Minimum of 2 pipes for input/output flow
-      if (ultimateFluidPipes < 2) {
-        ultimateFluidPipes = 2;
+      // Ensure minimum pipes for proper flow
+      if (ultimateFluidPipes < this.MIN_PIPES) {
+        ultimateFluidPipes = this.MIN_PIPES;
       }
     }
     
