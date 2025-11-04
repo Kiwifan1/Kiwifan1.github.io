@@ -20,6 +20,8 @@ interface ReactorResults {
   reactorCasings: number;
   reactorGlass: number;
   structuralGlass: number;
+  bladeRate: number;
+  maxSteamFlow: number;
 }
 
 interface BuildMaterials {
@@ -50,13 +52,15 @@ export class MekanismFission {
   private readonly PIPE_CAPACITY = 25600; // mB/t each ultimate fluid pipe can transport
   private readonly MIN_PIPES = 2; // Minimum pipes needed for proper flow
   
-  // Turbine constants (per FTB Wiki)
-  private readonly BLADES_PER_COIL = 4; // Optimal blade count = coils × 4
-  private readonly STEAM_PER_COIL = 200; // Each coil can process 200 mB steam/tick
-  private readonly FE_PER_STEAM = 5000; // Joules per mB of steam (approximate for basic coils)
-  private readonly DISPERSER_CAPACITY = 1280; // mB/t per disperser
-  private readonly VENT_CAPACITY = 32000; // mB/t per vent
-  private readonly MAX_BLADES_PER_ROTOR = 2; // 2 blades per rotor block
+  // Turbine constants (per FTB Wiki - from config/Mekanism/generators.toml)
+  private readonly TURBINE_BLADES_PER_COIL = 4; // turbineBladesPerCoil = 4
+  private readonly MAX_BLADES = 28; // Maximum blade rate constant
+  private readonly MAX_ENERGY_PER_STEAM = 10; // maxEnergyPerSteam = "10" Joules per mB of steam
+  private readonly DISPERSER_GAS_FLOW = 1280; // turbineDisperserGasFlow (mB/t per disperser, configurable)
+  private readonly VENT_GAS_FLOW = 32000; // turbineVentGasFlow (mB/t per vent, configurable)
+  private readonly CONDENSER_RATE = 1000; // condenserRate (mB/t per saturating condenser)
+  private readonly GAS_PER_TANK = 64000; // GAS_PER_TANK for steam storage per rotor
+  private readonly MAX_BLADES_PER_ROTOR = 2; // 2 blades can be placed per rotor block
   
   // Turbine size limits (interior dimensions)
   private readonly MAX_TURBINE_HEIGHT = 18;
@@ -102,43 +106,58 @@ export class MekanismFission {
       ? totalBurnRate * this.WATER_PER_MB_FUEL 
       : totalBurnRate * this.SODIUM_PER_MB_FUEL;
     
-    // Calculate turbine components
-    // Rotor blades automatically fill the entire height (height - 2 for top/bottom blocks)
-    const actualRotors = validatedTurbineHeight - 2;
+    // Calculate turbine components per FTB Wiki formulas
+    // Rotor column: The length cannot exceed 2 × TurbineWidth - 1 (interior width)
+    const turbineInteriorWidth = validatedTurbineWidth - 2;
+    const maxRotorLength = 2 * turbineInteriorWidth - 1;
+    const actualRotors = Math.min(validatedTurbineHeight - 2, maxRotorLength);
     
     // Calculate coil limits (depends on turbine cross-section)
-    const turbinePerimeter = 2 * (validatedTurbineWidth - 2) + 2 * (validatedTurbineWidth - 2);
+    const turbinePerimeter = 4 * (turbineInteriorWidth); // Perimeter of interior
     const maxCoils = turbinePerimeter * (validatedTurbineHeight - 2);
     const actualCoils = Math.min(this.electromagneticCoils, maxCoils);
     
-    // Calculate optimal blades needed (per FTB Wiki: optimal = coils × 4)
-    const optimalBlades = actualCoils * this.BLADES_PER_COIL;
+    // Calculate pressure dispersers (one per interior floor position minus center)
+    const dispersersCount = turbineInteriorWidth * turbineInteriorWidth - 1;
     
-    // Calculate actual blade count based on rotors (each rotor can hold 2 blades)
+    // Calculate blade count (each rotor can hold 2 blades)
     const maxPossibleBlades = actualRotors * this.MAX_BLADES_PER_ROTOR;
-    const actualBlades = Math.min(optimalBlades, maxPossibleBlades);
+    const actualBlades = maxPossibleBlades; // All rotors should have blades
     
-    // Calculate turbine steam processing capacity (each coil processes 200 mB/t)
-    const turbineSteamCapacity = actualCoils * this.STEAM_PER_COIL;
-    const effectiveSteam = Math.min(steamProduction, turbineSteamCapacity);
+    // Calculate BladeRate per FTB Wiki formula
+    // BladeRate = min(BladesNumber / MAX_BLADES(28), CoilsNumber × turbineBladesPerCoil(4) / MAX_BLADES(28))
+    const bladeRate1 = actualBlades / this.MAX_BLADES;
+    const bladeRate2 = (actualCoils * this.TURBINE_BLADES_PER_COIL) / this.MAX_BLADES;
+    const bladeRate = Math.min(bladeRate1, bladeRate2, 1.0); // Cap at 1.0
     
-    // Calculate power generation (FE/t) based on effective steam flow
-    // Formula: effective steam × FE per mB × efficiency factor from coils
-    const powerGeneration = effectiveSteam * (this.FE_PER_STEAM / 1000);
+    // Calculate max steam flow rate per FTB Wiki formulas
+    // MaxFlow(mB/t) = min(VentNumber × turbineVentGasFlow, Width² × RotorNumber × DisperserNumber × disperserGasFlow)
+    const maxFlowFromDispersers = turbineInteriorWidth * turbineInteriorWidth * actualRotors * dispersersCount * this.DISPERSER_GAS_FLOW;
+    // Assume 4 vents for a reasonable setup (user can have more)
+    const estimatedVents = Math.max(4, Math.ceil(steamProduction / this.VENT_GAS_FLOW));
+    const maxFlowFromVents = estimatedVents * this.VENT_GAS_FLOW;
+    const maxSteamFlow = Math.min(maxFlowFromDispersers, maxFlowFromVents);
     
-    // Calculate dispersers needed for steam input (each disperser handles 1280 mB/t)
-    const dispersersNeeded = Math.ceil(steamProduction / this.DISPERSER_CAPACITY);
+    // Effective steam is limited by turbine capacity
+    const effectiveSteam = Math.min(steamProduction, maxSteamFlow);
     
-    // Calculate turbine vents needed for steam output
-    const ventsNeeded = Math.ceil(steamProduction / this.VENT_CAPACITY);
+    // Calculate power generation per FTB Wiki formula
+    // Production(J) = maxEnergyPerSteam(10) × BladeRate × SteamFlow
+    const powerGenerationJ = this.MAX_ENERGY_PER_STEAM * bladeRate * effectiveSteam;
+    const powerGeneration = powerGenerationJ; // J/t = FE/t (1:1 conversion)
+    
+    // Calculate vents needed for steam output
+    const ventsNeeded = Math.ceil(effectiveSteam / this.VENT_GAS_FLOW);
     
     // Calculate water recycling components if enabled
     let ultimateFluidPipes = 0;
     let saturatingCondensers = 0;
     
     if (this.enableWaterRecycling) {
-      saturatingCondensers = Math.ceil(steamProduction / this.CONDENSER_CAPACITY);
-      ultimateFluidPipes = Math.ceil(steamProduction / this.PIPE_CAPACITY);
+      // Saturating condensers: condenserRate (1000 mB/t per condenser)
+      saturatingCondensers = Math.ceil(effectiveSteam / this.CONDENSER_RATE);
+      // Ultimate fluid pipes transport capacity (25,600 mB/t each, cumulative)
+      ultimateFluidPipes = Math.ceil(effectiveSteam / this.PIPE_CAPACITY);
       
       if (ultimateFluidPipes < this.MIN_PIPES) {
         ultimateFluidPipes = this.MIN_PIPES;
@@ -174,12 +193,14 @@ export class MekanismFission {
       turbineRotors: actualRotors,
       turbineBlades: actualBlades,
       turbineCoils: actualCoils,
-      turbineDispersers: dispersersNeeded,
+      turbineDispersers: dispersersCount,
       turbineVents: ventsNeeded,
       turbineSize: turbineSize,
       reactorCasings: reactorCasings,
       reactorGlass: reactorGlass,
       structuralGlass: structuralGlass,
+      bladeRate: Math.round(bladeRate * 10000) / 100, // Show as percentage
+      maxSteamFlow: Math.round(maxSteamFlow * 100) / 100,
     };
   }
 
