@@ -8,6 +8,57 @@
     <h2>Reactor Configuration</h2>
     
     <div class="calculator-form">
+      <h3>Reactor Dimensions</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="reactorWidth">
+            <strong>Width:</strong>
+          </label>
+          <input
+            type="number"
+            id="reactorWidth"
+            [(ngModel)]="reactorWidth"
+            min="3"
+            max="18"
+            class="form-input"
+          />
+          <p class="form-help">Reactor width (3-18 blocks)</p>
+        </div>
+
+        <div class="form-group">
+          <label for="reactorHeight">
+            <strong>Height:</strong>
+          </label>
+          <input
+            type="number"
+            id="reactorHeight"
+            [(ngModel)]="reactorHeight"
+            min="4"
+            max="18"
+            class="form-input"
+          />
+          <p class="form-help">Reactor height (4-18 blocks)</p>
+        </div>
+
+        <div class="form-group">
+          <label for="reactorLength">
+            <strong>Length:</strong>
+          </label>
+          <input
+            type="number"
+            id="reactorLength"
+            [(ngModel)]="reactorLength"
+            min="3"
+            max="18"
+            class="form-input"
+          />
+          <p class="form-help">Reactor length (3-18 blocks)</p>
+        </div>
+      </div>
+
+      <h3>Reactor Settings</h3>
+
       <div class="form-group">
         <label for="fuelAssemblies">
           <strong>Number of Fuel Assemblies:</strong>
@@ -17,10 +68,12 @@
           id="fuelAssemblies"
           [(ngModel)]="fuelAssemblies"
           min="1"
-          max="100"
+          [max]="getMaxFuelAssemblies()"
           class="form-input"
         />
-        <p class="form-help">The number of fuel assemblies in your reactor (1-100)</p>
+        <p class="form-help">
+          Fuel assemblies in reactor (1-{{ getMaxFuelAssemblies() }} based on dimensions)
+        </p>
       </div>
 
       <div class="form-group">
@@ -38,6 +91,87 @@
         />
         <p class="form-help">Reactor burn rate (0.1-10 mB/t per assembly)</p>
       </div>
+
+      <div class="form-group">
+        <label for="coolantType">
+          <strong>Coolant Type:</strong>
+        </label>
+        <select id="coolantType" [(ngModel)]="coolantType" class="form-input">
+          <option value="water">Water</option>
+          <option value="sodium">Sodium (5x steam production)</option>
+        </select>
+        <p class="form-help">Choose reactor coolant type</p>
+      </div>
+
+      <h3>Turbine Configuration</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="turbineWidth">
+            <strong>Turbine Width:</strong>
+          </label>
+          <input
+            type="number"
+            id="turbineWidth"
+            [(ngModel)]="turbineWidth"
+            min="5"
+            max="17"
+            class="form-input"
+          />
+          <p class="form-help">Width & Length (5-17 blocks)</p>
+        </div>
+
+        <div class="form-group">
+          <label for="turbineHeight">
+            <strong>Turbine Height:</strong>
+          </label>
+          <input
+            type="number"
+            id="turbineHeight"
+            [(ngModel)]="turbineHeight"
+            min="5"
+            max="18"
+            class="form-input"
+          />
+          <p class="form-help">Turbine height (5-18 blocks)</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="rotorBlades">
+          <strong>Rotor Blades:</strong>
+        </label>
+        <input
+          type="number"
+          id="rotorBlades"
+          [(ngModel)]="rotorBlades"
+          min="1"
+          [max]="getMaxRotors()"
+          class="form-input"
+        />
+        <p class="form-help">
+          Number of rotor blades (max {{ getMaxRotors() }} for height)
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="electromagneticCoils">
+          <strong>Electromagnetic Coils:</strong>
+        </label>
+        <input
+          type="number"
+          id="electromagneticCoils"
+          [(ngModel)]="electromagneticCoils"
+          min="1"
+          [max]="getMaxCoils()"
+          class="form-input"
+        />
+        <p class="form-help">
+          Number of coils (max {{ getMaxCoils() }} for turbine size)
+        </p>
+      </div>
+
+      <h3>Additional Options</h3>
 
       <div class="form-group checkbox-group">
         <label>
@@ -74,6 +208,14 @@
               <span class="result-label">Control Rods:</span>
               <span class="result-value">{{ results.controlRods }}</span>
             </li>
+            <li>
+              <span class="result-label">Reactor Casings:</span>
+              <span class="result-value">{{ results.reactorCasings }}</span>
+            </li>
+            <li>
+              <span class="result-label">Reactor Glass:</span>
+              <span class="result-value">{{ results.reactorGlass }}</span>
+            </li>
           </ul>
         </div>
 
@@ -91,6 +233,28 @@
             <li>
               <span class="result-label">Water Consumption:</span>
               <span class="result-value">{{ results.waterConsumption }} mB/t</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="result-card">
+          <h3>Turbine Components ({{ results.turbineSize }})</h3>
+          <ul class="result-list">
+            <li>
+              <span class="result-label">Rotor Blades:</span>
+              <span class="result-value">{{ results.turbineRotors }}</span>
+            </li>
+            <li>
+              <span class="result-label">Electromagnetic Coils:</span>
+              <span class="result-value">{{ results.turbineCoils }}</span>
+            </li>
+            <li>
+              <span class="result-label">Saturating Vents:</span>
+              <span class="result-value">{{ results.turbineVents }}</span>
+            </li>
+            <li>
+              <span class="result-label">Structural Glass:</span>
+              <span class="result-value">{{ results.structuralGlass }}</span>
             </li>
           </ul>
         </div>

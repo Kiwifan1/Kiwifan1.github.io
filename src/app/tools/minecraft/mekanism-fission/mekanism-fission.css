@@ -1,7 +1,27 @@
 .calculator-form {
-  max-width: 600px;
+  max-width: 800px;
   margin: 20px auto;
   padding: 20px;
+}
+
+.calculator-form h3 {
+  color: var(--kiwi-blue);
+  font-size: 1.2rem;
+  margin-top: 25px;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--kiwi-green);
+}
+
+.calculator-form h3:first-of-type {
+  margin-top: 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
 }
 
 .form-group {
@@ -150,6 +170,10 @@
 @media (max-width: 768px) {
   .calculator-form {
     padding: 10px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
   }
 
   .button-group {
