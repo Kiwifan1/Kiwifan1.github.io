@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.section-card.section-card--flush {
+  align-items: center;
+}
+
+.section-card.section-card--flush .back-link {
+  text-decoration: none;
+}

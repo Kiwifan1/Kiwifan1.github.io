@@ -1,15 +1,18 @@
-<header>
-  <div class="navbar" [class.filled]="scrolled">
-    <a style="margin: 0" routerLink="/">
-      <img src="/res/images/kiwi-running.png" class="logo" alt="kiwi-run" />
+<header class="navbar" [class.navbar--filled]="scrolled">
+  <div class="navbar__inner">
+    <a routerLink="/" class="navbar__brand">
+      <img src="/res/images/kiwi-running.png" class="navbar__logo" alt="Kiwi running logo" />
+      <span class="navbar__title">Kiwifan1</span>
     </a>
-    <nav>
+    <nav class="navbar__nav" aria-label="Primary navigation">
       <ul>
-        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
-        <li><a routerLink="/about" routerLinkActive="active">About</a></li>
-        <li><a routerLink="/links" routerLinkActive="active">Links</a></li>
-        <li><a routerLink="/resume" routerLinkActive="active">Resume</a></li>
-        <li><a routerLink="/tools" routerLinkActive="active">Tools</a></li>
+        <li>
+          <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        </li>
+        <li><a routerLink="/about" routerLinkActive="is-active">About</a></li>
+        <li><a routerLink="/links" routerLinkActive="is-active">Links</a></li>
+        <li><a routerLink="/resume" routerLinkActive="is-active">Resume</a></li>
+        <li><a routerLink="/tools" routerLinkActive="is-active">Tools</a></li>
       </ul>
     </nav>
   </div>

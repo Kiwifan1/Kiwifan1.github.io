@@ -1,314 +1,440 @@
-* {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/** Global **/
 :root {
   --kiwi-lime: #8bc34a;
   --kiwi-green: #2a862a;
   --kiwi-brown: #a07454;
   --kiwi-blue: #1995ff;
   --kiwi-pink: #ea3381;
-  --kiwi-back: #181b1e;
-  --kiwi-fore: #f2f8fd;
+  --kiwi-back: #0f1216;
+  --kiwi-fore: #f3f7fa;
+  --text-muted: rgba(230, 237, 246, 0.78);
+  --surface: rgba(16, 20, 26, 0.72);
+  --surface-strong: rgba(12, 17, 24, 0.9);
+  --surface-border: rgba(153, 197, 255, 0.15);
+  --surface-hover: rgba(28, 36, 46, 0.92);
+  --nav-height: 4.25rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 1.25rem;
+  --radius-lg: 1.85rem;
+  --shadow-soft: 0 28px 60px rgba(5, 10, 18, 0.38);
+  --font-body: 'Exo', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-xxl: 4rem;
+  color-scheme: dark;
 }
 
-/* Making the scrollbar smooth. */
 html {
   scroll-behavior: smooth;
-  background: -webkit-linear-gradient(to left, #8f94fb, #4e54c8) repeat;
-  /* background: url(res/images/Mountain.jpg) no-repeat; */
+  background: #070b11;
 }
 
-/* Setting the background color to the kiwi-back variable, the color to the kiwi-fore variable,
-and the transition to all 0.3s ease-in-out. */
 body {
-  background-color: var(--kiwi-back);
-  color: var(--kiwi-fore);
-  transition: all 0.3s ease-in-out;
-  font-family: "Exo", sans-serif;
-  font-size: 1.2rem;
-  line-height: 1.5;
-}
-
-/* Setting the font weight to 100, the color to the kiwi-fore variable, and the transition to all 0.3s
-ease-in-out. */
-p {
-  font-weight: 100;
-  color: var(--kiwi-fore);
-  transition: all 0.3s ease-in-out;
-}
-
-.circles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.circles li {
-  position: absolute;
-  display: block;
-  list-style: none;
-  width: 20px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  animation: animate 25s linear infinite;
-  bottom: -150px;
-}
-
-.circles li:nth-child(1) {
-  left: 25%;
-  width: 80px;
-  height: 80px;
-  animation-delay: 0s;
-}
-
-.circles li:nth-child(2) {
-  left: 10%;
-  width: 20px;
-  height: 20px;
-  animation-delay: 2s;
-  animation-duration: 12s;
-}
-
-.circles li:nth-child(3) {
-  left: 70%;
-  width: 20px;
-  height: 20px;
-  animation-delay: 4s;
-}
-
-.circles li:nth-child(4) {
-  left: 40%;
-  width: 60px;
-  height: 60px;
-  animation-delay: 0s;
-  animation-duration: 18s;
-}
-
-.circles li:nth-child(5) {
-  left: 65%;
-  width: 20px;
-  height: 20px;
-  animation-delay: 0s;
-}
-
-.circles li:nth-child(6) {
-  left: 75%;
-  width: 110px;
-  height: 110px;
-  animation-delay: 3s;
-}
-
-.circles li:nth-child(7) {
-  left: 35%;
-  width: 150px;
-  height: 150px;
-  animation-delay: 7s;
-}
-
-.circles li:nth-child(8) {
-  left: 50%;
-  width: 25px;
-  height: 25px;
-  animation-delay: 15s;
-  animation-duration: 45s;
-}
-
-.circles li:nth-child(9) {
-  left: 20%;
-  width: 15px;
-  height: 15px;
-  animation-delay: 2s;
-  animation-duration: 35s;
-}
-
-.circles li:nth-child(10) {
-  left: 85%;
-  width: 150px;
-  height: 150px;
-  animation-delay: 0s;
-  animation-duration: 11s;
-}
-
-@keyframes animate {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
-    border-radius: 0;
-  }
-
-  100% {
-    transform: translateY(-1000px) rotate(720deg);
-    opacity: 0;
-    border-radius: 50%;
-  }
-}
-
-.container {
-  
   min-height: 100vh;
-  width: 100%;
-  /* background: url(res/images/Mountain.jpg) no-repeat; */
-  padding-left: 10%;
-  padding-right: 10%;
-  box-sizing: border-box;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--kiwi-fore);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(25, 149, 255, 0.18), transparent 52%),
+    radial-gradient(circle at 82% 8%, rgba(234, 51, 129, 0.16), transparent 58%),
+    radial-gradient(circle at 50% 92%, rgba(139, 195, 74, 0.14), transparent 60%),
+    linear-gradient(160deg, #05070d, #101723 55%, #090d13);
+  -webkit-font-smoothing: antialiased;
   position: relative;
 }
 
-.logo {
-  width: 80px;
-  cursor: point;
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 10% 90%, rgba(139, 195, 74, 0.18), transparent 52%),
+    radial-gradient(circle at 95% 70%, rgba(25, 149, 255, 0.22), transparent 55%);
+  pointer-events: none;
+  z-index: -2;
 }
 
-ul {
-  list-style-type: disc;
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.04) 0%, transparent 45%),
+    linear-gradient(300deg, rgba(0, 0, 0, 0.23), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+img {
+  max-width: 100%;
+  display: block;
 }
 
 a {
-  text-decoration: underline;
-  text-shadow: none;
-  color: var(--kiwi-fore);
-  transition: all 0.3s ease-in-out;
-}
-/** Navigation Bar **/
-
-/* Making the navbar take up the entire width of the page. */
-nav {
-  flex: 1;
-}
-
-/* Displays navbar as one row */
-nav ul li {
-  display: inline-block;
-  list-style: none;
-  margin: 0px 10px;
-}
-
-/* Styling of navbar elements */
-nav ul li a {
+  color: inherit;
   text-decoration: none;
-  color: var(--kiwi-fore);
-  border-bottom: 0px solid;
-  transition: all 0.3s ease-in-out;
+  transition: color 0.25s ease, text-shadow 0.25s ease;
 }
 
-/* Styling of navbar elements when hovered over */
-nav ul li a:hover {
+a:hover,
+a:focus-visible {
   color: var(--kiwi-green);
-  text-shadow: 0px 0px 5px var(--kiwi-green);
-  border-bottom: 2px solid var(--kiwi-green);
-  transition: all 0.3s ease-in-out;
+  text-shadow: 0 0 14px rgba(139, 195, 74, 0.4);
 }
 
-.navbar {
+p {
+  color: var(--text-muted);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--kiwi-fore);
+}
+
+h1 {
+  font-size: clamp(2.3rem, 5vw, 3.3rem);
+}
+
+h2 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  margin-bottom: var(--space-xs);
+}
+
+h3 {
+  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+}
+
+strong,
+b {
+  color: var(--kiwi-fore);
+  font-weight: 600;
+}
+
+main.app-shell {
   width: 100%;
-  height: 12vh;
-  margin: auto;
-  display: flex;
-  z-index: 2;
-  align-items: center;
-  position: fixed;
-  background-color: none;
-  flex-direction: column;
-  padding-bottom: 2vh;
-  border-bottom: 0px solid;
-  border-image: linear-gradient(45deg, var(#ea3381), var(#1995ff)) 10;
-  transition: all 0.3s ease-in-out;
 }
 
-.navbar.filled {
-  background-color: var(--kiwi-back);
-  border-bottom: 3px solid;
-  border-image: linear-gradient(45deg, var(--kiwi-green), var(--kiwi-brown)) 10;
-  transition: all 0.3s ease-in-out;
+.page {
+  width: min(960px, calc(100% - 2 * var(--space-xl)));
+  margin: 0 auto;
+  padding-block: var(--space-xxl);
+  display: grid;
+  gap: var(--space-xl);
 }
 
-/* Setting the margin-top of the navbar to 5px. */
-.navbar a {
-  margin-top: 5px;
+.page--wide {
+  width: min(1100px, calc(100% - 2 * var(--space-xl)));
 }
 
-/* Setting the background color to the kiwi-back variable, and the border-bottom to 3px solid. */
-/* .navbar.filled {
-  background-color: var(--kiwi-back);
-  border-bottom: 3px solid;
-} */
-
-/** Header **/
-
-/* Setting the padding-top to 15vh, and the margin-left to 7%. */
-.head-content {
-  padding-top: 15vh;
-  margin-left: 7%;
+.page__eyebrow {
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kiwi-lime);
+  font-weight: 600;
 }
 
-/* Centering the content in the header. */
-.head-content-centered {
-  padding-top: 15vh;
-  align-items: center;
+.page__header {
+  display: grid;
+  gap: var(--space-sm);
   text-align: center;
+  padding-inline: var(--space-lg);
 }
 
-/* Setting the font size to 42px, the font weight to 500, the margin-top to 18px, the
-margin-bottom to -10px, and the color to the kiwi-green variable. */
-.head-content-centered h1 {
-  font-size: 42px;
-  font-weight: 500;
-  margin-top: 18px;
-  margin-bottom: -10px;
-  color: var(--kiwi-blue);
+.page__header p {
+  margin: 0 auto;
+  max-width: 60ch;
 }
 
-/* Styling the paragraph in the header. */
-.head-content-centered p {
-  font-size: 18px;
-  font-weight: 400;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  color: var(--kiwi-fore);
+.section-grid {
+  display: grid;
+  gap: var(--space-xl);
 }
 
-/** Content **/
-
-.content {
-  margin-left: 8%;
-  margin-right: 8%;
-  margin-top: 3%;
-  margin-bottom: 3%;
-  border-top: 1px solid var(--kiwi-green);
+@media (min-width: 720px) {
+  .section-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
 }
 
-.content h2 {
-  font-size: 32px;
-  font-weight: 400;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  color: var(--kiwi-blue);
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  backdrop-filter: blur(22px);
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: var(--space-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
 
-.content p {
-  font-size: 18px;
-  font-weight: 400;
-  margin-top: 10px;
-  margin-bottom: 10px;
+.section-card:hover {
+  background: var(--surface-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 32px 60px rgba(8, 14, 24, 0.5);
 }
 
-.content ul {
-  font-size: 18px;
-  font-weight: 200;
-  margin-top: 5px;
-  margin-left: 5%;
-  margin-right: 5%;
-  color: var(--kiwi-fore);
+.section-card p {
+  margin: 0;
 }
 
-.content ul li b {
-  font-weight: 400;
+.section-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.section-card li {
+  position: relative;
+  padding-left: 1.5rem;
+  color: var(--text-muted);
+}
+
+.section-card li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--kiwi-blue), var(--kiwi-green));
+  box-shadow: 0 0 0.35rem rgba(25, 149, 255, 0.45);
+}
+
+.section-card li b {
   color: var(--kiwi-pink);
 }
-/** Body **/
+
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: clamp(var(--radius-md), 4vw, 2.75rem);
+  background:
+    linear-gradient(145deg, rgba(32, 45, 66, 0.92), rgba(16, 24, 32, 0.85));
+  border: 1px solid rgba(89, 153, 255, 0.22);
+  padding: calc(var(--space-xl) * 1.4) clamp(var(--space-lg), 5vw, var(--space-xxl));
+  box-shadow: 0 38px 70px rgba(6, 12, 20, 0.48);
+  display: grid;
+  gap: var(--space-md);
+}
+
+.hero-card::after {
+  content: '';
+  position: absolute;
+  inset: -30% 40% -40% -30%;
+  background: radial-gradient(circle at center, rgba(25, 149, 255, 0.28), transparent 65%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.hero-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-card__eyebrow {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: rgba(139, 195, 74, 0.85);
+  font-weight: 600;
+}
+
+.hero-card p {
+  max-width: 60ch;
+  color: rgba(247, 250, 255, 0.92);
+}
+
+.hero-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  color: rgba(222, 233, 247, 0.8);
+  font-size: 0.95rem;
+}
+
+.hero-card__meta span::before {
+  content: '•';
+  margin-right: var(--space-xs);
+}
+
+.hero-card__meta span:first-child::before {
+  content: '';
+  margin: 0;
+}
+
+.hero-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.hero-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  font-size: 0.95rem;
+}
+
+.hero-card__links a {
+  color: var(--kiwi-blue);
+  text-decoration: underline;
+  text-shadow: none;
+}
+
+.hero-card__links a:hover {
+  color: var(--kiwi-green);
+  text-shadow: 0 0 12px rgba(25, 149, 255, 0.45);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: 0.75rem 1.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--kiwi-green), var(--kiwi-lime));
+  color: #081014;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 35px rgba(45, 200, 125, 0.3);
+}
+
+.button--ghost {
+  background: transparent;
+  color: var(--kiwi-fore);
+  border-color: rgba(139, 195, 74, 0.55);
+}
+
+.button--ghost:hover,
+.button--ghost:focus-visible {
+  background: rgba(139, 195, 74, 0.16);
+  box-shadow: 0 18px 30px rgba(139, 195, 74, 0.22);
+}
+
+.link-muted {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
+.link-muted:hover {
+  color: var(--kiwi-fore);
+}
+
+.section-card--flush {
+  padding: var(--space-lg);
+}
+
+.section-card--accent {
+  border: 1px solid rgba(234, 51, 129, 0.3);
+  background: linear-gradient(145deg, rgba(42, 19, 37, 0.8), rgba(21, 27, 40, 0.78));
+}
+
+.list-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list-inline li {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(139, 195, 74, 0.18);
+  color: rgba(236, 245, 255, 0.84);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.list-inline li::before {
+  display: none;
+}
+
+.responsive-frame {
+  width: 100%;
+  min-height: 65vh;
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: #fff;
+}
+
+@media (min-width: 1024px) {
+  .responsive-frame {
+    min-height: 82vh;
+  }
+}
+
+.back-link {
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.back-link::before {
+  content: '←';
+}
+
+@media (max-width: 720px) {
+  .page {
+    width: calc(100% - 2 * var(--space-md));
+    gap: var(--space-lg);
+  }
+
+  .hero-card {
+    padding: var(--space-xl) var(--space-lg);
+  }
+
+  .hero-card__meta span::before {
+    display: none;
+  }
+
+  .hero-card__meta {
+    gap: var(--space-xs);
+  }
+
+  .section-card {
+    padding: clamp(var(--space-lg), 6vw, var(--space-xl));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
