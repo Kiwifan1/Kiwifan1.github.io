@@ -139,11 +139,11 @@
 
       <div class="form-group info-group">
         <label>
-          <strong>Rotor Blades (Auto-calculated):</strong>
+          <strong>Rotors (Auto-calculated):</strong>
         </label>
-        <div class="info-value">{{ getCalculatedRotors() }} blades</div>
+        <div class="info-value">{{ getCalculatedRotors() }} rotors</div>
         <p class="form-help">
-          Rotor blades automatically fill the turbine height (height - 2)
+          Rotors automatically fill the turbine height (height - 2). Each rotor can hold 2 blades. Optimal blades = coils × 4.
         </p>
       </div>
 
@@ -234,12 +234,20 @@
           <h3>Turbine Components ({{ results.turbineSize }})</h3>
           <ul class="result-list">
             <li>
-              <span class="result-label">Rotor Blades:</span>
+              <span class="result-label">Rotors:</span>
               <span class="result-value">{{ results.turbineRotors }}</span>
+            </li>
+            <li>
+              <span class="result-label">Turbine Blades:</span>
+              <span class="result-value">{{ results.turbineBlades }}</span>
             </li>
             <li>
               <span class="result-label">Electromagnetic Coils:</span>
               <span class="result-value">{{ results.turbineCoils }}</span>
+            </li>
+            <li>
+              <span class="result-label">Dispersers:</span>
+              <span class="result-value">{{ results.turbineDispersers }}</span>
             </li>
             <li>
               <span class="result-label">Saturating Vents:</span>
