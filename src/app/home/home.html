@@ -1,27 +1,53 @@
-<div class="container">
-  <div class="head-content-centered">
-    <h1>Welcome to my Website!</h1>
-    <p>This is the official website of Kiwifan1, also known as Joshua</p>
+<div class="page page--home">
+  <section class="hero-card">
+    <span class="hero-card__eyebrow">Welcome</span>
+    <h1>Welcome to my website!</h1>
     <p>
-      Thank you very much to
-      <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>
-      for hosting this website! This website is hosted at
-      <a href="https://github.com/Kiwifan1/Kiwifan1.github.io" target="_blank" rel="noopener">GitHub</a>
+      I'm Joshua, a Computer Science major focused on Software Security and Data Science. This is
+      my digital home for sharing the work I care about and the things I am building.
     </p>
-  </div>
-  <div class="content">
-    <h2>Who am I?</h2>
-    <p>
-      Hi, I'm Joshua. I'm a Computer Science major with a double
-      concentration in Software Security and Data Science.
-    </p>
-  </div>
-  <div class="content">
-    <h2>What's On This Website?</h2>
-    <p>
-      Good Question. I've decided to put some of the main things I'd like
-      people to see such as my resume, other places you might see me, and
-      things that I've done!
-    </p>
-  </div>
+    <div class="hero-card__meta">
+      <span>Gonzaga University · Class of 2025</span>
+      <span>Software Security &amp; Data Science</span>
+    </div>
+    <div class="hero-card__links">
+      <a href="https://pages.github.com/" target="_blank" rel="noopener">Powered by GitHub Pages</a>
+      <a href="https://github.com/Kiwifan1/Kiwifan1.github.io" target="_blank" rel="noopener">View the source on GitHub</a>
+    </div>
+    <div class="hero-card__actions">
+      <a class="button" routerLink="/resume">View my resume</a>
+      <a class="button button--ghost" routerLink="/links">Connect with me</a>
+    </div>
+  </section>
+
+  <section class="section-grid home-feature-grid">
+    <article class="section-card">
+      <h2>Who am I?</h2>
+      <p>
+        Hi, I'm Joshua. I enjoy solving puzzles, building secure systems, and exploring thoughtful
+        data insights. My coursework and projects are centered around uncovering how things work and
+        how to make them more resilient.
+      </p>
+    </article>
+
+    <article class="section-card">
+      <h2>What's on this site?</h2>
+      <p>Everything here is curated to help you learn more about me at a glance.</p>
+      <ul>
+        <li><b>Resume</b> &mdash; A quick overview of my experience and coursework.</li>
+        <li><b>Links</b> &mdash; Social profiles and the places you can reach me online.</li>
+        <li><b>Tools</b> &mdash; Small utilities and side projects I tinker with.</li>
+      </ul>
+    </article>
+
+    <article class="section-card section-card--accent">
+      <h2>Currently exploring</h2>
+      <p>I'm especially interested in secure software, data storytelling, and collaborative games.</p>
+      <ul class="list-inline">
+        <li>Secure architecture</li>
+        <li>Insightful data</li>
+        <li>Co-op systems</li>
+      </ul>
+    </article>
+  </section>
 </div>

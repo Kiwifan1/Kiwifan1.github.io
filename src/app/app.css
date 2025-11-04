@@ -1,0 +1,15 @@
+:host {
+  display: contents;
+}
+
+main.app-shell {
+  display: block;
+  min-height: 100vh;
+  padding-top: calc(var(--nav-height) + var(--space-lg));
+}
+
+@media (max-width: 640px) {
+  main.app-shell {
+    padding-top: calc(var(--nav-height) + var(--space-md));
+  }
+}
