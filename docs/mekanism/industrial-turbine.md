@@ -1,5 +1,18 @@
 # Industrial Turbine Information
 
+## Config Values
+
+Values in $\text{\red{red}}$ are nominally gathered from the `generators.toml` file within the Mekanism Modpack.  Defaults are defined as follows:
+
+* $\red{\tau = 4}$; the number of `Turbine Blade` that can be handled by a single `Electromagnetic Coil`.
+* $\red{\mu = 28}$; the maximum number of `Turbine Blade` that can be in a turbine.
+* $\red{\Rho_{vent} = 32{,}000}$; the rate at which steam is vented into the turbine.
+* $\red{\delta = 1{,}280}$; the rate at which steam is dispersed into the turbine.
+* $\red{\Epsilon_{block} = 16{,}000}$; the amount of energy (J) stored in each block of the turbine.
+* $\red{\Sigma_{block} = 64{,}000}$; the amount of steam (mB) stored in each block.
+* $\red{\Epsilon_{steam} = 10}$; the max energy (J) for each mB of steam.
+* $\red{\Rho_{cond} = 64{,}000}$; the rate at which steam can be condensed in the turbine.
+
 ## Construction
 
 Size:
@@ -21,9 +34,9 @@ Size:
 
 The tank volume $V_{tank}$ in mB is given by:
 
-$$V_{tank} = L^2 \cdot H_{rotor}$$
+$$V_{tank} = L^2 \cdot h_{rotor}$$
 
-Where $H_{rotor}$ is the height of the `Rotor Shaft` blocks.
+Where $h_{rotor}$ is the height of the `Rotor Shaft` blocks.
 
 ## Flow Rate
 
@@ -59,11 +72,11 @@ $$F_{max} = \min(F_{disperser}, F_{vent})$$
 
 Where:
 
-$$F_{disperser} = N_{disperser} \cdot V_{interior} \cdot 1{,}280 $$
+$$F_{disperser} = N_{disperser} \cdot V_{interior} \cdot \red{\delta} $$
 
-$$F_{vent} = N_{vent} \cdot 32{,}000$$
+$$F_{vent} = N_{vent} \cdot \red{\Rho_{vent}}$$
 
-$$V_{interior} = (L - 2)^2 \cdot H_{rotor}$$
+$$V_{interior} = (L - 2)^2 \cdot h_{rotor}$$
 
 ## Power Generation
 
@@ -71,20 +84,59 @@ $$V_{interior} = (L - 2)^2 \cdot H_{rotor}$$
 
 The Power Generation Rate $P$ in J is given by:
 
+$$P = \red{\Epsilon_{steam}} \cdot F_{blade} \cdot F_{max}$$
 
+Where:
+
+$$F_{blade} = \min(R_{blade}, R_{coil})$$
+
+$$R_{blade} = \frac{N_{blade}}{\red{\mu}}$$
+
+$$R_{coil} = \frac{N_{coil} \cdot \red{\tau}}{\red{\mu}}$$
 
 ### Storage Capacities
 
 The maximum amount of Power Storage $S_{E}$ in J is given by:
 
-$$S_{E} = L^2 \cdot H \cdot 16{,}000$$
+$$S_{E} = L^2 \cdot H \cdot \red{\Epsilon_{block}}$$
+
+where:
+
+$H$ is the total height of the Turbine structure in blocks
 
 ---
 
 The maximum amount of Steam Storage $S_{S}$ in mB is given by:
 
-$$S_{S} = L^2 \cdot H_{rotor} \cdot 64{,}000$$
+$$S_{S} = L^2 \cdot h_{rotor} \cdot \red{\Sigma_{block}}$$
 
-Where:
+## Water Reclamation
 
-$H$ is the total height of the Turbine structure in blocks
+The use of `Saturating Condenser` blocks enable reclamation of water back into the Fission Reactor/Thermoelectric Boiler.
+
+The maximum amount of water output $R_{water}$ is given by:
+
+$$R_{water} = N_{cond} \cdot \red{\Rho_{cond}}$$
+
+---
+
+To find the necessary amount of `Saturating Condenser` blocks to fully reclaim all steam, the following formula can be used:
+
+$$N_{cond} = \frac{F_{max}}{\red{\Rho_{cond}}}$$
+
+This means that:
+
+$$N_{cond} \propto N_{vent}$$
+
+$$N_{cond} \propto N_{disperser}$$
+
+## Water/Steam Transportation
+
+Transporting Water/Steam is the largest logistical problem, especially when aesthetics and lag are considerations. For purposes of the following calculations, Mekanism Ultimate Pipes are used, and their defaults are listed below:
+
+* Ultimate Mechanical Pipe: $64{,}000$ mb/t of water
+* Ultimate Pressurized Pipe: $1{,}024{,}000$ mb/t of steam
+
+This means that for the number of pipes necessary:
+
+$$N_{mech} = $$
