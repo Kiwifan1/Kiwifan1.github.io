@@ -68,7 +68,8 @@ const MIN_TURBINE_HEIGHT = 5;
 const MAX_TURBINE_HEIGHT = 18;
 const WATER_COOLANT_RATE = 20_000;
 const SODIUM_COOLANT_RATE = 200_000;
-const STEAM_PER_SUPERHEATER = 100_000;
+const STEAM_PER_FUEL = 20_000;
+const BOIL_CAPACITY_PER_SUPERHEATER = 320_000;
 const STEAM_CAPACITY_PER_BLOCK = 160_000;
 const HOT_COOLANT_CAPACITY_PER_BLOCK = 256_000;
 const WATER_CAPACITY_PER_BLOCK = 16_000;
@@ -181,8 +182,8 @@ function findReactor(
   return best;
 }
 
-function findBoiler(steamRequirement: number): BoilerPlan {
-  const superheatersNeeded = Math.ceil(steamRequirement / STEAM_PER_SUPERHEATER);
+function findBoiler(requirements: { steam: number; hotCoolant: number }): BoilerPlan {
+  const superheatersNeeded = Math.ceil(requirements.steam / BOIL_CAPACITY_PER_SUPERHEATER);
   let best: BoilerPlan | null = null;
   for (let width = 3; width <= 18; width += 1) {
     for (let length = 3; length <= 18; length += 1) {
@@ -200,15 +201,16 @@ function findBoiler(steamRequirement: number): BoilerPlan {
           }
           const steamVolume = steamLayers * area;
           const steamCapacity = STEAM_CAPACITY_PER_BLOCK * steamVolume;
-          if (steamCapacity + 1e-6 < steamRequirement) {
+          if (steamCapacity + 1e-6 < requirements.steam) {
             continue;
           }
-          const boilCapacity = STEAM_PER_SUPERHEATER * superheatersNeeded;
-          if (boilCapacity + 1e-6 < steamRequirement) {
+          const boilCapacity = BOIL_CAPACITY_PER_SUPERHEATER * superheatersNeeded;
+          if (boilCapacity + 1e-6 < requirements.steam) {
             continue;
           }
-          const waterCapacity = WATER_CAPACITY_PER_BLOCK * (waterSlots - superheatersNeeded);
-          if (waterCapacity < 0) {
+          const waterVolumeBlocks = Math.max(waterSlots - superheatersNeeded, 0);
+          const waterCapacity = WATER_CAPACITY_PER_BLOCK * waterVolumeBlocks;
+          if (waterCapacity + 1e-6 < requirements.steam) {
             continue;
           }
           const shell = computeShellBreakdown(
@@ -217,7 +219,10 @@ function findBoiler(steamRequirement: number): BoilerPlan {
             length,
             DEFAULT_BOILER_VALVES
           );
-          const hotCoolantCapacity = HOT_COOLANT_CAPACITY_PER_BLOCK * steamVolume;
+          const hotCoolantCapacity = HOT_COOLANT_CAPACITY_PER_BLOCK * waterVolumeBlocks;
+          if (requirements.hotCoolant > 0 && hotCoolantCapacity + 1e-6 < requirements.hotCoolant) {
+            continue;
+          }
           const candidate: BoilerPlan = {
             dimensions: { width, height, length },
             shell,
@@ -273,14 +278,20 @@ export function planFissionPower(
   const headroom =
     bestTurbine.turbine.performance.powerPerTick - options.targetPower;
 
-  const coolantRate =
-    options.cooling === 'sodium' ? SODIUM_COOLANT_RATE : WATER_COOLANT_RATE;
-  const burnRate = requiredSteam / coolantRate;
+  const burnRate = requiredSteam / STEAM_PER_FUEL;
+  const coolantPerTick =
+    burnRate *
+    (options.cooling === 'sodium' ? SODIUM_COOLANT_RATE : WATER_COOLANT_RATE);
 
   const reactorInfo = findReactor(burnRate, DEFAULT_REACTOR_PORTS);
 
   const needsBoiler = options.cooling === 'sodium' || options.useBoiler === true;
-  const boilerPlan = needsBoiler ? findBoiler(requiredSteam) : undefined;
+  const boilerPlan = needsBoiler
+    ? findBoiler({
+        steam: requiredSteam,
+        hotCoolant: options.cooling === 'sodium' ? coolantPerTick : 0,
+      })
+    : undefined;
 
   const reclaimWater =
     options.reclaimWater ?? (options.cooling === 'water' || needsBoiler);
@@ -298,7 +309,7 @@ export function planFissionPower(
     },
     reactor: {
       burnRate,
-      coolantPerTick: burnRate * coolantRate,
+      coolantPerTick,
       capacity: reactorInfo.capacity,
       cost: reactorInfo.cost,
     },

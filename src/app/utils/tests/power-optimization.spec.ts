@@ -46,11 +46,14 @@ describe('planFissionPower', () => {
       result.turbineOperation.requiredSteam
     );
     expect(result.boiler?.hotCoolantCapacity).toBeGreaterThanOrEqual(
-      result.turbineOperation.requiredSteam
+      result.reactor.coolantPerTick
     );
-    expect(result.reactor.coolantPerTick).toBe(result.turbineOperation.requiredSteam);
     expect(result.reactor.burnRate).toBeCloseTo(
-      result.turbineOperation.requiredSteam / 200_000,
+      result.turbineOperation.requiredSteam / 20_000,
+      6
+    );
+    expect(result.reactor.coolantPerTick).toBeCloseTo(
+      result.turbineOperation.requiredSteam * 10,
       6
     );
     expect(result.waterReclamation).toEqual(

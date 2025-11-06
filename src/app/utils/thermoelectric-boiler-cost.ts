@@ -23,7 +23,7 @@ export interface ThermoelectricBoilerCost {
   steamVolume: number;
 }
 
-const STEAM_NON_LIMIT_BOUND = (H: number) => Math.floor((58 * H + 5) / 63);
+const STEAM_NON_LIMIT_BOUND = (H: number) => Math.floor((21 * H + 2) / 23);
 
 function clampCandidateHeight(height: number, candidate: number): number {
   const upper = Math.max(height - 1, 2);
@@ -35,8 +35,8 @@ function calculateSuperheaters(h: number, area: number): number {
   if (h <= 1) {
     return 0;
   }
-  const numerator = 4 * (h - 1) * area;
-  return Math.ceil(numerator / 29);
+  const numerator = (h - 1) * area;
+  return Math.ceil(numerator / 21);
 }
 
 export function calculateThermoelectricBoilerCost(
