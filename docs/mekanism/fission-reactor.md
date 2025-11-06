@@ -8,10 +8,10 @@ Size:
 | ----- | -------- |
 | 3x4x3 | 18x18x18 |
 
->Note: above 75 Fission Fuel Assemblies, Water based cooling is no longer recommended.
+> Note: Above 75 Fission Fuel Assemblies, water-based cooling is no longer recommended.
 
 * Edges must be `Fission Reactor Casing`
-* Faces can be `Fission Reactor Casing`, `Reactor Glass`, `Fission Reactor Port` or `Fission Reactor Logic Adapater`
+* Faces can be `Fission Reactor Casing`, `Reactor Glass`, `Fission Reactor Port` or `Fission Reactor Logic Adapter`
 * Interior can be either air or fission control rods
   * A control rod is made from 1 to 15 `Fission Fuel Assembly` and a single `Control Rod Assembly` at the top
 * Each Reactor must have a minimum of:
@@ -22,37 +22,37 @@ Size:
 
 ## Heating Rate
 
-| Medium | Heating Rate (Mb/t) |
+| Medium | Heating Rate (mB/t) |
 | ------ | ------------------- |
 | Water  | 20,000              |
 | Sodium | 200,000             |
 
->Note: These numbers also match for how much is heated per 1 mb of `Fissile Fuel`
+> Note: These numbers also match how much is heated per 1 mB of `Fissile Fuel`.
 
 ## Power Generation
 
 * The Power Generated per mB of `Fissile Fuel` follows the formula:
 
-$$P = 7.14 \space \text{kJ} * N_{blades}$$
+$$P = 7.14\,\text{kJ} \cdot N_{blades}$$
 
 ## Burn Rate
 
-The Max Burn Rate Formula is as follows:
+Let $N_{\text{fuel}}$ be the number of `Fission Fuel Assembly` blocks in the reactor. Then the maximum burn rate is
 
-$$B_{Max} = N_{Fuel \space Assemblies}$$
+$$B_{\max} = N_{\text{fuel}}$$
 
-The Max Safe Burn Rate Formula, given a Turbine $X$ is as follows:
+Given a paired turbine $X$ with steam handling $X_{\text{steam flow}}$ and water return $X_{\text{water output}}$, the safe burn rate is
 
-$$B_{Safe} = \min(X_{steam \space flow}, X_{water \space output})$$
+$$B_{\text{safe}} = \min\big(X_{\text{steam flow}},\ X_{\text{water output}}\big)$$
 
 ## Temperature
 
 | Color  | Temperature (K)     |
 | ------ | ------------------- |
-| Green  | $ T < 600 $         |
-| Yellow | $ 600 < T < 1000 $  |
-| Orange | $ 1000 < T < 1200 $ |
-| Red\*  | $ 1200 < T $        |
+| Green  | $T < 600$           |
+| Yellow | $600 < T < 1000$    |
+| Orange | $1000 < T < 1200$   |
+| Red\*  | $1200 < T$          |
 
 > \*Note: Above 1200K, the reactor will take structural damage
 
@@ -60,31 +60,31 @@ $$B_{Safe} = \min(X_{steam \space flow}, X_{water \space output})$$
 
 #### Damage Formula
 
-Above 1200K, the reactor starts to take damage, using the following formula:
+Above 1200K, the reactor starts to take damage according to
 
-$$D = \frac{\min(T, 1800)}{12,000}\% \space \text{per tick}$$
+$$D = \frac{\min(T, 1800)}{12{,}000}\% \text{ per tick}.$$
 
-This means for a reactor at 1400K:
+For a reactor at $T = 1400\,\text{K}$ this evaluates to
 
-$$D = \frac{\min(1400,1800)}{12,000} =  2.\overline{33}\%  \space \text{per second}$$
+$$D = \frac{1400}{12{,}000} \approx 0.1167\% \text{ per tick} \approx 2.33\% \text{ per second}.$$
 
 #### Meltdown Formula
 
-While damage is over 100% and the temperature is above 1200K, the reactor will roll a chance to meldown every tick, following the formula:
+While damage is over 100% and the temperature remains above 1200K, the reactor rolls a chance to melt down every tick:
 
-$$p_{meltdown} =\frac{D (\%)}{1000}\space \text{per tick}$$
+$$p_{\text{meltdown}} = \frac{D(\%)}{1000}.$$
 
-This means for a reactor at 100% damage, it would be:
+At 100% damage that becomes
 
-$$P_{meltdown} \frac{100}{1000} = 0.1\% \space \text{per tick} = 2\% \space \text{per second}$$
+$$p_{\text{meltdown}} = \frac{100}{1000} = 0.1\% \text{ per tick} \approx 2\% \text{ per second}.$$
 
 #### Repair Formula
 
-While the temperature is < 1200K. The reactor repairs itself at a rate of:
+While the temperature stays below 1200K the reactor repairs itself at
 
-$$ \frac{1200 - T}{120,000}\% \space \text{per tick}$$
+$$ \frac{1200 - T}{120{,}000}\% \text{ per tick},$$
 
-This means that at 0K, the reactor will repair itself at 0.2% per second
+so at $T = 0\,\text{K}$ the structure heals at 0.2% per second.
 
 ## Nuclear Waste
 

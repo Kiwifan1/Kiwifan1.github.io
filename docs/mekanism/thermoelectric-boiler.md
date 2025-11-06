@@ -30,23 +30,14 @@ Tank Capacities are as follows:
 
 ### Intermediate Formulas
 
-Simplified parameter definitions (dimensions):
-Let
-
-* H = height
-* W, L = width, length
-* A = $W \cdot L$ (layer area)
-* h = $(\text{water cavity height} + 1 \text{ pressure disperser layer})$
-* N = number of superheaters placed in the water cavity
+Let the overall height be $H$ and the footprint dimensions be $W$ by $L$ so that the layer area is $A = W \cdot L$. Define $h$ as the water cavity height plus the single pressure disperser layer and let $N$ be the number of superheaters.
 
 Then:
 
-* Water cavity height = $h - 1$
-* Steam cavity height = $H - h$
-* Water volume: $V_{Water} = (h - 1)A - N$
-* Steam volume: $V_{Steam} = (H - h)A$
-
-(Original expression for $H_{Water\ Cavity}$ reduced from $H_{boiler} - (H_{boiler} - H_{pressure\ dispersers} + 1)$ to $h - 1$.)
+* Water cavity height $= h - 1$
+* Steam cavity height $= H - h$
+* Water volume $V_{Water} = (h - 1)A - N$
+* Steam volume $V_{Steam} = (H - h)A$
 
 ### Tank Capacities (mB)
 
@@ -66,28 +57,28 @@ $$\min\big(C_{Water},\ C_{Steam},\ C_{Boil}\big)$$
 
 Balance idea:
 
-* Increasing N raises \(C_{Boil}\) but shrinks water volume (\(C_{Water}\)).
+* Increasing N raises $(C_{Boil})$ but shrinks water volume $(C_{Water})$.
 * Steam capacity depends only on h (not N).
-  Optimal strategy: choose h so steam is not the smallest term, then choose N so \(C_{Water} \approx C_{Boil}\).
+  Optimal strategy: choose h so steam is not the smallest term, then choose N so $(C_{Water} \approx C_{Boil})$.
 
 Balance equation (normalized by 16,000):
-$$(h - 1)A - N \approx 6.25N \Rightarrow N \approx \frac{(h - 1)A}{7.25}$$
+$$(h - 1)A - N \approx \frac{25}{4}N \quad \Rightarrow \quad N \approx \frac{4(h - 1)A}{29}$$
 
 Steam non‑limiting condition:
-$$0.862069 (h - 1)A \le 10(H - h)A \Rightarrow h \le \frac{10H + 0.862069}{10.862069}$$
+$$25(h - 1) \le 290(H - h) \quad \Rightarrow \quad h \le \frac{58H + 5}{63}$$
 
-## Maximum Flow
+Since $h$ counts block layers, round the bound down to the nearest integer.
 
 ## Example: Optimal 18×18×18 Boiler
 
 H = $18$, W = $L = 18$, A = $324$
 
-Steam-safe h (integer) $ \le 16$; choose highest: $h = 16$
+Steam-safe h (integer) $\le 16$; choose highest: $h = 16$
 
 * Water cavity height = $15$
 * Steam cavity height = $2$
 
-Balanced superheaters: $N_{eq} = \frac{15 \cdot 324}{7.25} \approx 670.34 \Rightarrow N = 671$ (slightly beyond equality to avoid boil being lower)
+Balanced superheaters: $N_{eq} = \frac{4 \cdot 15 \cdot 324}{29} \approx 670.34 \Rightarrow N = 671$ (slightly beyond equality to avoid boil being lower)
 
 Resulting capacities:
 
@@ -100,9 +91,9 @@ Maximum effective production governed by water: $67{,}024{,}000\ \text{mB}$
 ## General Recipe (Any Size)
 
 1. Compute $A = W \cdot L$.
-2. Find $h_{max} = \lfloor \frac{10H + 0.862069}{10.862069}\rfloor$.
+2. Find $h_{max} = \left\lfloor \frac{58H + 5}{63} \right\rfloor$.
 3. Use $h = h_{max}$. If steam becomes limiting factor after rounding N, decrement h.
-4. $N_{eq} = \frac{(h - 1)A}{7.25}$; take $N = \lceil N_{eq} \rceil$.
+4. $N_{eq} = \frac{4(h - 1)A}{29}$; take $N = \lceil N_{eq} \rceil$.
 5. Capacities:
    * $C_{Water} = 16{,}000 \cdot ((h - 1)A - N)$
    * $C_{Steam} = 160{,}000 \cdot (H - h)A$
