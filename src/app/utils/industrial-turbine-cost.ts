@@ -48,9 +48,9 @@ const STEAM_PER_VENT = 32_000;
 const ENERGY_PER_MB = 10;
 const BLADES_PER_COIL = 4;
 const MAX_BLADES = 28;
-const CONDENSER_RATE = 64_000;
-const WATER_PIPE_RATE = 64_000;
-const STEAM_PIPE_RATE = 1_024_000;
+export const CONDENSER_RATE = 64_000;
+export const WATER_PIPE_RATE = 64_000;
+export const STEAM_PIPE_RATE = 1_024_000;
 
 function computeVentCount(
   width: number,

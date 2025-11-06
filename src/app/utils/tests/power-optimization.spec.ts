@@ -69,4 +69,23 @@ describe('planFissionPower', () => {
       })
     ).toThrowError('Target power must be greater than zero');
   });
+
+  it('honours tuning overrides when provided', () => {
+    const result = planFissionPower({
+      targetPower: 95_000_000,
+      cooling: 'water',
+      overrides: {
+        steamPerFuel: 40_000,
+        waterCoolantRate: 30_000,
+      },
+    });
+
+    const expectedBurnRate =
+      result.turbineOperation.requiredSteam / 40_000;
+    expect(result.reactor.burnRate).toBeCloseTo(expectedBurnRate, 6);
+    expect(result.reactor.coolantPerTick).toBeCloseTo(
+      expectedBurnRate * 30_000,
+      6
+    );
+  });
 });

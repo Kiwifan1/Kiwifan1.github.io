@@ -6,6 +6,8 @@ import {
   calculateIndustrialTurbineCost,
   IndustrialTurbineCost,
   IndustrialTurbineWaterReclamation,
+  STEAM_PIPE_RATE,
+  WATER_PIPE_RATE,
 } from './industrial-turbine-cost';
 import { computeShellBreakdown, ShellBreakdown } from './structure-shell';
 
@@ -15,7 +17,7 @@ interface TurbineCandidate {
   utilisation: number;
 }
 
-interface BoilerPlan {
+export interface BoilerPlan {
   dimensions: {
     width: number;
     height: number;
@@ -33,7 +35,29 @@ interface BoilerPlan {
   hotCoolantCapacity: number;
 }
 
+export interface BoilerTuning {
+  boilCapacityPerSuperheater: number;
+  steamCapacityPerBlock: number;
+  waterCapacityPerBlock: number;
+  hotCoolantCapacityPerBlock: number;
+  defaultBoilerValves: number;
+}
+
 export type CoolingMode = 'water' | 'sodium';
+
+export interface PowerOptimizationOverrides {
+  steamPerFuel?: number;
+  waterCoolantRate?: number;
+  sodiumCoolantRate?: number;
+  boilCapacityPerSuperheater?: number;
+  steamCapacityPerBlock?: number;
+  hotCoolantCapacityPerBlock?: number;
+  waterCapacityPerBlock?: number;
+  defaultReactorPorts?: number;
+  defaultBoilerValves?: number;
+  mechanicalPipeRate?: number;
+  pressurizedPipeRate?: number;
+}
 
 export interface PowerOptimizationOptions {
   targetPower: number;
@@ -42,6 +66,7 @@ export interface PowerOptimizationOptions {
   reclaimWater?: boolean;
   minTurbineSize?: number;
   maxTurbineSize?: number;
+  overrides?: PowerOptimizationOverrides;
 }
 
 export interface PowerOptimizationResult {
@@ -62,10 +87,10 @@ export interface PowerOptimizationResult {
   waterReclamation: IndustrialTurbineWaterReclamation;
 }
 
-const MIN_TURBINE_SIZE = 5;
-const MAX_TURBINE_SIZE = 17;
-const MIN_TURBINE_HEIGHT = 5;
-const MAX_TURBINE_HEIGHT = 18;
+export const MIN_TURBINE_SIZE = 5;
+export const MAX_TURBINE_SIZE = 17;
+export const MIN_TURBINE_HEIGHT = 5;
+export const MAX_TURBINE_HEIGHT = 18;
 const WATER_COOLANT_RATE = 20_000;
 const SODIUM_COOLANT_RATE = 200_000;
 const STEAM_PER_FUEL = 20_000;
@@ -75,6 +100,42 @@ const HOT_COOLANT_CAPACITY_PER_BLOCK = 256_000;
 const WATER_CAPACITY_PER_BLOCK = 16_000;
 const DEFAULT_REACTOR_PORTS = 4;
 const DEFAULT_BOILER_VALVES = 4;
+const DEFAULT_MECHANICAL_PIPE_RATE = WATER_PIPE_RATE;
+const DEFAULT_PRESSURISED_PIPE_RATE = STEAM_PIPE_RATE;
+
+export const POWER_OPTIMIZATION_DEFAULTS: Required<PowerOptimizationOverrides> = {
+  steamPerFuel: STEAM_PER_FUEL,
+  waterCoolantRate: WATER_COOLANT_RATE,
+  sodiumCoolantRate: SODIUM_COOLANT_RATE,
+  boilCapacityPerSuperheater: BOIL_CAPACITY_PER_SUPERHEATER,
+  steamCapacityPerBlock: STEAM_CAPACITY_PER_BLOCK,
+  hotCoolantCapacityPerBlock: HOT_COOLANT_CAPACITY_PER_BLOCK,
+  waterCapacityPerBlock: WATER_CAPACITY_PER_BLOCK,
+  defaultReactorPorts: DEFAULT_REACTOR_PORTS,
+  defaultBoilerValves: DEFAULT_BOILER_VALVES,
+  mechanicalPipeRate: DEFAULT_MECHANICAL_PIPE_RATE,
+  pressurizedPipeRate: DEFAULT_PRESSURISED_PIPE_RATE,
+};
+
+export function listTurbineDesigns(
+  minSize: number = MIN_TURBINE_SIZE,
+  maxSize: number = MAX_TURBINE_SIZE
+): IndustrialTurbineCost[] {
+  const designs: IndustrialTurbineCost[] = [];
+  for (let size = minSize; size <= maxSize; size += 1) {
+    const maxHeight = Math.min(MAX_TURBINE_HEIGHT, 2 * size - 1);
+    for (let height = MIN_TURBINE_HEIGHT; height <= maxHeight; height += 1) {
+      designs.push(
+        calculateIndustrialTurbineCost({
+          width: size,
+          length: size,
+          height,
+        })
+      );
+    }
+  }
+  return designs;
+}
 
 function enumerateTurbines(
   targetPower: number,
@@ -182,8 +243,13 @@ function findReactor(
   return best;
 }
 
-function findBoiler(requirements: { steam: number; hotCoolant: number }): BoilerPlan {
-  const superheatersNeeded = Math.ceil(requirements.steam / BOIL_CAPACITY_PER_SUPERHEATER);
+export function planBoiler(
+  requirements: { steam: number; hotCoolant: number },
+  tuning: BoilerTuning
+): BoilerPlan {
+  const superheatersNeeded = Math.ceil(
+    requirements.steam / tuning.boilCapacityPerSuperheater
+  );
   let best: BoilerPlan | null = null;
   for (let width = 3; width <= 18; width += 1) {
     for (let length = 3; length <= 18; length += 1) {
@@ -200,16 +266,17 @@ function findBoiler(requirements: { steam: number; hotCoolant: number }): Boiler
             continue;
           }
           const steamVolume = steamLayers * area;
-          const steamCapacity = STEAM_CAPACITY_PER_BLOCK * steamVolume;
+          const steamCapacity = tuning.steamCapacityPerBlock * steamVolume;
           if (steamCapacity + 1e-6 < requirements.steam) {
             continue;
           }
-          const boilCapacity = BOIL_CAPACITY_PER_SUPERHEATER * superheatersNeeded;
+          const boilCapacity =
+            tuning.boilCapacityPerSuperheater * superheatersNeeded;
           if (boilCapacity + 1e-6 < requirements.steam) {
             continue;
           }
           const waterVolumeBlocks = Math.max(waterSlots - superheatersNeeded, 0);
-          const waterCapacity = WATER_CAPACITY_PER_BLOCK * waterVolumeBlocks;
+          const waterCapacity = tuning.waterCapacityPerBlock * waterVolumeBlocks;
           if (waterCapacity + 1e-6 < requirements.steam) {
             continue;
           }
@@ -217,16 +284,20 @@ function findBoiler(requirements: { steam: number; hotCoolant: number }): Boiler
             width,
             height,
             length,
-            DEFAULT_BOILER_VALVES
+            tuning.defaultBoilerValves
           );
-          const hotCoolantCapacity = HOT_COOLANT_CAPACITY_PER_BLOCK * waterVolumeBlocks;
-          if (requirements.hotCoolant > 0 && hotCoolantCapacity + 1e-6 < requirements.hotCoolant) {
+          const hotCoolantCapacity =
+            tuning.hotCoolantCapacityPerBlock * waterVolumeBlocks;
+          if (
+            requirements.hotCoolant > 0 &&
+            hotCoolantCapacity + 1e-6 < requirements.hotCoolant
+          ) {
             continue;
           }
           const candidate: BoilerPlan = {
             dimensions: { width, height, length },
             shell,
-            valves: DEFAULT_BOILER_VALVES,
+            valves: tuning.defaultBoilerValves,
             waterCavityHeight: waterLayers,
             steamCavityHeight: steamLayers,
             pressureDispersers: Math.max((width - 2) * (length - 2), 0),
@@ -265,6 +336,61 @@ export function planFissionPower(
   if (options.targetPower <= 0) {
     throw new Error('Target power must be greater than zero');
   }
+  const overrides = options.overrides ?? {};
+  const tuning = {
+    steamPerFuel: overrides.steamPerFuel ?? STEAM_PER_FUEL,
+    waterCoolantRate: overrides.waterCoolantRate ?? WATER_COOLANT_RATE,
+    sodiumCoolantRate: overrides.sodiumCoolantRate ?? SODIUM_COOLANT_RATE,
+    boilCapacityPerSuperheater:
+      overrides.boilCapacityPerSuperheater ?? BOIL_CAPACITY_PER_SUPERHEATER,
+    steamCapacityPerBlock:
+      overrides.steamCapacityPerBlock ?? STEAM_CAPACITY_PER_BLOCK,
+    hotCoolantCapacityPerBlock:
+      overrides.hotCoolantCapacityPerBlock ?? HOT_COOLANT_CAPACITY_PER_BLOCK,
+    waterCapacityPerBlock:
+      overrides.waterCapacityPerBlock ?? WATER_CAPACITY_PER_BLOCK,
+    defaultReactorPorts:
+      overrides.defaultReactorPorts ?? DEFAULT_REACTOR_PORTS,
+    defaultBoilerValves:
+      overrides.defaultBoilerValves ?? DEFAULT_BOILER_VALVES,
+    mechanicalPipeRate:
+      overrides.mechanicalPipeRate ?? DEFAULT_MECHANICAL_PIPE_RATE,
+    pressurizedPipeRate:
+      overrides.pressurizedPipeRate ?? DEFAULT_PRESSURISED_PIPE_RATE,
+  };
+  if (tuning.steamPerFuel <= 0) {
+    throw new Error('Steam per fuel must be greater than zero');
+  }
+  if (options.cooling === 'water' && tuning.waterCoolantRate <= 0) {
+    throw new Error('Water coolant rate must be greater than zero');
+  }
+  if (options.cooling === 'sodium' && tuning.sodiumCoolantRate <= 0) {
+    throw new Error('Sodium coolant rate must be greater than zero');
+  }
+  if (tuning.boilCapacityPerSuperheater <= 0) {
+    throw new Error('Boil capacity per superheater must be greater than zero');
+  }
+  if (tuning.steamCapacityPerBlock <= 0) {
+    throw new Error('Steam capacity per block must be greater than zero');
+  }
+  if (tuning.waterCapacityPerBlock <= 0) {
+    throw new Error('Water capacity per block must be greater than zero');
+  }
+  if (tuning.hotCoolantCapacityPerBlock <= 0) {
+    throw new Error('Hot coolant capacity per block must be greater than zero');
+  }
+  if (tuning.defaultReactorPorts < 0) {
+    throw new Error('Reactor ports cannot be negative');
+  }
+  if (tuning.defaultBoilerValves < 0) {
+    throw new Error('Boiler valves cannot be negative');
+  }
+  if (tuning.mechanicalPipeRate <= 0) {
+    throw new Error('Mechanical pipe rate must be greater than zero');
+  }
+  if (tuning.pressurizedPipeRate <= 0) {
+    throw new Error('Pressurized pipe rate must be greater than zero');
+  }
   const minSize = Math.max(options.minTurbineSize ?? MIN_TURBINE_SIZE, MIN_TURBINE_SIZE);
   const maxSize = Math.min(options.maxTurbineSize ?? MAX_TURBINE_SIZE, MAX_TURBINE_SIZE);
   if (minSize > maxSize) {
@@ -278,19 +404,21 @@ export function planFissionPower(
   const headroom =
     bestTurbine.turbine.performance.powerPerTick - options.targetPower;
 
-  const burnRate = requiredSteam / STEAM_PER_FUEL;
+  const burnRate = requiredSteam / tuning.steamPerFuel;
   const coolantPerTick =
     burnRate *
-    (options.cooling === 'sodium' ? SODIUM_COOLANT_RATE : WATER_COOLANT_RATE);
+    (options.cooling === 'sodium'
+      ? tuning.sodiumCoolantRate
+      : tuning.waterCoolantRate);
 
-  const reactorInfo = findReactor(burnRate, DEFAULT_REACTOR_PORTS);
+  const reactorInfo = findReactor(burnRate, tuning.defaultReactorPorts);
 
   const needsBoiler = options.cooling === 'sodium' || options.useBoiler === true;
   const boilerPlan = needsBoiler
-    ? findBoiler({
+    ? planBoiler({
         steam: requiredSteam,
         hotCoolant: options.cooling === 'sodium' ? coolantPerTick : 0,
-      })
+      }, tuning)
     : undefined;
 
   const reclaimWater =

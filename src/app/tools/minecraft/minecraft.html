@@ -1,19 +1,35 @@
-<div class="page">
-  <section class="page__header">
-    <span class="page__eyebrow">Tools</span>
-    <h1>Minecraft Tools</h1>
-    <p>Various Minecraft tools and utilities.</p>
+<div class="minecraft">
+  <section class="section-card section-card--flush minecraft__crumb">
+    <a routerLink="/tools" class="back-link">Back to tools</a>
   </section>
 
-  <section class="section-card">
-    <h2>Coming soon</h2>
+  <section class="section-card minecraft__intro">
+    <span class="minecraft__eyebrow">Minecraft tools</span>
+    <h1>Utilities for modded builders</h1>
     <p>
-      This section will collect Minecraft-focused helpers&mdash;from world utilities to quick
-      calculators. I'm still building out the experience, so keep an eye out for updates.
+      Explore calculators and helpers tailored around my favourite modded Minecraft packs. Pick a
+      tool below to get started.
     </p>
   </section>
 
-  <section class="section-card section-card--flush">
-    <a routerLink="/tools" class="back-link">Back to tools</a>
+  <section class="section-card">
+    <h2>Available tools</h2>
+    <ul class="minecraft__grid">
+      <li>
+        <a routerLink="/tools/minecraft/mekanism" class="minecraft__item">
+          <h3>Mekanism fission planner</h3>
+          <p>
+            Size turbines and boilers for any reactor footprint, with quick overrides for pack
+            config changes.
+          </p>
+        </a>
+      </li>
+      <li>
+        <div class="minecraft__item minecraft__item--placeholder">
+          <h3>More coming soon</h3>
+          <p>Additional calculators will land here as they are built.</p>
+        </div>
+      </li>
+    </ul>
   </section>
 </div>

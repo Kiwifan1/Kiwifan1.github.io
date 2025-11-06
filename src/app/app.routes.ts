@@ -5,6 +5,7 @@ import { Links } from './links/links';
 import { Resume } from './resume/resume';
 import { Tools } from './tools/tools';
 import { Minecraft } from './tools/minecraft/minecraft';
+import { MekanismPlanner } from './tools/minecraft/mekanism/mekanism';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'resume', component: Resume },
   { path: 'tools', component: Tools },
   { path: 'tools/minecraft', component: Minecraft },
+  { path: 'tools/minecraft/mekanism', component: MekanismPlanner },
   { path: '**', redirectTo: '' }
 ];
