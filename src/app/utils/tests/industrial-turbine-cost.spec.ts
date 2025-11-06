@@ -6,9 +6,9 @@ describe('calculateIndustrialTurbineCost', () => {
   it('selects the optimal rotor configuration for a max-sized turbine', () => {
     const result = calculateIndustrialTurbineCost();
 
-  expect(result.dimensions.width).toBe(17);
-  expect(result.dimensions.height).toBe(18);
-  expect(result.dimensions.length).toBe(17);
+    expect(result.dimensions.width).toBe(17);
+    expect(result.dimensions.height).toBe(18);
+    expect(result.dimensions.length).toBe(17);
     expect(result.valves).toBe(1);
     expect(result.rotors).toBe(10);
     expect(result.performance.rotorLayers).toBe(10);
@@ -19,6 +19,10 @@ describe('calculateIndustrialTurbineCost', () => {
     expect(result.performance.maxSteamFlow).toBe(18_720_000);
     expect(result.performance.bladeEfficiency).toBeCloseTo(5 / 7, 6);
     expect(result.performance.powerPerTick).toBeCloseTo(133_714_285.714, 3);
+    const steamStorage = 17 * 17 * result.performance.rotorLayers * 64_000;
+    const energyStorage = 17 * 17 * result.dimensions.height * 16_000;
+    expect(steamStorage).toBe(184_960_000);
+    expect(energyStorage).toBe(83_232_000);
     expect(result.condensersWithWaterReclamation.condensers).toBe(293);
     expect(result.condensersWithWaterReclamation.waterThroughput).toBe(18_720_000);
     expect(result.condensersWithWaterReclamation.mechanicalPipes).toBe(293);
@@ -35,9 +39,9 @@ describe('calculateIndustrialTurbineCost', () => {
       valves: -2,
     });
 
-  expect(result.dimensions.width).toBe(5);
-  expect(result.dimensions.height).toBe(5);
-  expect(result.dimensions.length).toBe(5);
+    expect(result.dimensions.width).toBe(5);
+    expect(result.dimensions.height).toBe(5);
+    expect(result.dimensions.length).toBe(5);
     expect(result.valves).toBe(0);
     expect(result.performance.rotorLayers + result.performance.steamLayers).toBe(
       Math.max(result.dimensions.height - 2, 0)
