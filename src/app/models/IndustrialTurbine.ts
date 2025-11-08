@@ -44,7 +44,7 @@ export class IndustrialTurbine {
       );
     }
 
-    if (disperserOffset < 2 || disperserOffset > height - 1) {
+    if (disperserOffset < 2 || disperserOffset >= height - 1) {
       throw new Error(`Disperser offset must be between 2 and ${height - 1}`);
     }
 
@@ -281,13 +281,17 @@ export class IndustrialTurbine {
     const p = IndustrialTurbine.MAX_BLADES;
     const r = math.parse('r');
 
-    const vent_limiting_expr = math.simplify(math.parse(
-      `((${2 * k * m} * r) / ${p}) * (${4 * (L - 2)} * (${h} - r - 1) + ${(L - 2) ** 2})`
-    ));
+    const vent_limiting_expr = math.simplify(
+      math.parse(
+        `((${2 * k * m} * r) / ${p}) * (${4 * (L - 2)} * (${h} - r - 1) + ${Math.pow(L - 2, 2)})`
+      )
+    );
 
-    const disperser_limiting_expr = math.simplify(math.parse(
-      `(${2 * k * n} / ${p}) * r ** 2 * (${(L - 2) ** 4} - ${(L - 2) ** 2})`
-    ));
+    const disperser_limiting_expr = math.simplify(
+      math.parse(
+        `(${2 * k * n} / ${p}) * r^2 * (${Math.pow(L - 2, 4)} - ${Math.pow(L - 2, 2)})`
+      )
+    );
 
 
     return -1;
@@ -295,5 +299,3 @@ export class IndustrialTurbine {
 
   //#endregion
 }
-
-IndustrialTurbine.getOptimalDisperserOffset(10, 10);

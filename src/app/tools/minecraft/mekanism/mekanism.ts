@@ -2,6 +2,7 @@ import { CommonModule } from "@angular/common";
 import { Component } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
+import { IndustrialTurbine } from "../../../models/IndustrialTurbine";
 
 @Component({
   selector: 'app-mekanism-planner',
@@ -11,5 +12,8 @@ import { RouterLink } from "@angular/router";
   styleUrl: './mekanism.css',
 })
 export class MekanismPlanner {
+
+  constructor() {
+  }
 
 }
