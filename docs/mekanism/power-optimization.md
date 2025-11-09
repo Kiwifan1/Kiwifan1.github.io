@@ -17,6 +17,19 @@
   - The formula for the number of `Disperser` blocks is:
     - $N_{disperser} = (L - 2)^2 - 1$
 
+### Construction Knowledge
+
+The `Industrial Turbine` structure must follow these rules for construction:
+
+- Each `Industrial Turbine` must have exactly one `Rotational Complex`.
+  - A single `Rotational Complex` must be placed directly above the uppermost `Turbine Rotor`.
+- Surrounding the `Rotational Complex`, `Disperser` blocks must fill the rest of the disperser layer.
+- `Vents` can be placed on the ceiling layer and on each steam layer (including the disperser layer) on the faces.
+- The Inside Cavity above the `Disperser` layer may be empty or include `Saturating Condensers` to allow for water flow.
+- The edges, must be `Turbine Casing` blocks.
+- The faces may be `Turbine Casing`, `Turbine Valve`, or `Structural Glass` (or vents above the disperser layer).
+- Each `Industrial Turbine` needs at least three `Turbine Valve` blocks to function (Steam, Water, Energy)
+
 ## Variable Definitions
 
 - Let $h = H - 2$ be the height of the interior of the `Industrial Turbine` (in blocks)
@@ -28,8 +41,10 @@
 - Let $\beta$ be the `TURBINE.BLADES_PER_COIL` constant
 - Let $\varepsilon$ be the `ENERGY_PER_STEAM` constant
 - Let $\rho$ be the `TURBINE.CONDENSER_RATE` constant
-- Let $S_{transporter}$ be the steam transportation rate
-- Let $W_{transporter}$ be the water transportation rate
+- Let $S_{steam}$ be the `TURBINE.CHEMICAL_PER_TANK` constant
+- Let $S_{energy}$ be the `TURBINE.ENERGY_CAPACITY_PER_VOLUME` constant
+- Let $T_{steam}$ be the steam transportation rate
+- Let $T_{water}$ be the water transportation rate
 
 The following are default values for the constants (may vary by modpack):
 
@@ -38,6 +53,11 @@ The following are default values for the constants (may vary by modpack):
 - $\phi = 28$ blades
 - $\varepsilon = 10$ J/mB
 - $\beta = 4$ blades/coil
+- $\rho = 64{,}000$ mB/t
+- $S_{steam} = 16{,}000{,}000$ J
+- $S_{energy} = 64{,}000$ mB
+- $T_{steam} = 256{,}000$ mB/t
+- $T_{water} = 64{,}000$ mB/t
 
 ## Calculating Optimal Energy Output
 
@@ -99,6 +119,46 @@ so the final formula for $F_{vent}$ becomes:
 
 $$F_{vent} = \gamma \cdot \left((L - 2)^2 + 4 \cdot (L - 2) \cdot (h - r)\right)$$
 
+### Calculating Steam/Energy Storage
+
+The steam and energy storage capacities are determined by the following formulas:
+
+$$S_{steam} = A \cdot r \cdot \S_{steam}$$
+
+$$S_{energy} = A \cdot H \cdot \S_{energy}$$
+
+### Calculating Water Flow
+
+The maximum water flow is given by the formula:
+
+$$F_{water\ \max} = N_{condenser} \cdot \rho$$
+
+and the maximum number of `Saturating Condensers` is given by:
+
+$$N_{condenser\ \max} = (L - 2)^2 \cdot (h - r - 1) - N_{coil}$$
+
+Note that the true max water flow may be limited by the steam flow, so the actual water flow is:
+
+$$F_{water} = \min(F_{steam},\ F_{water\ \max})$$
+
+This means, for finding the minimum number of saturating condensers required, we have:
+
+$$N_{condenser} \ge \left\lceil\dfrac{F_{steam}}{\rho}\right\rceil$$
+
+Because, assuming that all available face-space is used by vents, the water flow will always be able to keep up with the steam flow.
+
+### Calculating Steam/Water Transportation
+
+For transporting the massive amount of steam/water required, `Mechanical Pipes` and `Pressurized Pipes` are used.
+
+The number of pipes required for steam transportation is given by:
+
+$$N_{steam\_pipe} \ge \left\lceil\dfrac{F_{steam}}{T_{steam}}\right\rceil$$
+
+The number of pipes required for water transportation is given by:
+
+$$N_{water\_pipe} \ge \left\lceil\dfrac{F_{water}}{T_{water}}\right\rceil$$
+
 ### Calculating $F_{disperser}$
 
 The maximum steam flow through the disperser is given by the volume of steam handled by each disperser block multiplied by the number of disperser blocks:
@@ -108,7 +168,7 @@ $$F_{disperser} = \delta \cdot V_{interior} \cdot N_{disperser}$$
 where:
 
 - $V_{interior} = (L - 2)^2 * r$ is the interior volume of the turbine occupied by the `Turbine Rotors`
-- $N_{disperser} = (L - 2)^2 - 1$ is the number of `Disperser` blocks in the disperser layer.
+- $N_{disperser} = (L - 2)^2 - 1$ is the number of `Disperser` blocks in the disperser layer minus the spot for the `Rotational Complex`.
 
 So the final formula for $F_{disperser}$ becomes:
 
@@ -196,7 +256,7 @@ Consequently, $G(r)$ is monotonically increasing for $1 \leq r \leq r_{\max}$, m
 
 Now that we know that $F_{vent}$ is the limiting factor, we can find the optimal $r$ that maximizes $P$ by maximizing $F_{vent} \cdot F_{blade}$.
 
->Note: We include $F_{blade}$ here because it is also dependent on $r$ and we can bring it back into the equation, we only took it out for simplicity of finding the limiting factor.
+> Note: We include $F_{blade}$ here because it is also dependent on $r$ and we can bring it back into the equation, we only took it out for simplicity of finding the limiting factor.
 
 This means that $P \propto F_{vent} \cdot F_{blade}$, so we can define:
 
@@ -208,7 +268,7 @@ $$Q(r) = \dfrac{2\gamma}{\phi} \cdot \left(Ar + 4Bh r - 4B r^2\right)$$
 
 The quadratic term $(-4B r^2 + 4Bh r + Ar)$ peaks at $r = \dfrac{-b}{2a}$
 
->Note: Don't fall into the trap of assuming that $Ar$ is the constant, the $b$ term is $4Bhr + Ar$.
+> Note: Don't fall into the trap of assuming that $Ar$ is the constant, the $b$ term is $4Bhr + Ar$.
 
 $$r = \left\lceil\dfrac{-\left(4Bh + A\right)}{-8B}\right\rceil = \left\lceil\dfrac{4Bh + A}{8B}\right\rceil$$
 
@@ -240,30 +300,6 @@ We can rewrite the final formula as:
 $$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(32{,}000 \cdot ((L - 2)^2 + 4(L - 2)(H - 2 - r))\right)$$
 
 This formula can be used to calculate the optimal power output of an `Industrial Turbine` given its dimensions $L$ and $H$.
-
-### Calculating Maximum Water Flow
-
-The maximum water flow rate ($F_{water}$) required to sustain the steam flow rate ($F_{steam}$) must be equal to the maximum steam flow rate if water reycling is requested.
-
-$$F_{water} \ge F_{steam}$$
-
-$$F_{water} = N_{condenser} \cdot \rho$$
-
-So the minimum number of `Saturating Condensers` ($N_{condenser}$) required is given by:
-
-$$N_{condenser} \ge \dfrac{F_{steam}}{\rho}$$
-
-### Calculating Steam/Water Transportation
-
-For transporting the massive amount of steam/water required, `Mechanical Pipes` and `Pressurized Pipes` are used.
-
-The number of pipes required for steam transportation is given by:
-
-$$N_{steam\_pipe} \ge \dfrac{F_{steam}}{S_{transporter}}$$
-
-The number of pipes required for water transportation is given by:
-
-$$N_{water\_pipe} \ge \dfrac{F_{water}}{W_{transporter}}$$
 
 ## Example Calculation
 
@@ -306,7 +342,128 @@ $$P = 10 \cdot \dfrac{1}{14} \cdot 10 \left(37{,}920{,}000 - 1{,}920{,}000 \cdot
 
 $$\downarrow$$
 
-$$P \approx 133{,}714{,}286 \text{ J/t}$$
+$$P \approx 133{,}714{,}286 \text{ J/t} \approx 133.71 \text{ MJ/t} \approx 53.48 \text{ MFE/t}$$
+
+### Steam flow calculations
+
+The number of vents is given by:
+
+$$N_{vent} = N_{ceiling} + N_{layers} \cdot (h - r)$$
+
+$$\downarrow$$
+
+$$N_{vent} = 225 + 60 \cdot (16 - 10) = 225 + 360 = 585$$
+
+Which means that the steam flow through the vents is:
+
+$$F_{vent} = \gamma \cdot N_{vent} = 32{,}000 \cdot 585 = 18{,}720{,}000 \text{ mB/t}$$
 
 ### Finding Water Flow
 
+The Theoretical maximum water flow is given by:
+
+$$F_{water\ \max} = N_{condenser\ \max} \cdot \rho$$
+
+where
+
+$$N_{condenser\ \max} = (L - 2)^2 \cdot (h - r - 1) - N_{coil}$$
+
+Calculating $N_{coil}$:
+
+$$N_{coil} = \left\lceil\dfrac{2r}{\beta}\right\rceil = \left\lceil\dfrac{2 \cdot 10}{4}\right\rceil = 5$$
+
+$$\downarrow$$
+
+$$N_{condenser\ \max} = 225 \cdot (16 - 10 - 1) - 5 = 225 \cdot 5 - 5 = 1{,}120$$
+
+$$\downarrow$$
+
+$$F_{water\ \max} = 1{,}120 \cdot 64{,}000 = 71{,}680{,}000 \text{ mB/t}$$
+
+Since $F_{water\ \max} > F_{steam}$, we have:
+
+$$F_{water} = F_{steam} = 18{,}720{,}000 \text{ mB/t}$$
+
+### Construction Costs
+
+#### Finding Number of Condensers
+
+The number of condensers required is given by:
+
+$$N_{condenser} \ge \left\lceil\dfrac{F_{steam}}{\rho}\right\rceil = \left\lceil\dfrac{18{,}720{,}000}{64{,}000}\right\rceil = 293$$
+
+#### Finding Number of Pipes
+
+The number of pipes required for steam transportation is given by:
+
+$$N_{steam\_pipe} \ge \left\lceil\dfrac{F_{steam}}{T_{steam}}\right\rceil$$
+
+$$\downarrow$$
+
+$$N_{steam\_pipe} \ge \left\lceil\dfrac{18{,}720{,}000}{256{,}000}\right\rceil = 74$$
+
+The number of pipes required for water transportation is given by:
+
+$$N_{water\_pipe} \ge \left\lceil\dfrac{F_{water}}{T_{water}}\right\rceil$$
+
+$$\downarrow$$
+
+$$N_{water\_pipe} \ge \left\lceil\dfrac{18{,}720{,}000}{64{,}000}\right\rceil = 293$$
+
+#### Finding Number of Coils
+
+The number of coils required is given by:
+
+$$N_{coil} = \left\lceil\dfrac{2r}{\beta}\right\rceil = \left\lceil\dfrac{2 \cdot 10}{4}\right\rceil = 5$$
+
+#### Finding number of Dispersers
+
+The number of dispersers required is given by:
+
+$$N_{disperser} = (L - 2)^2 - 1 = 225 - 1 = 224$$
+
+#### Finding number of Blades/Rotor
+
+The number of blades required is given by:
+
+$$b = 2 \cdot r = 2 \cdot 10 = 20$$
+
+The number of rotors required is given by:
+
+$$r = 10$$
+
+#### Finding number of Casings
+
+The minimum number of casings required (just floor and edges) is given by:
+
+$$N_{casing\ \min} = L^2 + 4(H - 1) + 4(L - 2)$$
+
+$$\downarrow$$
+
+$$N_{casing\ \min} = 17^2 + 4(18 - 1) + 4(17 - 2) = 289 + 68 + 60 = 417$$
+
+The rest of the structure may be filled with `Turbine Casing` or `Structural Glass` as desired. But must include at least 3 `Turbine Valve` blocks. This means that the total number of structural blocks required is at least:
+
+$$N_{structure} = N_{casing\ \min} + N_{faces\ optional} + 3 = 417 + N_{faces\ optional} + 3$$
+
+where:
+
+$$N_{faces\ optional} = (L - 2) \cdot r \cdot 4 - 3 = (17 - 2) \cdot 10 \cdot 4 - 3 = 15 \cdot 10 \cdot 4 - 3 = 597$$
+
+So the total number of structural blocks required is at least:
+
+$$N_{structure} = 417 + 597 + 3 = 1{,}017$$
+
+### Summary of Construction Costs
+
+| Component               | Quantity |
+| ----------------------- | -------- |
+| `Saturating Condensers` | 293      |
+| `Mechanical Pipes`      | 74       |
+| `Pressurized Pipes`     | 293      |
+| `Electromagnetic Coils` | 5        |
+| `Dispersers`            | 224      |
+| `Turbine Blades`        | 20       |
+| `Turbine Rotors`        | 10       |
+| `Rotational Complex`    | 1        |
+| Structural Blocks       | 1,017    |
