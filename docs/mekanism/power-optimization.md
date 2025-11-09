@@ -31,6 +31,14 @@
 - Let $S_{transporter}$ be the steam transportation rate
 - Let $W_{transporter}$ be the water transportation rate
 
+The following are default values for the constants (may vary by modpack):
+
+- $\gamma = 32{,}000$ mB/t
+- $\delta = 1{,}280$ mB/t
+- $\phi = 28$ blades
+- $\varepsilon = 10$ J/mB
+- $\beta = 4$ blades/coil
+
 ## Calculating Optimal Energy Output
 
 ### Plan of Attack
@@ -74,14 +82,13 @@ $$F_{blade} = \min\left(\dfrac{2r}{\phi},\ \dfrac{\beta \cdot \left\lceil\dfrac{
 The maximum steam flow through the vents is given by:
 
 $$F_{vent} = \gamma \cdot N_{vent}$$
+where $N_{vent}$ is the number of steam vents in the turbine, calculated as the sum of the vents on the ceiling and the vents on each steam layer (plus one since vents may be placed on the disperser layer):
 
-where $N_{vent}$ is the number of steam vents in the turbine, calculated as the sum of the vents on the ceiling and the vents on each steam layer:
-
-$$N_{vent} = N_{ceiling} + N_{layers} \cdot s$$
+$$N_{vent} = N_{ceiling} + N_{layers} \cdot (s + 1)$$
 
 we know that $s = h - r - 1$, so we can rewrite this as:
 
-$$N_{vent} = N_{ceiling} + N_{layers} \cdot (h - r - 1)$$
+$$N_{vent} = N_{ceiling} + N_{layers} \cdot (h - r)$$
 
 where:
 
@@ -90,7 +97,7 @@ where:
 
 so the final formula for $F_{vent}$ becomes:
 
-$$F_{vent} = \gamma \cdot \left((L - 2)^2 + 4 \cdot (L - 2) \cdot (h - r - 1)\right)$$
+$$F_{vent} = \gamma \cdot \left((L - 2)^2 + 4 \cdot (L - 2) \cdot (h - r)\right)$$
 
 ### Calculating $F_{disperser}$
 
@@ -109,6 +116,8 @@ $$F_{disperser} = \delta \cdot r \cdot (L - 2)^2 \cdot \left((L - 2)^2 - 1\right
 
 ### Calculating Optimal $r$
 
+#### Finding Limiting Factor
+
 If we remember that
 
 - $r_{\max} = \min(2 \cdot L - 5, 14)$
@@ -117,12 +126,12 @@ To find the optimal number of `Turbine Rotors` ($r$) that maximizes the power ou
 
 If we let $A = (L - 2)^2$, $B = (L - 2)$, we can rewrite $F_{vent}$ and $F_{disperser}$ as:
 
-$$F_{vent} = \gamma \cdot (A + 4B(h - 1 - r))$$
+$$F_{vent} = \gamma \cdot (A + 4B(h - r))$$
 $$F_{disperser} = \delta \cdot A (A - 1) \cdot r$$
 
 which if expanded gives us:
 
-$$F_{vent} = \gamma \cdot (A + 4Bh - 4B - 4Br)$$
+$$F_{vent} = \gamma \cdot (A + 4Bh - 4Br)$$
 
 $$F_{disperser} = \delta \cdot (A^2 - A) \cdot r$$
 
@@ -130,60 +139,86 @@ To find the optimal $r$, we can obtain the $F_{blade}$ from $P$ in order to obta
 
 $$F_{blade} = \dfrac{2r}{\phi}$$
 
-If I can prove that $G(r) = \left(F_{disperser} - F_{vent}\right) \cdot \dfrac{2r}{\phi}$ is monotonically increasing for $1 \leq r \leq r_{\max}$, then I can conclude that the limiting factor for $P$ is $F_{vent}$ (and if decreasing, vice-versa).
+If we can prove that $G(r) = \left(F_{disperser} - F_{vent}\right) \cdot \dfrac{2r}{\phi}$ is monotonically increasing for $1 \leq r \leq r_{\max}$, then we can conclude that the limiting factor for $P$ is $F_{vent}$ (and if decreasing, vice-versa).
+
+We prove this by showing that the sign of the derivative of $G(r)$ is positive for $1 \leq r \leq r_{\max}$.
 
 - We know that $5 \leq L \leq 17$, so $3^2 \leq A \leq 15^2$ and $3 \leq B \leq 15$
 - We know that $5 \leq H \leq 18$, so $3 \leq h \leq 16$
 
-$$G(r) = \left(\delta \cdot (A^2 - A) \cdot r - \gamma \cdot (A + 4Bh - 4B - 4Br)\right) \cdot \dfrac{2r}{\phi}$$
+$$G(r) = \dfrac{2r}{\phi} \cdot \left(\delta \cdot \left(A^2 - A\right) \cdot r - \gamma \cdot \left(A + 4Bh - 4Br\right)\right)$$
+
+Calculating the derivative of $G(r)$ with respect to $r$:
+
+$$G'(r) = \dfrac{2}{\phi} \cdot \left(2\delta \cdot (A^2 - A) \cdot r - \gamma \cdot (A + 4Bh - 8Br)\right)$$
+
+To prove that $G'(r) > 0$ for $1 \leq r \leq r_{\max}$, we can analyze the terms, and ignore $\dfrac{2}{\phi}$ because it is a consant applying to both terms equally.
+
+Replacing $A$ and $B$ with their original definitions:
+
+- $A = (L - 2)^2$
+- $B = (L - 2)$
+- $h = H - 2$
+
+The terms in $G'(r)$ become:
+
+- $2\delta \cdot ((L - 2)^4 - (L - 2)^2) \cdot r$
+- $-\gamma \cdot ((L - 2)^2 + 4(L - 2) \cdot (H - 2) - 8(L - 2)r)$
+
+The first term is always positive for $L \geq 5$ and $r \geq 1$.
+The second term is negative for all feasible $r$ since:
+
+$$((L - 2)^2 + 4(L - 2) \cdot (H - 2) - 8(L - 2)r) > 0$$
+
+for $1 \leq r \leq r_{\max}$.
+
+To minimize the first term and maximize the second term, we can substitute the minimum and maximum values for $L$, $H$, and $r$:
+
+- Minimum $L = 5$
+- Maximum $H = H_{\max} = 9$
+- Maximum $r = r_{\max} = 5$
+
+We will also plug in the default values for $\gamma$ and $\delta$:
+
+- $\gamma = 32{,}000$ mB/t
+- $\delta = 1{,}280$ mB/t
+
+Calculating the terms:
+
+- First term: $2 \cdot 1{,}280 \cdot (3^4 - 3^2) \cdot 5 = 921{,}600$
+- Second term: $-32{,}000 \cdot (3^2 + 4 \cdot 3 \cdot 7 - 8 \cdot 3 \cdot 5) = -32{,}000 \cdot (9 + 84 - 120) = 864{,}000$
+
+Since $921{,}600 - 864{,}000 > 0$, we can conclude that $G'(r) > 0$ for all feasible $r$.
+
+Consequently, $G(r)$ is monotonically increasing for $1 \leq r \leq r_{\max}$, meaning that $F_{vent}$ is the limiting factor for $P$.
+
+#### Finding $r$
+
+Now that we know that $F_{vent}$ is the limiting factor, we can find the optimal $r$ that maximizes $P$ by maximizing $F_{vent} \cdot F_{blade}$.
+
+>Note: We include $F_{blade}$ here because it is also dependent on $r$ and we can bring it back into the equation, we only took it out for simplicity of finding the limiting factor.
+
+This means that $P \propto F_{vent} \cdot F_{blade}$, so we can define:
+
+$$Q(r) = F_{vent} \cdot F_{blade} = \gamma \cdot (A + 4B(h - r)) \cdot \dfrac{2r}{\phi}$$
 
 $$\downarrow$$
 
-$$G(r) = \dfrac{2}{\phi} \cdot \left(\delta \cdot (A^2 - A) \cdot r^2 - \gamma \cdot (A + 4Bh - 4B) \cdot r + 4B\gamma \cdot r^2\right)$$
+$$Q(r) = \dfrac{2\gamma}{\phi} \cdot \left(Ar + 4Bh r - 4B r^2\right)$$
 
-Calculating the derivative:
+The quadratic term $(-4B r^2 + 4Bh r + Ar)$ peaks at $r = \dfrac{-b}{2a}$
 
-$$G'(r) = \dfrac{2}{\phi} \cdot \left(2\delta \cdot (A^2 - A) \cdot r - \gamma \cdot (A + 4Bh - 4B) + 8B\gamma \cdot r\right)$$
+>Note: Don't fall into the trap of assuming that $Ar$ is the constant, the $b$ term is $4Bhr + Ar$.
 
-$$\downarrow$$
-
-$$G'(r) = \dfrac{2}{\phi} \cdot \left(r \cdot (2\delta \cdot (A^2 - A) + 8B\gamma) - \gamma \cdot (A + 4Bh - 4B)\right)$$
-
-Since $\dfrac{2}{\phi} > 0$ for all valid $L$, we only need to analyze the term in the parentheses.
-
-$$H(r) = r \cdot (2\delta \cdot (A^2 - A) + 8B\gamma) - \gamma \cdot (A + 4Bh - 4B)$$
-
-Assume to take reasonable default values for $\gamma = 43{,}478.262$ mB/t and $\delta = 1{,}280$ mB/t. (These are default values from ATM 10 TTS, they may vary, but not enough to change the conclusion.)
-
-For some of the most extreme values of $L$ and $H$, $H(r)$ is negative, but the values chosen aren't reasonable (ie. $L = 5$, $H = 9$, $r = 1$). To keep within bounds, choose a Length to Height ratio of at most $1:1.5$ and $r > 2$ (which is already quite tall for a turbine), or make $L > 7$ and $r > 1$. This means that for $L = 5$, $H$ can be at most $7$; for $L = 17$, $H$ can be at most $18$.
-
-$$H(3) = 3 \cdot (2 \cdot 1{,}280 \cdot (3^2 - 3) + 8 \cdot 3 \cdot 43{,}478.262) - 43{,}478.262 \cdot (3 + 4 \cdot 3 \cdot 7 - 4 \cdot 3) \approx 164{,}634.786 > 0$$
-
-Given $L = 7$, $H = 10$ $r = 2$:
-
-$$H(2) = 2 \cdot (2 \cdot 1{,}280 \cdot (5^2 - 5) + 8 \cdot 5 \cdot 43{,}478.262) - 43{,}478.262 \cdot (5 + 4 \cdot 5 \cdot 8 - 4 \cdot 5) \approx 56{,}634.786 > 0$$
-
-Thus, for reasonable values of $L$, $H$, and $r$, $H(r) > 0$ and thus $G'(r) > 0$ meaning that $G(r)$ is monotonically increasing.
-
-This means that for reasonable values of $L$, $H$, and $r$, the limiting factor for $P$ is $F_{vent}$.
-
-$$F_{vent} = \gamma \cdot (A + 4B(h - 1 - r))$$
-
-This means for optimal $P$:
-
-$$P = \varepsilon \cdot \dfrac{2r}{\phi} \cdot \gamma \cdot (A + 4B(h - 1 - r))$$
-
-The $r$ term from the equation can be isolated to:
-
-$$r = h - 1 - \dfrac{\frac{F_{vent}}{\gamma} - A}{4B}$$
+$$r = \left\lceil\dfrac{-\left(4Bh + A\right)}{-8B}\right\rceil = \left\lceil\dfrac{4Bh + A}{8B}\right\rceil$$
 
 ### Pulling it All Together
 
 Let us remember the key formulas:
 
 - $F_{blade} = \dfrac{2r}{\phi}$
-- $F_{steam} = F_{vent} = \gamma \cdot (A + 4B(h - 1 - r))$
-- $r = h - 1 - \dfrac{\frac{F_{vent}}{\gamma} - A}{4B}$
+- $F_{steam} = \min(F_{vent}, F_{disperser}) = F_{vent} = \gamma \cdot (A + 4B(h - r))$
+- $r = \left\lceil\dfrac{4B h + A}{8B}\right\rceil$
 - $P = \varepsilon \cdot F_{blade} \cdot F_{steam}$
 
 where:
@@ -196,19 +231,13 @@ Finally, we can calculate the optimal power output $P$ as:
 
 $$P = \varepsilon \cdot F_{blade} \cdot F_{vent}$$
 
-$$P = \varepsilon \cdot \left(\dfrac{2r}{\phi}\right) \cdot \left(\gamma \cdot (A + 4B(h - 1 - r))\right)$$
+$$\downarrow$$
 
-Plugging in some default values for the constants:
-
-- $\gamma = 43{,}478.262$ mB/t
-- $\delta = 1{,}280$ mB/t
-- $\phi = 28$ blades
-- $\varepsilon = 10$ J/mB
-- $\beta = 4$ blades/coil
+$$P = \varepsilon \cdot \left(\dfrac{2r}{\phi}\right) \cdot \left(\gamma \cdot (A + 4B(h - r))\right)$$
 
 We can rewrite the final formula as:
 
-$$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(43{,}478.262 \cdot ((L - 2)^2 + 4(L - 2)(H - 2 - 1 - r))\right)$$
+$$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(32{,}000 \cdot ((L - 2)^2 + 4(L - 2)(H - 2 - r))\right)$$
 
 This formula can be used to calculate the optimal power output of an `Industrial Turbine` given its dimensions $L$ and $H$.
 
@@ -249,58 +278,35 @@ Some initial calculations:
 
 Initial Formula:
 
-$$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(43{,}478.262 \cdot (225 + 4 \cdot 15 \cdot (15 - r))\right)$$
+$$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(32{,}000 \cdot (225 + 4 \cdot 15 \cdot (16 - r))\right)$$
 
 $$\downarrow$$
 
-$$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(43{,}478.262 \cdot (225 + 900 - 60r)\right)$$
+$$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(32{,}000 \cdot (225 + 960 - 60r)\right)$$
 
 $$\downarrow$$
 
-$$P = 10 \cdot \dfrac{2r}{28} \cdot \left(48{,}913{,}044.8 - 2608695.72r\right)$$
-
-The optimal $r$ can be found from taking the quadratic formula of the inner term:
-
-$$P = 10 \cdot \dfrac{1}{14} \cdot r \left(48{,}913{,}044.8 - 2608695.72r\right)$$
+$$P = 10 \cdot \dfrac{2r}{28} \cdot \left(37{,}920{,}000 - 1{,}920{,}000r\right)$$
 
 ### Finding Optimal $r$
 
-The quadratic term $r(48{,}913{,}044.8 - 2608695.72r)$ peaks at
+The formula for finding $r$ is:
 
-$$r = \dfrac{-b}{2a} = \dfrac{-48{,}913{,}044.8}{-2 \cdot 2608695.72} \approx 9.37$$
+$$r = \left\lceil\dfrac{4B h + A}{8B}\right\rceil = \left\lceil\dfrac{4 \cdot 15 \cdot 16 + 225}{8 \cdot 15}\right\rceil$$
 
-And we round to the nearest integer, giving us $r = 9$.
+$$\downarrow$$
+
+$$r = \left\lceil9.875\right\rceil = 10$$
 
 ### Final Power Calculation
 
-Plugging $r = 9$ back into the power formula:
+Plugging $r = 10$ back into the power formula:
 
-$$P = 10 \cdot \dfrac{1}{14} \cdot 9 \left(48{,}913{,}044.8 - 2608695.72 \cdot 9\right)$$
-
-$$\downarrow$$
-
-$$P \approx 163{,}125{,}000 \text{ J/t}$$
-
-### Finding Max Steam & Water Flow
-
-We have already found the maximum steam flow rate:
-
-$$F_{steam} = F_{vent} = 43{,}478.262 \cdot (225 + 4 \cdot 15 \cdot (15 - 9))$$
+$$P = 10 \cdot \dfrac{1}{14} \cdot 10 \left(37{,}920{,}000 - 1{,}920{,}000 \cdot 10\right)$$
 
 $$\downarrow$$
 
-$$F_{steam} = 43{,}478.262 \cdot (225 + 360) = 43{,}478.262 \cdot 585 \approx 25{,}434{,}000 \text{ mB/t}$$
+$$P \approx 133{,}714{,}286 \text{ J/t}$$
 
-So the minimum number of `Saturating Condensers` required to sustain this steam flow rate is:
+### Finding Water Flow
 
-$$N_{condenser} \ge \dfrac{25{,}434{,}000}{128{,}000} \approx 198.5$$
-
-#### Water/Steam Transportation
-
-The number of pipes required for steam transportation is given by:
-
-$$N_{steam\_pipe} \ge \dfrac{25{,}434{,}000}{256{,}000} \approx 99.3$$
-
-The number of pipes required for water transportation is given by:
-
-$$N_{water\_pipe} \ge \dfrac{25{,}434{,}000}{64{,}000} \approx 397.3$$
