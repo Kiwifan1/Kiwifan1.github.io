@@ -1,19 +1,20 @@
-import { CommonModule } from "@angular/common";
-import { Component } from "@angular/core";
-import { ReactiveFormsModule } from "@angular/forms";
-import { RouterLink } from "@angular/router";
-import { IndustrialTurbine } from "../../../models/IndustrialTurbine";
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { IndustrialTurbine } from '../../../models/IndustrialTurbine';
 
 @Component({
   selector: 'app-mekanism-planner',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './mekanism.html',
   styleUrl: './mekanism.css',
 })
 export class MekanismPlanner {
 
   constructor() {
+    const test = IndustrialTurbine.getOptimalDisperserOffset(10, 10);
+    console.log(test);
   }
 
 }
