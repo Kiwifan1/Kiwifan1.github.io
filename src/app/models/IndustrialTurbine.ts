@@ -1,38 +1,197 @@
 import { ENERGY_PER_STEAM, STEAM_PIPE, TURBINE, WATER_PIPE } from './constants';
-import { ShellBreakdown } from './Shell';
-import { create, all, MathNode } from 'mathjs';
 
-const math = create(all);
+export interface IndustrialTurbineOptions {
+  bladeCount?: number;
+  coilCount?: number;
+  condenserCount?: number;
+}
 
-export interface IndustrialTurbineCost {
-  LowerShell: ShellBreakdown;
-  Dispersers: {
-    Amount: number;
-    Offset: number;
-  };
-  Vents: number;
-  Condensors: number;
-  TurbineRotors: number;
-  TurbineBlades: number;
-  Coils: number;
-  RotationalComplex: number;
+export interface IndustrialTurbineFlowStats {
+  ventFlow: number;
+  disperserFlow: number;
+  maxSteamFlow: number;
+  limiting: 'vent' | 'disperser';
+}
+
+export interface IndustrialTurbineVentPlan {
+  ceiling: number;
+  side: number;
+  total: number;
+  steamLayers: number;
+}
+
+export interface IndustrialTurbineStorage {
+  steam: number;
+  energy: number;
+}
+
+export interface IndustrialTurbineTransportPlan {
+  condensersInstalled: number;
+  condensersRequired: number;
+  condensersMax: number;
+  steamFlow: number;
+  waterFlow: number;
+  steamPipes: number;
+  waterPipes: number;
 }
 
 export class IndustrialTurbine {
-  public static MIN_LENGTH = 5;
-  public static MIN_HEIGHT = 5;
-  public static MAX_LENGTH = 17;
-  public static MAX_HEIGHT = 18;
-  public static VALVES = 3;
-  public static MAX_BLADES = 28;
+  public static readonly MIN_LENGTH = 5;
+  public static readonly MIN_HEIGHT = 5;
+  public static readonly MAX_LENGTH = 17;
+  public static readonly MAX_HEIGHT = 18;
+  public static readonly MAX_BLADES = 28;
 
-  length: number;
-  height: number;
-  interiorLength: number;
-  interiorHeight: number;
-  disperserOffset: number;
+  public readonly length: number;
+  public readonly height: number;
+  public readonly rotorCount: number;
+  public readonly bladeCount: number;
+  public readonly coilCount: number;
+  public readonly condenserCount: number;
 
-  constructor(length: number, height: number, disperserOffset: number) {
+  constructor(length: number, height: number, rotorCount: number, options: IndustrialTurbineOptions = {}) {
+    IndustrialTurbine.validateDimensions(length, height);
+    IndustrialTurbine.validateRotorCount(length, height, rotorCount);
+
+    this.length = length;
+    this.height = height;
+    this.rotorCount = rotorCount;
+
+    const maxBladeSupport = Math.min(rotorCount * 2, IndustrialTurbine.MAX_BLADES);
+    const rawBladeCount = options.bladeCount ?? maxBladeSupport;
+    if (rawBladeCount < 0 || rawBladeCount > maxBladeSupport) {
+      throw new Error(`Blade count must be between 0 and ${maxBladeSupport}`);
+    }
+    this.bladeCount = rawBladeCount;
+
+    const minCoils = Math.ceil(this.bladeCount / TURBINE.BLADES_PER_COIL);
+    const requestedCoils = options.coilCount ?? minCoils;
+    if (requestedCoils < minCoils) {
+      throw new Error(`Coil count must be at least ${minCoils} to support ${this.bladeCount} blades`);
+    }
+    this.coilCount = requestedCoils;
+
+    const maxCondensers = this.getMaxCondensers();
+    const recommendedCondensers = Math.min(
+      Math.ceil(this.getSteamFlow().maxSteamFlow / TURBINE.CONDENSER_RATE),
+      maxCondensers
+    );
+    const requestedCondensers = options.condenserCount ?? recommendedCondensers;
+    if (requestedCondensers < 0 || requestedCondensers > maxCondensers) {
+      throw new Error(`Condenser count must be between 0 and ${maxCondensers}`);
+    }
+    this.condenserCount = requestedCondensers;
+  }
+
+  public static getMaxRotorCount(length: number): number {
+    return Math.min(2 * length - 5, 14);
+  }
+
+  public getInteriorSpan(): number {
+    return Math.max(this.length - 2, 0);
+  }
+
+  public getInteriorHeight(): number {
+    return Math.max(this.height - 2, 0);
+  }
+
+  public getInteriorArea(): number {
+    const span = this.getInteriorSpan();
+    return span * span;
+  }
+
+  public getVentLayers(): number {
+    return Math.max(this.getInteriorHeight() - this.rotorCount, 0);
+  }
+
+  public getVentPlan(): IndustrialTurbineVentPlan {
+    const span = this.getInteriorSpan();
+    if (span <= 0) {
+      return { ceiling: 0, side: 0, total: 0, steamLayers: 0 };
+    }
+    const steamLayers = this.getVentLayers();
+    const ceiling = span * span;
+    const side = 4 * span * steamLayers;
+    return {
+      ceiling,
+      side,
+      total: ceiling + side,
+      steamLayers,
+    };
+  }
+
+  public getDisperserCount(): number {
+    const span = this.getInteriorSpan();
+    if (span <= 0) {
+      return 0;
+    }
+    return span * span - 1;
+  }
+
+  public getBladeRate(): number {
+    return Math.min(
+      this.bladeCount / IndustrialTurbine.MAX_BLADES,
+      (this.coilCount * TURBINE.BLADES_PER_COIL) / IndustrialTurbine.MAX_BLADES
+    );
+  }
+
+  public getSteamFlow(): IndustrialTurbineFlowStats {
+    const ventPlan = this.getVentPlan();
+    const ventFlow = ventPlan.total * TURBINE.VENT_CHEMICAL_FLOW;
+    const interiorArea = this.getInteriorArea();
+    const disperserCount = this.getDisperserCount();
+    const disperserFlow =
+      disperserCount * interiorArea * this.rotorCount * TURBINE.DISPERSER_CHEMICAL_FLOW;
+    const maxSteamFlow = Math.min(ventFlow, disperserFlow);
+    return {
+      ventFlow,
+      disperserFlow,
+      maxSteamFlow,
+      limiting: ventFlow <= disperserFlow ? 'vent' : 'disperser',
+    };
+  }
+
+  public getEffectiveSteamThroughput(): number {
+    const theoretical = this.getSteamFlow().maxSteamFlow;
+    const condenserFlow = this.condenserCount * TURBINE.CONDENSER_RATE;
+    return Math.min(theoretical, condenserFlow);
+  }
+
+  public getEnergyProduction(): number {
+    return ENERGY_PER_STEAM * this.getBladeRate() * this.getEffectiveSteamThroughput();
+  }
+
+  public getSteamStorage(): IndustrialTurbineStorage {
+    const interiorArea = this.getInteriorArea();
+    return {
+      steam: interiorArea * this.rotorCount * TURBINE.CHEMICAL_PER_TANK,
+      energy: this.length ** 2 * this.height * TURBINE.ENERGY_CAPACITY_PER_VOLUME,
+    };
+  }
+
+  public getMaxCondensers(): number {
+    const interiorArea = this.getInteriorArea();
+    const availableLayers = Math.max(this.getVentLayers() - 1, 0);
+    const slots = interiorArea * availableLayers - this.coilCount;
+    return Math.max(slots, 0);
+  }
+
+  public getTransportPlan(): IndustrialTurbineTransportPlan {
+    const flow = this.getSteamFlow();
+    const throughput = this.getEffectiveSteamThroughput();
+    const condensersRequired = Math.ceil(flow.maxSteamFlow / TURBINE.CONDENSER_RATE);
+    return {
+      condensersInstalled: this.condenserCount,
+      condensersRequired,
+      condensersMax: this.getMaxCondensers(),
+      steamFlow: throughput,
+      waterFlow: Math.min(this.condenserCount * TURBINE.CONDENSER_RATE, throughput),
+      steamPipes: Math.ceil(throughput / STEAM_PIPE.RATE),
+      waterPipes: Math.ceil(throughput / WATER_PIPE.RATE),
+    };
+  }
+
+  private static validateDimensions(length: number, height: number): void {
     if (length < IndustrialTurbine.MIN_LENGTH || length > IndustrialTurbine.MAX_LENGTH) {
       throw new Error(
         `Length must be between ${IndustrialTurbine.MIN_LENGTH} and ${IndustrialTurbine.MAX_LENGTH}`
@@ -43,226 +202,19 @@ export class IndustrialTurbine {
         `Height must be between ${IndustrialTurbine.MIN_HEIGHT} and ${IndustrialTurbine.MAX_HEIGHT}`
       );
     }
+  }
 
-    if (disperserOffset < 2 || disperserOffset >= height - 1) {
-      throw new Error(`Disperser offset must be between 2 and ${height - 1}`);
+  private static validateRotorCount(length: number, height: number, rotorCount: number): void {
+    if (rotorCount < 1) {
+      throw new Error('At least one rotor is required');
     }
-
-    this.length = length;
-    this.height = height;
-    this.interiorLength = this.length - 2;
-    this.interiorHeight = this.height - 2;
-    this.disperserOffset = disperserOffset;
-  }
-
-  //#region Class Methods
-
-  getVolume(): number {
-    return this.length ** 2 * this.height;
-  }
-
-  getLowerHeight(): number {
-    return Math.max(this.disperserOffset - 1, 0);
-  }
-
-  getUpperHeight(): number {
-    return Math.max(this.height - this.disperserOffset, 0);
-  }
-
-  getLowerInteriorHeight(): number {
-    return Math.max(this.disperserOffset - 2, 0);
-  }
-
-  getUpperInteriorHeight(): number {
-    return Math.max(this.height - this.disperserOffset - 1, 0);
-  }
-
-  getLowerVolume(): number {
-    return this.length ** 2 * this.getLowerHeight();
-  }
-
-  getUpperVolume(): number {
-    return this.length ** 2 * this.getUpperHeight();
-  }
-
-  getDisperserVolume(): number {
-    return this.length ** 2;
-  }
-
-  getLowerInteriorVolume(): number {
-    const interiorLength = Math.max(this.interiorLength, 0);
-    return interiorLength ** 2 * this.getLowerInteriorHeight();
-  }
-
-  getUpperInteriorVolume(): number {
-    const interiorLength = Math.max(this.interiorLength, 0);
-    return interiorLength ** 2 * this.getUpperInteriorHeight();
-  }
-
-  getDisperserInteriorVolume(): number {
-    const interiorLength = Math.max(this.interiorLength, 0);
-    return interiorLength ** 2;
-  }
-
-  getInteriorVolume(): number {
-    if (this.interiorLength <= 0 || this.interiorHeight <= 0) {
-      return 0;
+    const maxRotor = IndustrialTurbine.getMaxRotorCount(length);
+    if (rotorCount > maxRotor) {
+      throw new Error(`Rotor count cannot exceed ${maxRotor} for length ${length}`);
     }
-    return this.interiorLength ** 2 * this.interiorHeight;
+    const interiorHeight = Math.max(height - 2, 0);
+    if (rotorCount > interiorHeight - 1) {
+      throw new Error('Rotor stack must leave space for the disperser layer');
+    }
   }
-
-  getShellVolume(): number {
-    return this.getVolume() - this.getInteriorVolume();
-  }
-
-  getLowerShellVolume(): number {
-    return this.getLowerVolume() - this.getLowerInteriorVolume();
-  }
-
-  getUpperShellVolume(): number {
-    return this.getUpperVolume() - this.getUpperInteriorVolume();
-  }
-
-  getDisperserShellVolume(): number {
-    return this.getDisperserVolume() - this.getDisperserInteriorVolume();
-  }
-
-  //#endregion
-
-  //#region Optimal Value Methods
-
-  static getVentsPerSteamlayer(L: number): number {
-    return 4 * (L - 2);
-  }
-
-  static getVentsForCeiling(L: number): number {
-    return (L - 2) ** 2;
-  }
-
-  static getDisperserAmount(L: number): number {
-    return (L - 2) ** 2 - 1; // Rotational Complex
-  }
-
-  static getSteamCapacityPerLayer(L: number): number {
-    return TURBINE.CHEMICAL_PER_TANK * (L - 2) ** 2;
-  }
-
-  static getBladeRate(coilCount: number, bladeCount: number): number {
-    return Math.min(
-      bladeCount / IndustrialTurbine.MAX_BLADES,
-      (coilCount * TURBINE.BLADES_PER_COIL) / IndustrialTurbine.MAX_BLADES
-    );
-  }
-
-  static getVentFlow(ventCount: number): number {
-    return ventCount * TURBINE.VENT_CHEMICAL_FLOW;
-  }
-
-  static getDisperserFlow(disperserCount: number): number {
-    return disperserCount * TURBINE.DISPERSER_CHEMICAL_FLOW;
-  }
-
-  static getLowerVolume(L: number, rotorCount: number): number {
-    return (L - 2) ** 2 * rotorCount;
-  }
-
-  static getSteamFlow(L: number, disperserCount: number, rotorCount: number): number {
-    return (
-      IndustrialTurbine.getLowerVolume(L, rotorCount) *
-      IndustrialTurbine.getDisperserFlow(disperserCount)
-    );
-  }
-
-  static getSteamStorage(L: number, rotorCount: number): number {
-    return L ** 2 * rotorCount * TURBINE.CHEMICAL_PER_TANK;
-  }
-
-  static getEnergyStorage(L: number, H: number): number {
-    return L ** 2 * H * TURBINE.ENERGY_CAPACITY_PER_VOLUME;
-  }
-
-  static getWaterFlow(condenserCount: number): number {
-    return condenserCount * TURBINE.CONDENSER_RATE;
-  }
-
-  static getWaterPipeCount(waterFlow: number): number {
-    return Math.ceil(waterFlow / WATER_PIPE.RATE);
-  }
-
-  static getSteamPipeCount(steamFlow: number): number {
-    return Math.ceil(steamFlow / STEAM_PIPE.RATE);
-  }
-
-  static getEnergyProduction(BladeRate: number, steamFlow: number): number {
-    return BladeRate * steamFlow * TURBINE.ENERGY_CAPACITY_PER_VOLUME;
-  }
-
-  static getMaxFlow(
-    L: number,
-    rotorCount: number,
-    ventCount: number,
-    disperserCount: number
-  ): number {
-    const steamFlow = IndustrialTurbine.getSteamFlow(L, disperserCount, rotorCount);
-    const ventFlow = IndustrialTurbine.getVentFlow(ventCount);
-    return Math.min(ventFlow, steamFlow);
-  }
-
-  static getOptimalDisperserOffset(L: number, H: number): number {
-    /** r = rotorCount, 
-        s = height above dispersers, 
-        h = (H - 2) height of interior
-        m = TURBINE.VENT_CHEMICAL_FLOW
-        n = TURBINE.DISPERSER_CHEMICAL_FLOW
-        p = IndustrialTurbine.MAX_BLADES
-        q = TURBINE.BLADES_PER_COIL
-        e = ENERGY_PER_STEAM
-    
-    /* r + s + 1 = h
-
-    /* F_{max} = e * F_{blade} * F_{steamMax}
-    /* F_{SteamMax} = Min(SteamFlowMax(vent), SteamFlowMax(disperser))
-    /* F_{blade} = Min(BladeNumRate, CoilBladeRate)
-    /* N_{vent} = getVentsForCeiling(L) + (getVentsPerSteamlayer(L) * (h - r - 1))
-
-    /* SteamFlowMax(vent) = m * N_{vent} 
-     * Let 
-        =>   m * getVentsForCeiling(L) + (getVentsPerSteamlayer(L) * (h - r - 1))
-        =>   m * (L - 2)^2) + ((L - 2) * 4) * (h - r - 1))
-        =>   m * (L - 2)^2) + (4(L - 2)(h - r - 1))
-        => 
-
-    /* SteamFlowMax(disperser) = getSteamFlow(L, disperserCount, r)
-        =>  n * N_{disperser} * ((L - 2)^2 * r)
-        =>  ... * ((L - 2)^2 - 1) * ((L - 2)^2 * r)
-
-    /* F_{blade} = min(getBladeNumRate(b), getCoilBladeRate(c))
-    /*   b = 2r (two blades per rotor)
-    /*   c = (2 * r) / q (# coils to support blades)
-
-       bladeNumRate = 2r / p
-       coilBladeRate = (c * q) / p
-         => ((2 * r) / q) * q / p
-         => 2r / p
-
-       => F_{blade} = 2r / p
-
-    /* F_{max} = e * F_{blade} * F_{steamMax}
-         => e * (2r / p) * F_{steamMax}
-    **/
-
-    // define symbolic variables
-
-    const k = ENERGY_PER_STEAM;
-    const h = H - 2;
-    const m = TURBINE.VENT_CHEMICAL_FLOW;
-    const n = TURBINE.DISPERSER_CHEMICAL_FLOW;
-    const p = IndustrialTurbine.MAX_BLADES;
-    const r = math.parse('r');
-
-    let a = 0, b = 0, c = 0;
-    return -1;
-  }
-
-  //#endregion
 }

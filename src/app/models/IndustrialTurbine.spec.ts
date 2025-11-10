@@ -1,135 +1,102 @@
 import { IndustrialTurbine } from './IndustrialTurbine';
-import { STEAM_PIPE, TURBINE, WATER_PIPE } from './constants';
+import { ENERGY_PER_STEAM, STEAM_PIPE, TURBINE, WATER_PIPE } from './constants';
 
 describe('IndustrialTurbine', () => {
   describe('constructor validation', () => {
-    it('rejects lengths outside the supported range', () => {
-      expect(() => new IndustrialTurbine(4, 10, 5)).toThrowError(/Length must be between/);
-      expect(() => new IndustrialTurbine(18, 10, 5)).toThrowError(/Length must be between/);
-    });
-
-    it('rejects heights outside the supported range', () => {
+    it('rejects dimensions outside the supported range', () => {
+      expect(() => new IndustrialTurbine(4, 10, 3)).toThrowError(/Length must be between/);
+      expect(() => new IndustrialTurbine(18, 10, 3)).toThrowError(/Length must be between/);
       expect(() => new IndustrialTurbine(6, 4, 3)).toThrowError(/Height must be between/);
       expect(() => new IndustrialTurbine(6, 19, 3)).toThrowError(/Height must be between/);
     });
 
-    it('rejects disperser offsets outside the valid interior span', () => {
-      expect(() => new IndustrialTurbine(6, 8, 1)).toThrowError(/Disperser offset must be between/);
-      expect(() => new IndustrialTurbine(6, 8, 7)).toThrowError(/Disperser offset must be between/);
+    it('rejects rotor counts that violate design constraints', () => {
+      expect(() => new IndustrialTurbine(7, 9, 0)).toThrowError(/At least one rotor/);
+      const maxRotor = IndustrialTurbine.getMaxRotorCount(7);
+      expect(() => new IndustrialTurbine(7, 9, maxRotor + 1)).toThrowError(/Rotor count cannot exceed/);
+      expect(() => new IndustrialTurbine(7, 6, 5)).toThrowError(/Rotor stack must leave space/);
+    });
+
+    it('enforces blade, coil, and condenser option bounds', () => {
+      expect(() => new IndustrialTurbine(7, 9, 3, { bladeCount: 10, coilCount: 1 })).toThrowError(
+        /Blade count must be between/
+      );
+
+      const baseline = new IndustrialTurbine(7, 9, 3);
+      const maxCondensers = baseline.getMaxCondensers();
+      expect(() => new IndustrialTurbine(7, 9, 3, { condenserCount: maxCondensers + 1 })).toThrowError(
+        /Condenser count must be between/
+      );
+
+      expect(() => new IndustrialTurbine(7, 9, 3, { bladeCount: -1 })).toThrowError(/Blade count must be between/);
     });
   });
 
-  describe('volume calculations', () => {
-    const length = 10;
-    const height = 12;
-    const disperserOffset = 6;
-    const turbine = new IndustrialTurbine(length, height, disperserOffset);
+  describe('derived metrics', () => {
+    it('computes vent, flow, and energy figures for a balanced build', () => {
+      const turbine = new IndustrialTurbine(10, 12, 5);
 
-    it('tracks interior dimensions', () => {
-      expect(turbine.interiorLength).toBe(8);
-      expect(turbine.interiorHeight).toBe(10);
+      expect(turbine.getInteriorSpan()).toBe(8);
+      expect(turbine.getInteriorHeight()).toBe(10);
+
+      const ventPlan = turbine.getVentPlan();
+      expect(ventPlan).toEqual({ ceiling: 64, side: 160, total: 224, steamLayers: 5 });
+
+      expect(turbine.getDisperserCount()).toBe(63);
+
+      const bladeRate = turbine.getBladeRate();
+      expect(bladeRate).toBeCloseTo(10 / IndustrialTurbine.MAX_BLADES, 6);
+
+      const flow = turbine.getSteamFlow();
+      expect(flow.ventFlow).toBeCloseTo(9_739_130.688, 3);
+      expect(flow.disperserFlow).toBeCloseTo(25_804_800, 3);
+      expect(flow.maxSteamFlow).toBeCloseTo(9_739_130.688, 3);
+      expect(flow.limiting).toBe('vent');
+
+      const throughput = turbine.getEffectiveSteamThroughput();
+      expect(throughput).toBeCloseTo(flow.maxSteamFlow, 3);
+
+      const energy = turbine.getEnergyProduction();
+      const expectedEnergy = ENERGY_PER_STEAM * bladeRate * throughput;
+      expect(energy).toBeCloseTo(expectedEnergy, 3);
+
+      expect(turbine.getSteamStorage()).toEqual({
+        steam: 20_480_000,
+        energy: 19_200_000_000,
+      });
+
+      expect(turbine.getMaxCondensers()).toBe(253);
+
+      const transport = turbine.getTransportPlan();
+      expect(transport.condensersRequired).toBe(77);
+      expect(transport.condensersInstalled).toBe(77);
+      expect(transport.condensersMax).toBe(253);
+      expect(transport.steamFlow).toBeCloseTo(flow.maxSteamFlow, 3);
+      expect(transport.waterFlow).toBeCloseTo(flow.maxSteamFlow, 3);
+      expect(transport.steamPipes).toBe(39);
+      expect(transport.waterPipes).toBe(153);
     });
 
-    it('derives lower and upper heights', () => {
-      expect(turbine.getLowerHeight()).toBe(5);
-      expect(turbine.getUpperHeight()).toBe(6);
-      expect(turbine.getLowerInteriorHeight()).toBe(4);
-      expect(turbine.getUpperInteriorHeight()).toBe(5);
+    it('caps throughput when condenser capacity is the bottleneck', () => {
+      const condenserLimited = new IndustrialTurbine(7, 9, 3, { condenserCount: 10 });
+      const flow = condenserLimited.getSteamFlow();
+      const throughput = condenserLimited.getEffectiveSteamThroughput();
+
+      expect(throughput).toBeCloseTo(10 * TURBINE.CONDENSER_RATE, 3);
+      expect(throughput).toBeLessThan(flow.maxSteamFlow);
+
+      const transport = condenserLimited.getTransportPlan();
+      expect(transport.steamFlow).toBeCloseTo(throughput, 3);
+      expect(transport.waterFlow).toBeCloseTo(throughput, 3);
+      expect(transport.condensersInstalled).toBe(10);
+      expect(transport.steamPipes).toBe(Math.ceil(throughput / STEAM_PIPE.RATE));
+      expect(transport.waterPipes).toBe(Math.ceil(throughput / WATER_PIPE.RATE));
     });
 
-    it('computes total, lower, upper, and disperser volumes', () => {
-      expect(turbine.getVolume()).toBe(length ** 2 * height);
-      expect(turbine.getLowerVolume()).toBe(length ** 2 * turbine.getLowerHeight());
-      expect(turbine.getUpperVolume()).toBe(length ** 2 * turbine.getUpperHeight());
-      expect(turbine.getDisperserVolume()).toBe(length ** 2);
-    });
-
-    it('computes interior volumes for each segment', () => {
-      const interiorArea = turbine.interiorLength ** 2;
-      expect(turbine.getInteriorVolume()).toBe(interiorArea * turbine.interiorHeight);
-      expect(turbine.getLowerInteriorVolume()).toBe(
-        interiorArea * turbine.getLowerInteriorHeight()
-      );
-      expect(turbine.getUpperInteriorVolume()).toBe(
-        interiorArea * turbine.getUpperInteriorHeight()
-      );
-      expect(turbine.getDisperserInteriorVolume()).toBe(interiorArea);
-    });
-
-    it('keeps shell volumes consistent across segments', () => {
-      const totalShell = turbine.getShellVolume();
-      const segmentedShell =
-        turbine.getLowerShellVolume() +
-        turbine.getUpperShellVolume() +
-        turbine.getDisperserShellVolume();
-
-      expect(segmentedShell).toBe(totalShell);
-    });
-  });
-
-  describe('static helpers', () => {
-    const length = 10;
-
-    it('derives vent counts for the side layers and the ceiling', () => {
-      expect(IndustrialTurbine.getVentsPerSteamlayer(length)).toBe(4 * (length - 2));
-      expect(IndustrialTurbine.getVentsForCeiling(length)).toBe((length - 2) ** 2);
-    });
-
-    it('derives disperser counts and per-layer capacities', () => {
-      expect(IndustrialTurbine.getDisperserAmount(length)).toBe((length - 2) ** 2 - 1);
-      expect(IndustrialTurbine.getSteamCapacityPerLayer(length)).toBe(
-        TURBINE.CHEMICAL_PER_TANK * (length - 2) ** 2
-      );
-    });
-
-    it('limits blade rate by the lesser of blade and coil capacity', () => {
-      const coilLimited = IndustrialTurbine.getBladeRate(1, IndustrialTurbine.MAX_BLADES);
-      expect(coilLimited).toBeCloseTo(
-        (1 * TURBINE.BLADES_PER_COIL) / IndustrialTurbine.MAX_BLADES,
-        6
-      );
-
-      const bladeLimited = IndustrialTurbine.getBladeRate(5, 20);
-      expect(bladeLimited).toBeCloseTo(20 / IndustrialTurbine.MAX_BLADES, 6);
-    });
-
-    it('calculates vent and disperser flows', () => {
-      const vents = 120;
-      const dispersers = IndustrialTurbine.getDisperserAmount(length);
-      const rotorLayers = 4;
-
-      const ventFlow = IndustrialTurbine.getVentFlow(vents);
-      const disperserFlow = IndustrialTurbine.getSteamFlow(length, dispersers, rotorLayers);
-      const limitingFlow = IndustrialTurbine.getMaxFlow(length, rotorLayers, vents, dispersers);
-
-      expect(limitingFlow).toBe(Math.min(ventFlow, disperserFlow));
-    });
-
-    it('derives storage and pipe requirements from throughput figures', () => {
-      const rotorLayers = 3;
-      const dispersers = IndustrialTurbine.getDisperserAmount(length);
-      const steamFlow = IndustrialTurbine.getSteamFlow(length, dispersers, rotorLayers);
-
-      expect(IndustrialTurbine.getSteamStorage(length, rotorLayers)).toBe(
-        length ** 2 * rotorLayers * TURBINE.CHEMICAL_PER_TANK
-      );
-      expect(IndustrialTurbine.getEnergyStorage(length, length + 2)).toBe(
-        length ** 2 * (length + 2) * TURBINE.ENERGY_CAPACITY_PER_VOLUME
-      );
-
-      const condensersNeeded = IndustrialTurbine.getWaterFlow(5);
-      expect(IndustrialTurbine.getWaterPipeCount(condensersNeeded)).toBe(
-        Math.ceil(condensersNeeded / WATER_PIPE.RATE)
-      );
-      expect(IndustrialTurbine.getSteamPipeCount(steamFlow)).toBe(
-        Math.ceil(steamFlow / STEAM_PIPE.RATE)
-      );
-    });
-  });
-
-  describe('getOptimalDisperserOffset', () => {
-    it('returns the optimal disperser offset for given length and height', () => {
-      expect(IndustrialTurbine.getOptimalDisperserOffset(10, 10)).toBe(5);
+    it('accepts custom blade and coil configurations', () => {
+      const turbine = new IndustrialTurbine(7, 9, 3, { bladeCount: 4, coilCount: 5 });
+      const bladeRate = turbine.getBladeRate();
+      expect(bladeRate).toBeCloseTo(4 / IndustrialTurbine.MAX_BLADES, 6);
     });
   });
 });

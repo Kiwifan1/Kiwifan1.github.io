@@ -13,8 +13,6 @@ import { IndustrialTurbine } from '../../../models/IndustrialTurbine';
 export class MekanismPlanner {
 
   constructor() {
-    const test = IndustrialTurbine.getOptimalDisperserOffset(10, 10);
-    console.log(test);
   }
 
 }

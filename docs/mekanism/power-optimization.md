@@ -1,4 +1,4 @@
-# Power Optimization
+# Power Optimization (Turbine)
 
 ## Prerequisite Knowledge
 
