@@ -87,20 +87,89 @@
         <h2>Turbine Requirements</h2>
         <p class="planner__summary">
           {{ describeCount(data.turbines.count, 'turbine') }}
-          <span class="planner__summary-detail">17 × 17 footprint · 18 blocks tall</span>
+          <span class="planner__summary-detail">
+            {{ data.turbines.configuration.length }} × {{ data.turbines.configuration.length }} footprint ·
+            {{ data.turbines.configuration.height }} blocks tall
+          </span>
         </p>
         <ul>
           <li>Per turbine steam: {{ asNumber(data.turbines.perUnitSteam) }} mB/t</li>
           <li>Per turbine return water: {{ asNumber(data.turbines.perUnitWater) }} mB/t</li>
           <li>Per turbine output: {{ asNumber(data.turbines.perUnitPower) }} FE/t</li>
         </ul>
+        <ng-container *ngIf="data.turbines.construction as turbineBuild">
+          <div class="planner__construction">
+            <div>
+              <h3>Construction (per turbine)</h3>
+              <ul class="planner__construction-list">
+                <li>
+                  Shell casing (solid):
+                  {{ asNumber(turbineBuild.perUnit.shell.solid.casing) }}
+                </li>
+                <li>
+                  Glass-ready faces:
+                  {{ asNumber(turbineBuild.perUnit.shell.withGlass.casing) }} casing ·
+                  {{ asNumber(turbineBuild.perUnit.shell.withGlass.glass) }} glass
+                </li>
+                <li>Rotor shafts: {{ asNumber(turbineBuild.perUnit.internals.rotorShaft) }}</li>
+                <li>Rotor blades: {{ asNumber(turbineBuild.perUnit.internals.rotorBlades) }}</li>
+                <li>Electromagnetic coils: {{ asNumber(turbineBuild.perUnit.internals.electromagneticCoils) }}</li>
+                <li>Pressure dispersers: {{ asNumber(turbineBuild.perUnit.internals.pressureDispersers) }}</li>
+                <li>
+                  Saturating condensers: {{ asNumber(turbineBuild.perUnit.internals.saturatingCondensers) }}
+                </li>
+                <li>
+                  Venting (ceiling/sides):
+                  {{ asNumber(turbineBuild.perUnit.internals.vents.ceiling) }} /
+                  {{ asNumber(turbineBuild.perUnit.internals.vents.sides) }}
+                </li>
+              </ul>
+              <p class="planner__construction-note">
+                Rotor layers: {{ turbineBuild.perUnit.geometry.rotorLayers }} · Vent layers:
+                {{ turbineBuild.perUnit.geometry.ventLayers }}
+              </p>
+            </div>
+            <div>
+              <h3>All turbines ({{ asNumber(data.turbines.count) }})</h3>
+              <ul class="planner__construction-list">
+                <li>
+                  Shell casing (solid):
+                  {{ asNumber(turbineBuild.total.shell.solid.casing) }}
+                </li>
+                <li>
+                  Glass-ready faces:
+                  {{ asNumber(turbineBuild.total.shell.withGlass.casing) }} casing ·
+                  {{ asNumber(turbineBuild.total.shell.withGlass.glass) }} glass
+                </li>
+                <li>Rotor shafts: {{ asNumber(turbineBuild.total.internals.rotorShaft) }}</li>
+                <li>Rotor blades: {{ asNumber(turbineBuild.total.internals.rotorBlades) }}</li>
+                <li>
+                  Electromagnetic coils:
+                  {{ asNumber(turbineBuild.total.internals.electromagneticCoils) }}
+                </li>
+                <li>Pressure dispersers: {{ asNumber(turbineBuild.total.internals.pressureDispersers) }}</li>
+                <li>
+                  Saturating condensers: {{ asNumber(turbineBuild.total.internals.saturatingCondensers) }}
+                </li>
+                <li>
+                  Venting (ceiling/sides):
+                  {{ asNumber(turbineBuild.total.internals.vents.ceiling) }} /
+                  {{ asNumber(turbineBuild.total.internals.vents.sides) }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </ng-container>
       </section>
 
       <section class="planner__card" *ngIf="data.boiler as boiler">
         <h2>Boiler Requirements</h2>
         <p class="planner__summary">
           {{ describeCount(boiler.count, 'thermoelectric boiler') }}
-          <span class="planner__summary-detail">18 × 18 footprint · 18 blocks tall</span>
+          <span class="planner__summary-detail">
+            {{ boiler.configuration.width }} × {{ boiler.configuration.length }} footprint ·
+            {{ boiler.configuration.height }} blocks tall
+          </span>
         </p>
         <ul>
           <li>Per boiler steam: {{ asNumber(boiler.perUnitSteam) }} mB/t</li>
@@ -110,6 +179,60 @@
             Required heat input: {{ asNumber(boiler.requiredHeat) }} J/t
           </li>
         </ul>
+        <ng-container *ngIf="boiler.construction as boilerBuild">
+          <div class="planner__construction">
+            <div>
+              <h3>Construction (per boiler)</h3>
+              <ul class="planner__construction-list">
+                <li>
+                  Shell casing (solid):
+                  {{ asNumber(boilerBuild.perUnit.shell.solid.casing) }}
+                </li>
+                <li>
+                  Glass-ready faces:
+                  {{ asNumber(boilerBuild.perUnit.shell.withGlass.casing) }} casing ·
+                  {{ asNumber(boilerBuild.perUnit.shell.withGlass.glass) }} glass
+                </li>
+                <li>Superheating elements: {{ asNumber(boilerBuild.perUnit.internals.superheaters) }}</li>
+                <li>Pressure dispersers: {{ asNumber(boilerBuild.perUnit.internals.pressureDispersers) }}</li>
+                <li>Boiler valves (recommended): {{ asNumber(boilerBuild.perUnit.internals.valves) }}</li>
+                <li>
+                  Resistive heating elements:
+                  {{ asNumber(boilerBuild.perUnit.internals.resistiveHeatingElements) }}
+                </li>
+              </ul>
+              <p class="planner__construction-note">
+                Water layers: {{ boilerBuild.perUnit.geometry.waterLayers }} · Steam layers:
+                {{ boilerBuild.perUnit.geometry.steamLayers }}
+              </p>
+            </div>
+            <div>
+              <h3>All boilers ({{ asNumber(boiler.count) }})</h3>
+              <ul class="planner__construction-list">
+                <li>
+                  Shell casing (solid):
+                  {{ asNumber(boilerBuild.total.shell.solid.casing) }}
+                </li>
+                <li>
+                  Glass-ready faces:
+                  {{ asNumber(boilerBuild.total.shell.withGlass.casing) }} casing ·
+                  {{ asNumber(boilerBuild.total.shell.withGlass.glass) }} glass
+                </li>
+                <li>Superheating elements: {{ asNumber(boilerBuild.total.internals.superheaters) }}</li>
+                <li>
+                  Pressure dispersers: {{ asNumber(boilerBuild.total.internals.pressureDispersers) }}
+                </li>
+                <li>
+                  Boiler valves (recommended): {{ asNumber(boilerBuild.total.internals.valves) }}
+                </li>
+                <li>
+                  Resistive heating elements:
+                  {{ asNumber(boilerBuild.total.internals.resistiveHeatingElements) }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </ng-container>
       </section>
 
       <section class="planner__card">
@@ -123,6 +246,11 @@
           <li>Hot coolant capacity: {{ asNumber(data.construction.HotCoolantCapacity) }} mB</li>
         </ul>
       </section>
+      <app-structure-visualizer
+        class="planner__visualizer"
+        [turbine]="data.turbines"
+        [boiler]="data.boiler"
+      ></app-structure-visualizer>
     </div>
   </ng-template>
 </section>

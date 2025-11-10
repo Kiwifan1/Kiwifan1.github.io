@@ -1,0 +1,111 @@
+<section class="visualizer" aria-label="Structure assembly guide">
+  <header class="visualizer__header">
+    <div class="visualizer__switch">
+      <button
+        type="button"
+        class="visualizer__tab"
+        [class.visualizer__tab--active]="activeStructure() === 'turbine'"
+        [disabled]="!hasTurbine()"
+        (click)="switchStructure('turbine')"
+      >
+        Industrial Turbine
+      </button>
+      <button
+        type="button"
+        class="visualizer__tab"
+        [class.visualizer__tab--active]="activeStructure() === 'boiler'"
+        [disabled]="!hasBoiler()"
+        (click)="switchStructure('boiler')"
+      >
+        Thermoelectric Boiler
+      </button>
+    </div>
+
+    <ng-container *ngIf="activeLayer() as layer">
+      <div class="visualizer__layer">
+        <label class="visualizer__slider">
+          <span class="visualizer__slider-label">
+            Layer {{ activeLayerDisplay() }} / {{ activeLayerCount() }}
+          </span>
+          <input
+            type="range"
+            [min]="0"
+            [max]="maxLayerIndex()"
+            [value]="activeLayerIndex()"
+            [disabled]="activeLayerCount() <= 1"
+            (input)="onLayerInput($event)"
+          />
+        </label>
+        <p class="visualizer__layer-name">{{ layer.name }}</p>
+        <p class="visualizer__layer-description">{{ layer.description }}</p>
+        <p class="visualizer__layer-repeat" *ngIf="layer.repeatHint">{{ layer.repeatHint }}</p>
+      </div>
+    </ng-container>
+  </header>
+
+  <div class="visualizer__content" *ngIf="activeStructure() === 'turbine'; else boilerView">
+    <ng-container *ngIf="turbinePlan(); else missingTurbine">
+      <ng-container *ngIf="activeLayer() as layer">
+        <div
+          class="visualizer__grid"
+          [style.gridTemplateColumns]="gridTemplateColumns(layer)"
+          [style.gridTemplateRows]="gridTemplateRows(layer)"
+        >
+          <ng-container *ngFor="let row of layer.grid">
+            <ng-container *ngFor="let cell of row">
+              <div
+                class="visualizer__cell visualizer__cell--{{ cell.type }}"
+                role="img"
+                [attr.aria-label]="cell.label"
+                title="{{ cell.label }}"
+              ></div>
+            </ng-container>
+          </ng-container>
+        </div>
+        <ul class="visualizer__legend">
+          <li *ngFor="let entry of turbineLegend">
+            <span class="visualizer__legend-swatch visualizer__legend-swatch--{{ entry.type }}"></span>
+            <span>{{ entry.label }}</span>
+          </li>
+        </ul>
+      </ng-container>
+    </ng-container>
+    <ng-template #missingTurbine>
+      <p class="visualizer__empty">Turbine data is unavailable.</p>
+    </ng-template>
+  </div>
+
+  <ng-template #boilerView>
+    <div class="visualizer__content">
+      <ng-container *ngIf="boilerPlan(); else missingBoiler">
+        <ng-container *ngIf="activeLayer() as layer">
+          <div
+            class="visualizer__grid"
+            [style.gridTemplateColumns]="gridTemplateColumns(layer)"
+            [style.gridTemplateRows]="gridTemplateRows(layer)"
+          >
+            <ng-container *ngFor="let row of layer.grid">
+              <ng-container *ngFor="let cell of row">
+                <div
+                  class="visualizer__cell visualizer__cell--{{ cell.type }}"
+                  role="img"
+                  [attr.aria-label]="cell.label"
+                  title="{{ cell.label }}"
+                ></div>
+              </ng-container>
+            </ng-container>
+          </div>
+          <ul class="visualizer__legend">
+            <li *ngFor="let entry of boilerLegend">
+              <span class="visualizer__legend-swatch visualizer__legend-swatch--{{ entry.type }}"></span>
+              <span>{{ entry.label }}</span>
+            </li>
+          </ul>
+        </ng-container>
+      </ng-container>
+      <ng-template #missingBoiler>
+        <p class="visualizer__empty">No boiler is required for this configuration.</p>
+      </ng-template>
+    </div>
+  </ng-template>
+</section>

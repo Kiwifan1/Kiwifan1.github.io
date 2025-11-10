@@ -1,10 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FissionReactor } from '../../../../models/FissionReactor';
-import { computeSodiumCoolingRequirements, computeWaterCoolingRequirements } from '../../../../utils/cooling-requirements';
-import { PowerOptimization } from '../../../../models/TurbinePowerOptimization';
+import {
+  computeSodiumCoolingRequirements,
+  computeWaterCoolingRequirements,
+  TurbineSupportPlan,
+  BoilerSupportPlan,
+} from '../../../../utils/cooling-requirements';
 import { HEATING } from '../../../../models/constants';
+import { StructureVisualizer } from '../structure-visualizer/structure-visualizer';
 
 interface PlannerInputs {
   width: number;
@@ -21,19 +26,8 @@ interface PlannerResult {
   steamDemand: number;
   waterDemand: number;
   heatDemand: number;
-  turbines: {
-    count: number;
-    perUnitSteam: number;
-    perUnitWater: number;
-    perUnitPower: number;
-  };
-  boiler?: {
-    count: number;
-    perUnitSteam: number;
-    perUnitHeat: number;
-    perUnitSuperheaters: number;
-    requiredHeat?: number;
-  };
+  turbines: TurbineSupportPlan;
+  boiler?: BoilerSupportPlan & { requiredHeat?: number };
   construction: ReturnType<FissionReactor['getConstructionSummary']>;
 }
 
@@ -51,7 +45,7 @@ const DEFAULT_BOILER = { width: 18, length: 18, height: 18 } as const;
 @Component({
   selector: 'app-fission-planner',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, StructureVisualizer],
   templateUrl: './fission-planner.html',
   styleUrl: './fission-planner.css',
 })
@@ -68,8 +62,6 @@ export class FissionPlanner {
 
   public readonly error = signal<string | null>(null);
   public readonly result = signal<PlannerResult | null>(null);
-
-  private readonly turbineProfile = computed(() => PowerOptimization.findOptimalDesign(DEFAULT_TURBINE.length, DEFAULT_TURBINE.height).optimal);
 
   constructor() {
     effect(() => {
@@ -117,8 +109,6 @@ export class FissionPlanner {
       const reactor = new FissionReactor(reactorWidth, reactorHeight, reactorLength, coolingMode);
       const burnRate = reactor.getMaxBurnRate();
       const construction = reactor.getConstructionSummary();
-      const turbine = this.turbineProfile();
-
       if (coolingMode === 'water') {
         const plan = computeWaterCoolingRequirements(
           burnRate,
@@ -135,25 +125,12 @@ export class FissionPlanner {
         this.result.set({
           burnRate,
           safeBurnRate: safeBurn,
-          powerPerTick: plan.turbine.count * turbine.powerPerTick,
+          powerPerTick: plan.turbine.count * plan.turbine.perUnitPower,
           steamDemand: plan.steamDemand,
           waterDemand: plan.waterDemand,
           heatDemand: plan.boiler?.requiredHeat ?? burnRate * HEATING.WATER,
-          turbines: {
-            count: plan.turbine.count,
-            perUnitSteam: plan.turbine.perUnitSteam,
-            perUnitWater: plan.turbine.perUnitWater,
-            perUnitPower: plan.turbine.perUnitPower,
-          },
-          boiler: plan.boiler
-            ? {
-                count: plan.boiler.count,
-                perUnitSteam: plan.boiler.perUnitSteam,
-                perUnitHeat: plan.boiler.perUnitHeat,
-                perUnitSuperheaters: plan.boiler.perUnitSuperheaters,
-                requiredHeat: plan.boiler.requiredHeat,
-              }
-            : undefined,
+          turbines: plan.turbine,
+          boiler: plan.boiler,
           construction,
         });
       } else {
@@ -172,18 +149,8 @@ export class FissionPlanner {
           steamDemand: plan.steamDemand,
           waterDemand: plan.steamDemand,
           heatDemand: plan.heatDemand,
-          turbines: {
-            count: plan.turbine.count,
-            perUnitSteam: plan.turbine.perUnitSteam,
-            perUnitWater: plan.turbine.perUnitWater,
-            perUnitPower: plan.turbine.perUnitPower,
-          },
-          boiler: {
-            count: plan.boiler.count,
-            perUnitSteam: plan.boiler.perUnitSteam,
-            perUnitHeat: plan.boiler.perUnitHeat,
-            perUnitSuperheaters: plan.boiler.perUnitSuperheaters,
-          },
+          turbines: plan.turbine,
+          boiler: plan.boiler,
           construction,
         });
       }

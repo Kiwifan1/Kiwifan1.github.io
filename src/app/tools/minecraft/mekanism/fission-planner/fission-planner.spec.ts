@@ -20,6 +20,7 @@ describe('FissionPlanner', () => {
     const result = component.result();
     expect(result).toBeTruthy();
     expect(result?.turbines.count).toBeGreaterThan(0);
+    expect(result?.turbines.construction.perUnit.shell.solid.casing).toBeGreaterThan(0);
   });
 
   it('switches to sodium cooling automatically enabling the boiler', () => {
@@ -28,5 +29,6 @@ describe('FissionPlanner', () => {
     const result = component.result();
     expect(component.form.value.includeBoiler).toBeTrue();
     expect(result?.boiler?.count).toBeGreaterThan(0);
+    expect(result?.boiler?.construction.perUnit.internals.superheaters).toBeGreaterThan(0);
   });
 });

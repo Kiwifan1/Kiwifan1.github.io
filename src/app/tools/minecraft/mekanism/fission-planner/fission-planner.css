@@ -139,6 +139,29 @@
   gap: 0.5rem;
 }
 
+.planner__construction {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-top: 0.75rem;
+}
+
+.planner__construction-list {
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.planner__construction-note {
+  margin-top: 0.5rem;
+  color: var(--kiwi-muted, #909090);
+  font-size: 0.85rem;
+}
+
+.planner__visualizer {
+  width: 100%;
+  grid-column: 1 / -1;
+}
+
 .planner__card li {
   color: var(--kiwi-muted, #bbb);
 }
