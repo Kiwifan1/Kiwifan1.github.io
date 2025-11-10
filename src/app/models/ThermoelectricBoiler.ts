@@ -1,3 +1,5 @@
+import { BOILER } from './constants';
+
 export interface ThermoelectricBoilerCapacities {
 	water: number;
 	steam: number;
@@ -89,11 +91,11 @@ export class ThermoelectricBoiler {
 		const waterVolume = this.getWaterVolume();
 		const steamVolume = this.getSteamVolume();
 		return {
-			water: waterVolume * 16000,
-			hotCoolant: waterVolume * 256000,
-			steam: steamVolume * 160000,
-			coldCoolant: steamVolume * 256000,
-			boil: this.superheaters * 320000,
+			water: waterVolume * BOILER.WATER_PER_TANK,
+			hotCoolant: waterVolume * BOILER.HEATED_COOLANT_PER_TANK,
+			steam: steamVolume * BOILER.STEAM_PER_TANK,
+			coldCoolant: steamVolume * BOILER.COOLED_COOLANT_PER_TANK,
+			boil: this.superheaters * ThermoelectricBoiler.STEAM_PER_SUPERHEATER,
 		};
 	}
 
@@ -110,7 +112,7 @@ export class ThermoelectricBoiler {
 	}
 
 	public getBalancedSuperheaterEstimate(): number {
-		return (this.waterLayers * this.getLayerArea()) / 21;
+		return (this.waterLayers * this.getLayerArea()) / 11;
 	}
 
 	public isSteamNonLimiting(): boolean {
@@ -127,6 +129,8 @@ export class ThermoelectricBoiler {
 		const balanced = Math.min(Math.ceil(this.getBalancedSuperheaterEstimate()), max);
 		return { balanced, maximum: max };
 	}
+
+	public static readonly STEAM_PER_SUPERHEATER = 320000;
 
 	private getLayerArea(): number {
 		return ThermoelectricBoiler.getLayerArea(this.width, this.length);

@@ -467,3 +467,5 @@ $$N_{structure} = 417 + 597 + 3 = 1{,}017$$
 | `Turbine Rotors`        | 10       |
 | `Rotational Complex`    | 1        |
 | Structural Blocks       | 1,017    |
+
+
