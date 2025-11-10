@@ -39,6 +39,12 @@
         <p class="visualizer__layer-name">{{ layer.name }}</p>
         <p class="visualizer__layer-description">{{ layer.description }}</p>
         <p class="visualizer__layer-repeat" *ngIf="layer.repeatHint">{{ layer.repeatHint }}</p>
+        <ul class="visualizer__materials" *ngIf="layer.materials.length > 0">
+          <li *ngFor="let material of layer.materials">
+            <span class="visualizer__materials-count">{{ material.count }}</span>
+            <span class="visualizer__materials-label">{{ material.label }}</span>
+          </li>
+        </ul>
       </div>
     </ng-container>
   </header>
