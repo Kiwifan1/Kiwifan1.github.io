@@ -90,3 +90,7 @@ so at $T = 0\,\text{K}$ the structure heals at 0.2% per second.
 ## Nuclear Waste
 
 * Radioactive Waste Barrels delete their contents at a rate of 1 mB/min
+
+## Derived Optimum for 18x18x18 Reactor
+
+
