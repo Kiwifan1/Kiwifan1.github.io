@@ -14,6 +14,7 @@ Size:
 * Faces can be `Fission Reactor Casing`, `Reactor Glass`, `Fission Reactor Port` or `Fission Reactor Logic Adapter`
 * Interior can be either air or fission control rods
   * A control rod is made from 1 to 15 `Fission Fuel Assembly` and a single `Control Rod Assembly` at the top
+  * A control rod may not share an edge with another control rod
 * Each Reactor must have a minimum of:
   * 1 Coolant Input (Water/Sodium)
   * 1 Coolant Output (Steam/Superheated Sodium)
@@ -89,3 +90,7 @@ so at $T = 0\,\text{K}$ the structure heals at 0.2% per second.
 ## Nuclear Waste
 
 * Radioactive Waste Barrels delete their contents at a rate of 1 mB/min
+
+## Derived Optimum for 18x18x18 Reactor
+
+
