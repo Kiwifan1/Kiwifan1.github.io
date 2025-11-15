@@ -5,8 +5,6 @@
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
     "module": "ES2022",
-    "sourceMap": true,
-    "inlineSources": true,
     "types": [
       "jasmine"
     ],

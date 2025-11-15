@@ -4,52 +4,17 @@
   "configurations": [
     {
       "name": "ng serve",
-      "type": "msedge",
+      "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:4200/",
       "preLaunchTask": "npm: start",
-      "webRoot": "${workspaceFolder}",
-      "sourceMapPathOverrides": {
-        "webpack:///./src/*": "${workspaceFolder}/src/*",
-        "webpack:///src/*": "${workspaceFolder}/src/*",
-        "webpack:///./node_modules/*": "${workspaceFolder}/node_modules/*",
-        "webpack:///./*": "${workspaceFolder}/*",
-        "webpack:///*": "${workspaceFolder}/*"
-      }
+      "url": "http://localhost:4200/"
     },
     {
       "name": "ng test",
-      "type": "msedge",
+      "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:9876/debug.html",
       "preLaunchTask": "npm: test",
-      "webRoot": "${workspaceFolder}",
-      "sourceMapPathOverrides": {
-        "webpack:///./src/*": "${workspaceFolder}/src/*",
-        "webpack:///src/*": "${workspaceFolder}/src/*",
-        "webpack:///./node_modules/*": "${workspaceFolder}/node_modules/*",
-        "webpack:///./*": "${workspaceFolder}/*",
-        "webpack:///*": "${workspaceFolder}/*"
-      }
-    },
-    {
-      "name": "ng test (breakpoints)",
-      "type": "msedge",
-      "request": "launch",
-      "url": "http://localhost:9876/debug.html",
-      "preLaunchTask": "npm: test",
-      "webRoot": "${workspaceFolder}",
-      "sourceMapPathOverrides": {
-        "webpack:///./src/*": "${workspaceFolder}/src/*",
-        "webpack:///src/*": "${workspaceFolder}/src/*",
-        "webpack:///./node_modules/*": "${workspaceFolder}/node_modules/*",
-        "webpack:///./*": "${workspaceFolder}/*",
-        "webpack:///*": "${workspaceFolder}/*"
-      },
-      "presentation": {
-        "group": "Tests",
-        "order": 1
-      }
+      "url": "http://localhost:9876/debug.html"
     }
   ]
 }

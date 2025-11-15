@@ -1,139 +1,107 @@
-# Thermoelectric Boiler Optimization
+# Thermoelectric Boiler Information
 
-## Prerequisite Knowledge
+## Construction
 
-- Let $W$ and $L$ be the outer width and length of the boiler footprint (in blocks).
-- Let $H$ be the total exterior height of the structure (in blocks).
-- Valid Mekanism boilers satisfy $3 \le W, L \le 18$ and $4 \le H \le 18$ with a rectangular prism shell.
-- The casing shell consumes one block on every edge. The interior stack therefore has height $h = H - 2$ and footprint area $A = W \cdot L$.
-- From top to bottom the interior contains a steam cavity, a one-block `Pressure Disperser` layer, and a water cavity populated by `Superheating Elements`.
-- The water cavity and steam cavity must both be at least one block tall.
+Size:
 
-## Variable Definitions
+| Min   | Max      |
+| ----- | -------- |
+| 3x4x3 | 18x18x18 |
 
-- Let $w$ be the height (in blocks) of the water cavity _excluding_ the disperser layer.
-- Let $s$ be the height of the steam cavity.
-- Let $N$ be the number of `Superheating Elements`.
-- Because the disperser layer is fixed at one block, $w + s + 1 = h$ and therefore $s = h - 1 - w$.
-- Every superheating element occupies one block of the water cavity, so $0 \le N \le wA$.
+* Edges must be `Boiler Casing`
+* Faces can be `Boiler Casing`, `Boiler Valve`, or `Reactor Glass`
+* Interior of structure is made up of 3 sections (top to bottom):
+  * Steam Cavity (exclusively air)
+  * Steam Catch (`Pressure Disperser` layer)
+  * Water Cavity (air, and `Superheaters` can be placed here)
 
-## Constants (Default Mekanism 1.20)
+>Note: All Superheating elements must be touching each other and there cannot be any air pockets
 
-These symbols reference `src/app/models/constants.ts`:
+## Tank Capacities
 
-$$\alpha = \texttt{BOILER.WATER\_PER\_TANK} = 32{,}000$$
-$$\beta = \texttt{BOILER.STEAM\_PER\_TANK} = 320{,}000$$
-$$\gamma = \texttt{BOILER.HEATED\_COOLANT\_PER\_TANK} = 512{,}000$$
-$$\delta = \texttt{BOILER.COOLED\_COOLANT\_PER\_TANK} = 512{,}000$$
+Boilers have four tanks:
 
-Superheating throughput is derived from the thermal constants:
+* Heated Coolant
+* Water
+* Steam
+* Cold Coolant
 
-$$\zeta = \texttt{SUPERHEATING\_HEAT\_TRANSFER} = 16{,}000{,}000$$
-$$\varepsilon = \texttt{HEATING.WATER} = 20{,}000$$
-$$\eta = \text{steam efficiency} = 0.4$$
+Tank Capacities are as follows:
 
-A single superheater converts
+### Intermediate Formulas
 
-$$\phi = \frac{\zeta}{\varepsilon} \times \eta \times 1{,}000 = 320{,}000$$
+Let the overall height be $H$ and the footprint dimensions be $W$ by $L$ so that the layer area is $A = W \cdot L$. Define $h$ as the water cavity height plus the single pressure disperser layer and let $N$ be the number of superheaters.
 
-millibuckets of water into steam per tick.
+Then:
 
-## Tank Volumes and Capacities
+* Water cavity height $= h - 1$
+* Steam cavity height $= H - h$
+* Water volume $V_{Water} = (h - 1)A - N$
+* Steam volume $V_{Steam} = (H - h)A$
 
-Because the disperser layer feeds both buffers, Mekanism includes it when sizing the tanks. The effective volumes are
+### Tank Capacities (mB)
 
-$$V_{\text{water}} = (w + 1)A - N,$$
-$$V_{\text{steam}} = (s + 1)A.$$
+$$C_{Water} = 16{,}000 \cdot \big((h - 1)A - N\big)$$
+$$C_{Coolant} = 256{,}000 \cdot \big((h - 1)A - N\big)$$
+$$C_{Steam} = 160{,}000 \cdot (H - h)A$$
+$$C_{Hot\ Coolant} = 256{,}000 \cdot (H - h)A$$
 
-Multiplying by the per-block constants yields the capacities
+### Boil Capacity
 
-$$C_{\text{water}} = \alpha V_{\text{water}}, \qquad C_{\text{cold}} = \delta V_{\text{water}},$$
-$$C_{\text{steam}} = \beta V_{\text{steam}}, \qquad C_{\text{hot}} = \gamma V_{\text{steam}}.$$
+$$C_{Boil} = 100{,}000 \cdot N$$
 
-The boil throughput contributed by $N$ superheaters is
+## Steam Production
 
-$$C_{\text{boil}} = \phi N.$$
+Maximum instantaneous steam production is limited by:
+$$\min\big(C_{Water},\ C_{Steam},\ C_{Boil}\big)$$
 
-## Production Limit
+Balance idea:
 
-The instantaneous steam output is constrained by all three buffers:
+* Increasing N raises $(C_{Boil})$ but shrinks water volume $(C_{Water})$.
+* Steam capacity depends only on h (not N).
+  Optimal strategy: choose h so steam is not the smallest term, then choose N so $(C_{Water} \approx C_{Boil})$.
 
-$$F(N, w) = \min\left(C_{\text{water}},\ C_{\text{steam}},\ C_{\text{boil}}\right).$$
+Balance equation (normalized by 16,000):
+$$(h - 1)A - N \approx \frac{25}{4}N \quad \Rightarrow \quad N \approx \frac{4(h - 1)A}{29}$$
 
-Our goal is to choose $w$ and $N$ that maximise $F$ while respecting the structural bounds.
+Steam non‑limiting condition:
+$$25(h - 1) \le 290(H - h) \quad \Rightarrow \quad h \le \frac{58H + 5}{63}$$
 
-## Balanced Superheater Count
+Since $h$ counts block layers, round the bound down to the nearest integer.
 
-Water draw decreases as $N$ grows, while boil throughput increases. Setting the two terms equal provides the balanced superheater count
+## Example: Optimal 18×18×18 Boiler
 
-$$\alpha \big((w + 1)A - N_{\text{eq}}\big) = \phi N_{\text{eq}}$$
+H = $18$, W = $L = 18$, A = $324$
 
-$$\Rightarrow N_{\text{eq}} = \frac{\alpha}{\alpha + \phi}(w + 1)A = \frac{(w + 1)A}{1 + \kappa},$$
+Steam-safe h (integer) $\le 16$; choose highest: $h = 16$
 
-where $\kappa = \tfrac{\phi}{\alpha} = 10$. Thus
+* Water cavity height = $15$
+* Steam cavity height = $2$
 
-$$N_{\text{eq}} = \frac{(w + 1)A}{11}.$$
+Balanced superheaters: $N_{eq} = \frac{4 \cdot 15 \cdot 324}{29} \approx 670.34 \Rightarrow N = 671$ (slightly beyond equality to avoid boil being lower)
 
-The corresponding throughput is
+Resulting capacities:
 
-$$F_{\text{water}}(w) = C_{\text{boil}}(N_{\text{eq}}) = \frac{\alpha \phi}{\alpha + \phi} (w + 1)A.$$
+* $C_{Water} = (15 \cdot 324 - 671) \cdot 16{,}000 = 67{,}024{,}000\ \text{mB}$ (limiting)
+* $C_{Boil} = 671 \cdot 100{,}000 = 67{,}100{,}000\ \text{mB}$
+* $C_{Steam} = (2 \cdot 324) \cdot 160{,}000 = 103{,}680{,}000\ \text{mB}$ (non-limiting)
 
-## Steam Headroom
+Maximum effective production governed by water: $67{,}024{,}000\ \text{mB}$
 
-The steam buffer is independent of $N$ and only depends on the height allocated above the disperser:
+## General Recipe (Any Size)
 
-$$F_{\text{steam}}(w) = C_{\text{steam}} = \beta (s + 1)A = \beta (h - w)A.$$
+1. Compute $A = W \cdot L$.
+2. Find $h_{max} = \left\lfloor \frac{58H + 5}{63} \right\rfloor$.
+3. Use $h = h_{max}$. If steam becomes limiting factor after rounding N, decrement h.
+4. $N_{eq} = \frac{4(h - 1)A}{29}$; take $N = \lceil N_{eq} \rceil$.
+5. Capacities:
+   * $C_{Water} = 16{,}000 \cdot ((h - 1)A - N)$
+   * $C_{Steam} = 160{,}000 \cdot (H - h)A$
+   * $C_{Boil} = 100{,}000 \cdot N$
+6. Production limit = $\min(C_{Water}, C_{Steam}, C_{Boil})$.
 
-For any admissible boiler ($w \le h - 2$ so that $s \ge 1$) the inequality
+(Adjust if $C_{Steam} <$ others by lowering h to enlarge steam cavity.)
 
-$$(w + 1) \le 11(h - w)$$
+## Summary (18×18×18)
 
-holds, ensuring $F_{\text{water}}(w) \le F_{\text{steam}}(w)$. In other words, with Mekanism’s default constants the water/boil pair is always the limiting factor, and the steam buffer provides ample headroom.
-
-## Optimal Water Height
-
-Since $F(N, w)$ is maximised by $F_{\text{water}}(w)$ and this term grows monotonically with $(w + 1)$, we should allocate as many interior layers as possible to the water cavity while keeping at least one steam layer. With $h = H - 2$, the optimal choice is
-
-$$w^{\star} = h - 2, \qquad s^{\star} = 1.$$
-
-The corresponding superheater target is
-
-$$N^{\star} = \left\lfloor \frac{(w^{\star} + 1)A}{11} \right\rfloor,$$
-
-subject to the practical cap $N \le w^{\star} A$ (which is always satisfied for $H \le 18$).
-
-## Design Workflow
-
-1. Pick dimensions $(W, L, H)$ that satisfy Mekanism’s casing bounds and compute $h = H - 2$ and $A = W \cdot L$.
-2. Set the water cavity height to $w = h - 2$ (one steam layer above the disperser). Compute $s = h - 1 - w = 1$.
-3. Evaluate the balanced superheater target
-   $$N_{\text{eq}} = \frac{(w + 1)A}{11}.$$
-   Round to the nearest feasible integer ($0 \le N \le wA$).
-4. Assemble the boiler with $N$ superheaters placed contiguously inside the water cavity.
-5. The resulting production limit is
-   $$F_{\max} = \frac{\alpha \phi}{\alpha + \phi}(w + 1)A,$$
-   while $C_{\text{steam}}$, $C_{\text{hot}}$, and $C_{\text{cold}}$ follow from the height allocation above.
-6. If you adjust the layout (e.g., add extra steam headroom or remove superheaters for easier piping), recompute $F$ with the same formulas—performance degrades smoothly around the optimum, so near-by configurations remain effective.
-
-## Worked Example — 18 × 18 × 18 Boiler
-
-For the maximum footprint ($W = L = 18$, $H = 18$):
-
-- Interior height: $h = H - 2 = 16$.
-- Choose $w = h - 2 = 14$ and $s = 1$.
-- Area: $A = 18^2 = 324$.
-- Balanced superheaters: $N_{\text{eq}} = \tfrac{(14 + 1) \cdot 324}{11} \approx 441.8 \Rightarrow N = 442$.
-
-Capacities and throughput:
-
-- $V_{\text{water}} = (14 + 1) \cdot 324 - 442 = 4{,}418$ blocks.
-- $C_{\text{water}} = \alpha V_{\text{water}} = 32{,}000 \times 4{,}418 = 141{,}376{,}000$ mB.
-- $C_{\text{boil}} = \phi N = 320{,}000 \times 442 = 141{,}440{,}000$ mB/t.
-- $C_{\text{steam}} = \beta (s + 1)A = 320{,}000 \times 2 \times 324 = 207{,}360{,}000$ mB.
-- Throughput: $F_{\max} = \min(C_{\text{water}}, C_{\text{steam}}, C_{\text{boil}}) = 141{,}376{,}000$ mB/t.
-
-## Practical Notes
-
-- Expanding the steam cavity (larger $s$) does not increase throughput with default constants—the water draw remains the bottleneck—so prefer maximising $w$.
-- When running sodium, simply multiply $V_{\text{water}}$ and $V_{\text{steam}}$ by $\delta$ and $\gamma$ to confirm the coolant buffers exceed the targeted flow.
-- If your modpack tweaks Mekanism’s heating constants, recompute $\phi$, $\kappa$, and the balanced ratio. The workflow above remains valid with the updated values.
+h = 16, N = 671, limiting capacity $= 67{,}024{,}000\ \text{mB}$ (water), steam comfortably above, boil slightly above water. This configuration maximizes $\min(C_{Water}, C_{Steam}, C_{Boil})$ for the size.

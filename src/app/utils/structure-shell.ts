@@ -1,10 +1,22 @@
-import { ShellBreakdown } from '../models/Shell';
+export interface ShellMaterialSet {
+  casing: number;
+  glass: number;
+}
+
+export interface ShellBreakdown {
+  solid: ShellMaterialSet;
+  withGlass: ShellMaterialSet;
+  totalShell: number;
+  faceArea: number;
+  edgeCasing: number;
+  replacements: number;
+}
 
 export function computeShellBreakdown(
   width: number,
   height: number,
   length: number,
-  faceReplacements: number = 0
+  faceReplacements: number
 ): ShellBreakdown {
   const interiorWidth = Math.max(width - 2, 0);
   const interiorHeight = Math.max(height - 2, 0);
