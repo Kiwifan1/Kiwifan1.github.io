@@ -113,27 +113,19 @@
 }
 
 .visualizer__cell--rotor {
-  background: #ffca28;
+  background: #9e9e9e;
 }
 
 .visualizer__cell--blade {
-  background: #ff9100;
-}
-
-.visualizer__cell--complex {
-  background: #ffd54f;
+  background: #cfd8dc;
 }
 
 .visualizer__cell--coil {
-  background: #26c6da;
+  background: #ff9800;
 }
 
-.visualizer__cell--condenser {
-  background: #8e24aa;
-}
-
-.visualizer__cell--disperser {
-  background: #ab47bc;
+.visualizer__cell--complex {
+  background: #ffe082;
 }
 
 .visualizer__cell--vent {
@@ -144,20 +136,16 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.visualizer__cell--water {
-  background: #1e88e5;
-}
-
 .visualizer__cell--superheater {
   background: #ef5350;
 }
 
-.visualizer__cell--heater {
-  background: #f4511e;
+.visualizer__cell--disperser {
+  background: #ab47bc;
 }
 
-.visualizer__cell--steam {
-  background: #90caf9;
+.visualizer__cell--condenser {
+  background: #81d4fa;
 }
 
 .visualizer__legend {
@@ -188,23 +176,23 @@
 }
 
 .visualizer__legend-swatch--rotor {
-  background: #ffca28;
+  background: #9e9e9e;
 }
 
 .visualizer__legend-swatch--blade {
-  background: #ff9100;
+  background: #cfd8dc;
 }
 
 .visualizer__legend-swatch--complex {
-  background: #ffd54f;
+  background: #ffe082;
 }
 
 .visualizer__legend-swatch--coil {
-  background: #26c6da;
+  background: #ff9800;
 }
 
 .visualizer__legend-swatch--condenser {
-  background: #8e24aa;
+  background: #81d4fa;
 }
 
 .visualizer__legend-swatch--disperser {
@@ -215,20 +203,8 @@
   background: #81c784;
 }
 
-.visualizer__legend-swatch--water {
-  background: #1e88e5;
-}
-
 .visualizer__legend-swatch--superheater {
   background: #ef5350;
-}
-
-.visualizer__legend-swatch--heater {
-  background: #f4511e;
-}
-
-.visualizer__legend-swatch--steam {
-  background: #90caf9;
 }
 
 .visualizer__legend-swatch--empty {

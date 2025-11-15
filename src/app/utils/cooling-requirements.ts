@@ -386,8 +386,9 @@ export function computeSodiumCoolingRequirements(
   if (!Number.isFinite(burnRate) || burnRate < 0) {
     throw new Error('Burn rate must be a non-negative finite number');
   }
-  const heatDemand = burnRate * HEATING.SODIUM;
-  const steamDemand = heatDemand * HEAT_TO_STEAM_RATIO;
+  const hotCoolantDemand = burnRate * HEATING.SODIUM;
+  const steamDemand = hotCoolantDemand;
+  const heatDemand = steamDemand / HEAT_TO_STEAM_RATIO;
   const boilerConfiguration = resolveBoilerConfiguration(boilerDimensions);
   const { count: boilerCount, heatCapacity } = computeBoilerCount(
     heatDemand,

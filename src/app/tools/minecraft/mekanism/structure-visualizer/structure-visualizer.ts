@@ -17,11 +17,8 @@ const TURBINE_LEGEND: LegendEntry[] = [
 
 const BOILER_LEGEND: LegendEntry[] = [
   { type: 'casing', label: 'Boiler casing / ports' },
-  { type: 'water', label: 'Water cavity' },
   { type: 'superheater', label: 'Superheating element' },
-  { type: 'heater', label: 'Resistive heating element' },
   { type: 'disperser', label: 'Pressure disperser deck' },
-  { type: 'steam', label: 'Steam cavity' },
 ];
 
 const CELL_LABELS: Record<CellType, string> = {
@@ -33,10 +30,7 @@ const CELL_LABELS: Record<CellType, string> = {
   disperser: 'Pressure disperser',
   vent: 'Turbine vent',
   empty: 'Interior cavity',
-  water: 'Water cavity',
   superheater: 'Superheating element',
-  heater: 'Resistive heating element',
-  steam: 'Steam cavity',
   condenser: 'Saturating condenser',
 };
 
@@ -49,10 +43,7 @@ type CellType =
   | 'disperser'
   | 'vent'
   | 'empty'
-  | 'water'
   | 'superheater'
-  | 'heater'
-  | 'steam'
   | 'condenser';
 
 interface CellVisual {
@@ -148,8 +139,9 @@ export class StructureVisualizer {
     effect(() => {
       const mode = this.activeStructure();
       const plan = mode === 'turbine' ? this.turbinePlan() : this.boilerPlan();
-      // Reset the slider to the first layer whenever the active plan changes.
-      untracked(() => this.activeLayerIndex.set(0));
+      untracked(() => {
+        this.activeLayerIndex.set(0);
+      });
       void plan;
     });
 
@@ -217,7 +209,7 @@ function buildTurbineLayers(plan: TurbineSupportPlan): LayerVisual[] {
   for (let i = 0; i < rotorLayers; i += 1) {
     layers.push({
       name: `Rotor layer ${i + 1}`,
-      description: 'Stack the rotor shaft and attach blade spokes on all four sides (repeat for each rotor layer).',
+      description: 'Stack the rotor shaft and attach the paired rotor blades opposite each other (repeat for each rotor layer).',
       grid: createRotorLayer(size),
     });
   }
@@ -291,10 +283,23 @@ function buildBoilerLayers(plan: BoilerSupportPlan): LayerVisual[] {
   const geometry = plan.construction.perUnit.geometry;
   const width = plan.configuration.width;
   const length = plan.configuration.length;
+  const totalHeight = Math.max(plan.configuration.height, 0);
+  if (totalHeight === 0) {
+    return [];
+  }
   const waterLayers = Math.max(geometry.waterLayers, 0);
   const steamLayers = Math.max(geometry.steamLayers, 0);
   const totalSuperheaters = plan.construction.perUnit.internals.superheaters;
-  const distribution = distributeAcrossLayers(totalSuperheaters, waterLayers);
+  const interiorSlotsPerLayer = Math.max((width - 2) * (length - 2), 0);
+  let remainingSuperheaters = totalSuperheaters;
+
+  const interiorLayerCapacity = Math.max(totalHeight - 2, 0);
+  const maxWaterLayers = Math.max(interiorLayerCapacity - 1, 0);
+  const waterLayersToUse = Math.min(waterLayers, maxWaterLayers);
+  const deckReserved = interiorLayerCapacity > waterLayersToUse;
+  const steamLayerCapacity = deckReserved ? Math.max(interiorLayerCapacity - waterLayersToUse - 1, 0) : 0;
+  const steamLayersToUse = Math.min(steamLayers, steamLayerCapacity);
+  const totalSteamSlots = steamLayerCapacity;
 
   layers.push({
     name: 'Foundation',
@@ -303,43 +308,52 @@ function buildBoilerLayers(plan: BoilerSupportPlan): LayerVisual[] {
     repeatHint: `${plan.construction.perUnit.shell.replacements} ports recommended`,
   });
 
-  const interiorCenter = {
-    x: Math.floor((width - 1) / 2),
-    y: Math.floor((length - 1) / 2),
-  };
-
-  for (let i = 0; i < waterLayers; i += 1) {
-    const superheaters = distribution[i] ?? 0;
-    const isBottomLayer = i === 0;
+  for (let i = 0; i < waterLayersToUse; i += 1) {
+    const layerCapacity = interiorSlotsPerLayer;
+    const superheaters = layerCapacity > 0 ? Math.min(remainingSuperheaters, layerCapacity) : 0;
+    const layerName = waterLayersToUse > 1 ? `Water cavity layer ${i + 1}` : 'Water cavity';
     layers.push({
-      name: `Water cavity layer ${i + 1}`,
+      name: layerName,
       description:
         superheaters > 0
-          ? `Place ${superheaters} superheating elements inside the water cavity (leave the remainder filled with water).`
-          : 'Fill this layer with water to feed the boiler.',
-      grid: createWaterLayer(width, length, superheaters, isBottomLayer ? interiorCenter : undefined),
+          ? remainingSuperheaters > superheaters
+            ? `Pack ${superheaters} superheating elements tightly on this level before moving upward.`
+            : `Place the final ${superheaters} superheating elements on this level.`
+          : 'No hardware required on this level; leave it filled with water.',
+      grid: createWaterLayer(width, length, superheaters),
+    });
+    remainingSuperheaters = Math.max(remainingSuperheaters - superheaters, 0);
+  }
+
+  if (deckReserved) {
+    layers.push({
+      name: 'Pressure disperser deck',
+      description: 'Cover the water cavity with pressure dispersers before the steam space.',
+      grid: createRectFilledInterior(width, length, 'disperser'),
+    });
+  }
+
+  for (let i = 0; i < totalSteamSlots; i += 1) {
+    const layerName = totalSteamSlots > 1 ? `Steam cavity layer ${i + 1}` : 'Steam cavity';
+    const isLastPlanned = i === steamLayersToUse - 1 && i < steamLayersToUse;
+    const description =
+      i < steamLayersToUse
+        ? isLastPlanned
+          ? 'Leave this space open for steam output before sealing the boiler.'
+          : 'Continue leaving this layer clear for steam expansion.'
+        : 'Headroom available for steam expansion; no additional hardware required.';
+    layers.push({
+      name: layerName,
+      description,
+      grid: createRectGrid(width, length, 'empty'),
     });
   }
 
   layers.push({
-    name: 'Pressure disperser deck',
-    description: 'Cover the water cavity with pressure dispersers before the steam space.',
-    grid: createRectFilledInterior(width, length, 'disperser'),
+    name: 'Boiler roof',
+    description: 'Seal the boiler with a final casing layer on top of the steam cavity.',
+    grid: createRectFilledInterior(width, length, 'casing'),
   });
-
-  for (let i = 0; i < steamLayers; i += 1) {
-    const layerNumber = i + 1;
-    const isFinal = layerNumber === steamLayers;
-    layers.push({
-      name: steamLayers > 1 ? `Steam cavity layer ${layerNumber}` : 'Steam cavity',
-      description: isFinal
-        ? 'Leave this space empty for steam output.'
-        : 'Continue leaving this layer open for steam expansion.',
-      grid: createRectFilledInterior(width, length, 'steam'),
-      repeatHint:
-        steamLayers > 1 ? `Layer ${layerNumber} of ${steamLayers} identical steam layers` : undefined,
-    });
-  }
 
   return finalizeLayers(layers);
 }
@@ -383,8 +397,6 @@ function createRotorLayer(size: number): CellVisual[][] {
   const offsets = [
     { x: 1, y: 0 },
     { x: -1, y: 0 },
-    { x: 0, y: 1 },
-    { x: 0, y: -1 },
   ];
   for (const offset of offsets) {
     setCell(grid, centre + offset.x, centre + offset.y, 'blade');
@@ -612,28 +624,14 @@ function enumerateInteriorPositions(size: number, includeCentre: boolean): GridP
   return positions.map(({ x, y }) => ({ x, y }));
 }
 
-function createWaterLayer(
-  width: number,
-  length: number,
-  superheaters: number,
-  heaterCentre?: { x: number; y: number }
-): CellVisual[][] {
-  const grid = createRectGrid(width, length, 'water');
-  const avoid = new Set<string>();
-  if (heaterCentre) {
-    setCell(grid, heaterCentre.x, heaterCentre.y, 'heater');
-    avoid.add(`${heaterCentre.x},${heaterCentre.y}`);
-  }
+function createWaterLayer(width: number, length: number, superheaters: number): CellVisual[][] {
+  const grid = createRectGrid(width, length, 'empty');
   if (superheaters <= 0) {
     return grid;
   }
   let placed = 0;
   for (let y = 1; y < length - 1 && placed < superheaters; y += 1) {
     for (let x = 1; x < width - 1 && placed < superheaters; x += 1) {
-      const key = `${x},${y}`;
-      if (avoid.has(key)) {
-        continue;
-      }
       setCell(grid, x, y, 'superheater');
       placed += 1;
     }
@@ -658,11 +656,3 @@ function makeCell(type: CellType): CellVisual {
   };
 }
 
-function distributeAcrossLayers(total: number, layers: number): number[] {
-  if (layers <= 0) {
-    return [];
-  }
-  const base = Math.floor(total / layers);
-  const remainder = total % layers;
-  return Array.from({ length: layers }, (_, index) => base + (index < remainder ? 1 : 0));
-}

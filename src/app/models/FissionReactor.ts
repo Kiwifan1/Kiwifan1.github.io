@@ -24,7 +24,7 @@ export interface BurnRateAnalysis {
   requested: number;
   achievable: number;
   limiting: 'fuel' | 'steam' | 'water' | 'none';
-  heatingPerTick: number;
+  hotCoolantPerTick: number;
 }
 
 export class FissionReactor {
@@ -112,12 +112,12 @@ export class FissionReactor {
     return this.getMaxFuelAssemblies() * FISSION_REACTOR.BURN_PER_ASSEMBLY;
   }
 
-  public getHeatingRate(mode: CoolingMode = this.coolingMode): number {
+  public getHotCoolantRate(mode: CoolingMode = this.coolingMode): number {
     return mode === 'sodium' ? HEATING.SODIUM : HEATING.WATER;
   }
 
-  public getHeatedCoolantPerTick(burnRate: number, mode: CoolingMode = this.coolingMode): number {
-    return burnRate * this.getHeatingRate(mode);
+  public getHotCoolantPerTick(burnRate: number, mode: CoolingMode = this.coolingMode): number {
+    return burnRate * this.getHotCoolantRate(mode);
   }
 
   public getCoolantCapacity(): number {
@@ -156,7 +156,7 @@ export class FissionReactor {
         requested,
         achievable: fuelLimited,
         limiting: fuelLimited < requested ? 'fuel' : 'none',
-        heatingPerTick: this.getHeatedCoolantPerTick(fuelLimited),
+        hotCoolantPerTick: this.getHotCoolantPerTick(fuelLimited),
       };
     }
     const steamLimited = Math.min(fuelLimited, pairing.steamFlow);
@@ -173,7 +173,7 @@ export class FissionReactor {
       requested,
       achievable: Math.min(waterLimited, this.getMaxBurnRate()),
       limiting,
-      heatingPerTick: this.getHeatedCoolantPerTick(Math.min(waterLimited, this.getMaxBurnRate())),
+      hotCoolantPerTick: this.getHotCoolantPerTick(Math.min(waterLimited, this.getMaxBurnRate())),
     };
   }
 

@@ -122,9 +122,10 @@ describe('cooling requirements utilities', () => {
         boiler.production.limit / heatToSteamRatio
       );
       const perBoilerSteam = boiler.production.limit;
-      const burnRate = sodiumBurnRate;
-      const heatDemand = burnRate * HEATING.SODIUM;
-      const steamDemand = heatDemand * heatToSteamRatio;
+  const burnRate = sodiumBurnRate;
+  const hotCoolant = burnRate * HEATING.SODIUM;
+  const steamDemand = hotCoolant;
+  const heatDemand = steamDemand / heatToSteamRatio;
 
       const result = computeSodiumCoolingRequirements(
         burnRate,
@@ -134,7 +135,7 @@ describe('cooling requirements utilities', () => {
 
       console.log('[Sodium] full plan', {
         burnRate,
-        heatDemand,
+  heatDemand,
         steamDemand,
         perBoilerHeat,
         perBoilerSteam,
@@ -158,8 +159,8 @@ describe('cooling requirements utilities', () => {
       expect(result.turbine.count).toBe(expectedTurbines);
       expect(result.turbine.perUnitSteam).toBeCloseTo(turbine.effectiveSteamFlow, 6);
       expect(result.turbine.perUnitWater).toBeCloseTo(turbine.waterFlow, 6);
-      expect(result.steamDemand).toBeCloseTo(steamDemand, 6);
-      expect(result.heatDemand).toBeCloseTo(heatDemand, 6);
+  expect(result.steamDemand).toBeCloseTo(steamDemand, 6);
+  expect(result.heatDemand).toBeCloseTo(heatDemand, 6);
     });
   });
 });
