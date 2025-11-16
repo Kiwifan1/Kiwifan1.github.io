@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { Home } from './home/home';
 import { About } from './about/about';
 import { Links } from './links/links';
-import { Resume } from './resume/resume';
 import { Tools } from './tools/tools';
 import { Minecraft } from './tools/minecraft/minecraft';
 import { MekanismPlanner } from './tools/minecraft/mekanism/mekanism';
@@ -11,7 +10,6 @@ export const routes: Routes = [
   { path: '', component: Home },
   { path: 'about', component: About },
   { path: 'links', component: Links },
-  { path: 'resume', component: Resume },
   { path: 'tools', component: Tools },
   { path: 'tools/minecraft', component: Minecraft },
   { path: 'tools/minecraft/mekanism', component: MekanismPlanner },
