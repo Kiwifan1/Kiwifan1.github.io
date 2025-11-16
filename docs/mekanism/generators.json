@@ -1,0 +1,87 @@
+{
+  "hohlraum": {
+    "capacity": 10,
+    "fillRate": 1
+  },
+  "solar_generator": {
+    "solarGeneration": 240,
+    "advancedSolarGeneration": 960
+  },
+  "bio_generator": {
+    "bioGeneration": 350,
+    "tankCapacity": 24000
+  },
+  "heat_generator": {
+    "heatGeneration": 800,
+    "heatGenerationLava": 40,
+    "heatGenerationNether": 100,
+    "tankCapacity": 24000,
+    "heatGenerationFluidRate": 10
+  },
+  "gas_generator": {
+    "tankCapacity": 18000
+  },
+  "wind_generator": {
+    "generationMin": 120,
+    "generationMax": 960,
+    "minY": 24,
+    "maxY": 2031
+  },
+  "turbine": {
+    "bladesPerCoil": 4,
+    "ventChemicalFlow": 43478.262,
+    "disperserChemicalFlow": 1280.0,
+    "condenserRate": 128000,
+    "energyCapacityPerVolume": 16000000,
+    "chemicalPerTank": 64000
+  },
+  "fission_reactor": {
+    "energyPerFissionFuel": 2800000,
+    "casingHeatCapacity": 4000.0,
+    "surfaceAreaTarget": 1.8,
+    "defaultBurnRate": 0.1,
+    "burnPerAssembly": 1,
+    "maxFuelPerAssembly": 8000,
+    "cooledCoolantPerTank": 100000,
+    "heatedCoolantPerTank": 1000000,
+    "excessWaste": 0.9,
+    "meltdowns": {
+      "enabled": true,
+      "radius": 8.0,
+      "chance": 0.001,
+      "radiationMultiplier": 50.0,
+      "postMeltdownDamage": 75.0
+    }
+  },
+  "fusion_reactor": {
+    "fuelEnergy": 10000000,
+    "thermocoupleEfficiency": 0.04,
+    "casingThermalConductivity": 0.333333333,
+    "waterHeatingRatio": 0.27272727272727,
+    "fuelCapacity": 500,
+    "energyCapacity": 1000000000,
+    "waterPerInjection": 1000000,
+    "steamPerInjection": 100000000
+  },
+  "boiler": {
+    "waterPerTank": 32000,
+    "steamPerTank": 320000,
+    "heatedCoolantPerTank": 512000,
+    "cooledCoolantPerTank": 512000,
+    "waterConductivity": 0.7,
+    "superheatingHeatTransfer": 16000000
+  },
+  "thermal_evaporation": {
+    "heatDissipation": 0.02,
+    "solarMultiplier": 0.2,
+    "tempMultiplier": 1.85,
+    "heatCapacity": 600.0,
+    "fluidPerTank": 128000,
+    "outputTankCapacity": 10000
+  },
+  "sps": {
+    "inputPerAntimatter": 1000,
+    "outputTankCapacity": 1000,
+    "energyPerInput": 100000
+  }
+}

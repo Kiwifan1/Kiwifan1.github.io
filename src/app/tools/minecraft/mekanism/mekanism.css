@@ -1,0 +1,72 @@
+:host {
+  display: block;
+  padding: var(--space-lg, 3rem) 0;
+}
+
+.mekanism {
+  display: grid;
+  gap: var(--space-md, 1.5rem);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 var(--space-md, 1.5rem);
+}
+
+.mekanism__back {
+  color: var(--kiwi-fore);
+  text-decoration: none;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.mekanism__back:hover,
+.mekanism__back:focus-visible {
+  opacity: 1;
+  color: var(--kiwi-green);
+}
+
+.mekanism__title {
+  font-size: clamp(2rem, 3vw + 1.2rem, 2.8rem);
+  margin: 0;
+}
+
+.mekanism__lead {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.mekanism__callout {
+  display: grid;
+  gap: var(--space-sm, 1rem);
+  padding: var(--space-md, 1.5rem);
+  border-radius: var(--radius-md, 16px);
+  background: rgba(11, 20, 30, 0.8);
+  border: 1px solid rgba(151, 210, 255, 0.18);
+}
+
+.mekanism__callout ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--kiwi-fore);
+}
+
+.mekanism__callout li {
+  margin-bottom: 0.45rem;
+  color: var(--text-muted);
+}
+
+.mekanism__callout h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.mekanism__callout a {
+  color: var(--kiwi-green);
+  text-decoration: underline;
+}
+
+.mekanism__callout a:hover,
+.mekanism__callout a:focus-visible {
+  color: var(--kiwi-fore);
+}

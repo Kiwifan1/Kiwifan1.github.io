@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.about-grid {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+@media (min-width: 920px) {
+  .about-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.about-list li,
+.about-links li {
+  color: var(--text-muted);
+}
+
+.about-links a {
+  color: var(--kiwi-blue);
+  text-decoration: underline;
+}
+
+.about-links a:hover {
+  color: var(--kiwi-green);
+}
