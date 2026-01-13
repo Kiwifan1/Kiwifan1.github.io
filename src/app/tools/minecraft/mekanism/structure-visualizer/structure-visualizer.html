@@ -1,27 +1,48 @@
 <section class="visualizer" aria-label="Structure assembly guide">
   <header class="visualizer__header">
-    <div class="visualizer__switch">
-      <button
-        type="button"
-        class="visualizer__tab"
-        [class.visualizer__tab--active]="activeStructure() === 'turbine'"
-        [disabled]="!hasTurbine()"
-        (click)="switchStructure('turbine')"
-      >
-        Industrial Turbine
-      </button>
-      <button
-        type="button"
-        class="visualizer__tab"
-        [class.visualizer__tab--active]="activeStructure() === 'boiler'"
-        [disabled]="!hasBoiler()"
-        (click)="switchStructure('boiler')"
-      >
-        Thermoelectric Boiler
-      </button>
+    <div class="visualizer__header-row">
+      <div class="visualizer__switch">
+        <button
+          type="button"
+          class="visualizer__tab"
+          [class.visualizer__tab--active]="activeStructure() === 'turbine'"
+          [disabled]="!hasTurbine()"
+          (click)="switchStructure('turbine')"
+        >
+          Industrial Turbine
+        </button>
+        <button
+          type="button"
+          class="visualizer__tab"
+          [class.visualizer__tab--active]="activeStructure() === 'boiler'"
+          [disabled]="!hasBoiler()"
+          (click)="switchStructure('boiler')"
+        >
+          Thermoelectric Boiler
+        </button>
+      </div>
+      <div class="visualizer__view-switch">
+        <button
+          type="button"
+          class="visualizer__view-tab"
+          [class.visualizer__view-tab--active]="viewMode() === 'guide'"
+          (click)="setViewMode('guide')"
+        >
+          Layer guide
+        </button>
+        <button
+          type="button"
+          class="visualizer__view-tab"
+          [class.visualizer__view-tab--active]="viewMode() === 'preview'"
+          [disabled]="!hasAnyPlan()"
+          (click)="setViewMode('preview')"
+        >
+          3D preview
+        </button>
+      </div>
     </div>
 
-    <ng-container *ngIf="activeLayer() as layer">
+    <ng-container *ngIf="viewMode() === 'guide' && activeLayer() as layer">
       <div class="visualizer__layer">
         <label class="visualizer__slider">
           <span class="visualizer__slider-label">
@@ -49,37 +70,39 @@
     </ng-container>
   </header>
 
-  <div class="visualizer__content" *ngIf="activeStructure() === 'turbine'; else boilerView">
-    <ng-container *ngIf="turbinePlan(); else missingTurbine">
-      <ng-container *ngIf="activeLayer() as layer">
-        <div
-          class="visualizer__grid"
-          [style.gridTemplateColumns]="gridTemplateColumns(layer)"
-          [style.gridTemplateRows]="gridTemplateRows(layer)"
-        >
-          <ng-container *ngFor="let row of layer.grid">
-            <ng-container *ngFor="let cell of row">
-              <div
-                class="visualizer__cell visualizer__cell--{{ cell.type }}"
-                role="img"
-                [attr.aria-label]="cell.label"
-                title="{{ cell.label }}"
-              ></div>
+  <ng-container *ngIf="viewMode() === 'guide'; else previewView">
+    <div class="visualizer__content" *ngIf="activeStructure() === 'turbine'; else boilerView">
+      <ng-container *ngIf="turbinePlan(); else missingTurbine">
+        <ng-container *ngIf="activeLayer() as layer">
+          <div
+            class="visualizer__grid"
+            [style.gridTemplateColumns]="gridTemplateColumns(layer)"
+            [style.gridTemplateRows]="gridTemplateRows(layer)"
+          >
+            <ng-container *ngFor="let row of layer.grid">
+              <ng-container *ngFor="let cell of row">
+                <div
+                  class="visualizer__cell visualizer__cell--{{ cell.type }}"
+                  role="img"
+                  [attr.aria-label]="cell.label"
+                  title="{{ cell.label }}"
+                ></div>
+              </ng-container>
             </ng-container>
-          </ng-container>
-        </div>
-        <ul class="visualizer__legend">
-          <li *ngFor="let entry of turbineLegend">
-            <span class="visualizer__legend-swatch visualizer__legend-swatch--{{ entry.type }}"></span>
-            <span>{{ entry.label }}</span>
-          </li>
-        </ul>
+          </div>
+          <ul class="visualizer__legend">
+            <li *ngFor="let entry of turbineLegend">
+              <span class="visualizer__legend-swatch visualizer__legend-swatch--{{ entry.type }}"></span>
+              <span>{{ entry.label }}</span>
+            </li>
+          </ul>
+        </ng-container>
       </ng-container>
-    </ng-container>
-    <ng-template #missingTurbine>
-      <p class="visualizer__empty">Turbine data is unavailable.</p>
-    </ng-template>
-  </div>
+      <ng-template #missingTurbine>
+        <p class="visualizer__empty">Turbine data is unavailable.</p>
+      </ng-template>
+    </div>
+  </ng-container>
 
   <ng-template #boilerView>
     <div class="visualizer__content">
@@ -113,5 +136,14 @@
         <p class="visualizer__empty">No boiler is required for this configuration.</p>
       </ng-template>
     </div>
+  </ng-template>
+
+  <ng-template #previewView>
+    <app-structure-visualizer-3d
+      class="visualizer__preview"
+      [mode]="activeStructure()"
+      [turbine]="turbinePlan()"
+      [boiler]="boilerPlan()"
+    ></app-structure-visualizer-3d>
   </ng-template>
 </section>
