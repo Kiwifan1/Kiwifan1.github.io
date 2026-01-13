@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.resume-card {
+  padding: clamp(var(--space-lg), 4vw, var(--space-xl));
+}
+
+.resume-card iframe {
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px rgba(9, 12, 18, 0.08);
+}
+
+@media (max-width: 640px) {
+  .resume-card {
+    padding: var(--space-lg) var(--space-md);
+  }
+}
