@@ -150,7 +150,7 @@ flowchart TD
     Start["Pick W, L, H"] --> Compute["$$h = H-2, \quad A = W \cdot L$$"]
     Compute --> Water["$$w = h-2$$ (max water)"]
     Water --> Steam["$$s = 1$$ (min steam)"]
-    Steam --> Balance["$$N = \lfloor\frac{(w+1)A}{11}\rfloor$$"]
+    Steam --> Balance["$$N = \left\lfloor\frac{(w+1)A}{11}\right\rfloor$$"]
     Balance --> Check{"$$N \leq wA$$?"}
     Check -->|"Yes"| Build["Build with N superheaters"]
     Check -->|"No"| Cap["$$N = wA$$"]
