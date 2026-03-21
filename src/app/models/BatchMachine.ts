@@ -15,9 +15,10 @@ export class BatchMachine implements ProcessingMachine {
   public readonly baseTicks: number;
   public readonly baseEnergy: number;
   public readonly speedUpgrades: number;
+  public readonly energyUpgrades: number;
   public readonly effectiveTicks: number;
 
-  constructor(name: string, baseTicks: number, baseEnergy: number, speedUpgrades: number = 0) {
+  constructor(name: string, baseTicks: number, baseEnergy: number, speedUpgrades: number = 0, energyUpgrades: number = 0) {
     if (speedUpgrades < 0 || speedUpgrades > BatchMachine.MAX_SPEED_UPGRADES) {
       throw new Error(`Speed upgrades must be between 0 and ${BatchMachine.MAX_SPEED_UPGRADES}`);
     }
@@ -28,6 +29,7 @@ export class BatchMachine implements ProcessingMachine {
     this.baseTicks = baseTicks;
     this.baseEnergy = baseEnergy;
     this.speedUpgrades = speedUpgrades;
+    this.energyUpgrades = energyUpgrades;
     this.effectiveTicks = BatchMachine.computeEffectiveTicks(baseTicks, speedUpgrades);
   }
 
@@ -50,10 +52,10 @@ export class BatchMachine implements ProcessingMachine {
 
   /** Total energy per tick for N machines.
    *  Mekanism formula: baseEnergy × 10^(2s - e) per machine.
-   *  With speed only (e=0): baseEnergy × 10^(2s).
    */
   public energyPerTick(machineCount: number): number {
-    const speedFraction = this.speedUpgrades / BatchMachine.MAX_SPEED_UPGRADES;
-    return machineCount * this.baseEnergy * Math.pow(10, 2 * speedFraction);
+    const s = this.speedUpgrades / BatchMachine.MAX_SPEED_UPGRADES;
+    const e = this.energyUpgrades / BatchMachine.MAX_SPEED_UPGRADES;
+    return machineCount * this.baseEnergy * Math.pow(10, 2 * s - e);
   }
 }

@@ -35,6 +35,14 @@ export class FuelChainPlanner {
         Validators.max(FissileProductionChain.MAX_SPEED_UPGRADES),
       ],
     ],
+    energyUpgrades: [
+      0,
+      [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(8),
+      ],
+    ],
   });
 
   public readonly result = signal<ProductionChainResult | null>(null);
@@ -101,23 +109,27 @@ export class FuelChainPlanner {
   public computeChain(): void {
     try {
       this.error.set(null);
-      const { fuelRate, speedUpgrades } = this.form.getRawValue();
+      const { fuelRate, speedUpgrades, energyUpgrades } = this.form.getRawValue();
 
       const rate =
         typeof fuelRate === 'number' ? fuelRate : Number.parseFloat(fuelRate);
-      const upgrades =
+      const speed =
         typeof speedUpgrades === 'number'
           ? speedUpgrades
           : Number.parseInt(speedUpgrades, 10);
+      const energy =
+        typeof energyUpgrades === 'number'
+          ? energyUpgrades
+          : Number.parseInt(energyUpgrades, 10);
 
       if (!Number.isFinite(rate)) {
         throw new Error('Invalid fuel rate supplied.');
       }
-      if (!Number.isFinite(upgrades)) {
+      if (!Number.isFinite(speed)) {
         throw new Error('Invalid speed upgrades value supplied.');
       }
 
-      const chain = new FissileProductionChain(rate, upgrades);
+      const chain = new FissileProductionChain(rate, speed, energy);
       this.result.set(chain.calculate());
     } catch (err) {
       const fallback =

@@ -46,6 +46,7 @@ export interface ResourceRates {
 
 export interface UpgradeRequirements {
 	speed: { perMachine: number; machines: number; total: number };
+	energy: { perMachine: number; machines: number; total: number };
 }
 
 export interface ProductionChainResult {
@@ -68,11 +69,13 @@ export class FissileProductionChain {
 
 	public readonly targetFuelRate: number;
 	public readonly speedUpgrades: number;
+	public readonly energyUpgrades: number;
 
-	constructor(targetFuelRate: number, speedUpgrades: number = 0) {
+	constructor(targetFuelRate: number, speedUpgrades: number = 0, energyUpgrades: number = 0) {
 		FissileProductionChain.validateInputs(targetFuelRate, speedUpgrades);
 		this.targetFuelRate = targetFuelRate;
 		this.speedUpgrades = speedUpgrades;
+		this.energyUpgrades = energyUpgrades;
 	}
 
 	/** Delegates to BatchMachine.computeEffectiveTicks for backward compat. */
@@ -83,21 +86,22 @@ export class FissileProductionChain {
 	public calculate(): ProductionChainResult {
 		const R = this.targetFuelRate;
 		const u = this.speedUpgrades;
+		const e = this.energyUpgrades;
 		const C = PRODUCTION_CHAIN;
 
-		// --- Create machine instances (all now receive speedUpgrades) ---
-		const enrichment = createEnrichmentChamber(u);
-		const oxidizerUO = createChemicalOxidizerUranium(u);
-		const oxidizerSO2 = createChemicalOxidizerSulfur(u);
-		const prc = createPressurizedReactionChamber(u);
-		const dissolution = createDissolutionChamber(u);
+		// --- Create machine instances (all receive speed + energy upgrades) ---
+		const enrichment = createEnrichmentChamber(u, e);
+		const oxidizerUO = createChemicalOxidizerUranium(u, e);
+		const oxidizerSO2 = createChemicalOxidizerSulfur(u, e);
+		const prc = createPressurizedReactionChamber(u, e);
+		const dissolution = createDissolutionChamber(u, e);
 
-		const infuserSO3 = createChemicalInfuserSO3(u);
-		const condensentrator = createRotaryCondensentrator(u);
-		const infuserH2SO4 = createChemicalInfuserH2SO4(u);
-		const es = createElectrolyticSeparator(u);
-		const infuserUF6 = createChemicalInfuserUF6(u);
-		const centrifuge = createIsotopicCentrifuge(u);
+		const infuserSO3 = createChemicalInfuserSO3(u, e);
+		const condensentrator = createRotaryCondensentrator(u, e);
+		const infuserH2SO4 = createChemicalInfuserH2SO4(u, e);
+		const es = createElectrolyticSeparator(u, e);
+		const infuserUF6 = createChemicalInfuserUF6(u, e);
+		const centrifuge = createIsotopicCentrifuge(u, e);
 
 		// --- Backward demand calculation from R mB/t Fissile Fuel ---
 
@@ -168,6 +172,11 @@ export class FissileProductionChain {
 				perMachine: this.speedUpgrades,
 				machines: totalMachines,
 				total: this.speedUpgrades * totalMachines,
+			},
+			energy: {
+				perMachine: this.energyUpgrades,
+				machines: totalMachines,
+				total: this.energyUpgrades * totalMachines,
 			},
 		};
 

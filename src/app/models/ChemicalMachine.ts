@@ -17,6 +17,7 @@ export class ChemicalMachine implements ProcessingMachine {
 	public readonly outputs: ReadonlyMap<string, number>;
 	public readonly baseEnergy: number;
 	public readonly speedUpgrades: number;
+	public readonly energyUpgrades: number;
 	public readonly supportsGasUpgrade: boolean;
 
 	/** Total output mB per recipe operation (sum of all outputs). */
@@ -31,7 +32,8 @@ export class ChemicalMachine implements ProcessingMachine {
 		outputs: Record<string, number>,
 		baseEnergy: number,
 		speedUpgrades: number = 0,
-		supportsGasUpgrade: boolean = false
+		supportsGasUpgrade: boolean = false,
+		energyUpgrades: number = 0
 	) {
 		if (speedUpgrades < 0 || speedUpgrades > ChemicalMachine.MAX_SPEED_UPGRADES) {
 			throw new Error(`Speed upgrades must be between 0 and ${ChemicalMachine.MAX_SPEED_UPGRADES}`);
@@ -41,6 +43,7 @@ export class ChemicalMachine implements ProcessingMachine {
 		this.outputs = new Map(Object.entries(outputs));
 		this.baseEnergy = baseEnergy;
 		this.speedUpgrades = speedUpgrades;
+		this.energyUpgrades = energyUpgrades;
 		this.supportsGasUpgrade = supportsGasUpgrade;
 
 		// Total output per recipe = sum of all output mB
@@ -56,10 +59,11 @@ export class ChemicalMachine implements ProcessingMachine {
 		return Math.ceil(requiredMbPerTick / this.throughputPerTick);
 	}
 
-	/** Energy per tick for N machines. Formula: baseEnergy × 10^(2s/8) per machine. */
+	/** Energy per tick for N machines. Formula: baseEnergy × 10^(2s - e) per machine. */
 	public energyPerTick(machineCount: number): number {
-		const speedFraction = this.speedUpgrades / ChemicalMachine.MAX_SPEED_UPGRADES;
-		return machineCount * this.baseEnergy * Math.pow(10, 2 * speedFraction);
+		const s = this.speedUpgrades / ChemicalMachine.MAX_SPEED_UPGRADES;
+		const e = this.energyUpgrades / ChemicalMachine.MAX_SPEED_UPGRADES;
+		return machineCount * this.baseEnergy * Math.pow(10, 2 * s - e);
 	}
 
 	/** Given a required output rate (mB/t), compute the input rate for a specific input. */
