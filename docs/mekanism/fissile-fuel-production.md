@@ -2,29 +2,43 @@
 
 ## Processing Chain Overview
 
-The full production chain from Uranium Ore to Fissile Fuel involves five main processing stages and two support stages for HCl synthesis:
+The Fissile Fuel production chain splits into two parallel paths that converge in a final assembly stage. **Path A** produces Uranium Oxide from Uranium Ingots. **Path B** synthesises Hydrofluoric Acid through a multi-step sulfuric acid sub-chain plus Fluorite. The two intermediates (UO and HF) combine into Uranium Hexafluoride, which is centrifuged into Fissile Fuel.
 
 ```mermaid
 flowchart TD
-    Ore["Uranium Ore"] -->|"1 ore"| DC["Chemical Dissolution Chamber"]
-    DC -->|"1,800 mB"| DS["Dirty Uranium Slurry"]
-    DS -->|"1,000 mB"| CW["Chemical Washer"]
-    Water1["Water"] -->|"1,000 mB"| CW
-    CW -->|"1,000 mB"| CS["Clean Uranium Slurry"]
-    CS -->|"200 mB"| CC["Chemical Crystallizer"]
-    CC -->|"1 item"| YC["Yellow Cake Uranium"]
-    YC -->|"1 item"| EC["Enrichment Chamber"]
-    EC -->|"1 item"| EU["Enriched Uranium"]
-    EU --> CI["Chemical Infuser"]
-    HCl["Hydrogen Chloride"] -->|"1,000 mB"| CI
-    CI -->|"2,000 mB"| FF["Fissile Fuel"]
+    subgraph PathA["Path A -- Uranium Oxide"]
+        UI["Uranium Ingot"] -->|"1 ingot"| EC["Enrichment Chamber"]
+        EC -->|"1 item"| YC["Yellow Cake Uranium"]
+        YC -->|"1 item"| COu["Chemical Oxidizer"]
+        COu -->|"1000 mB"| UO["Uranium Oxide"]
+    end
 
-    subgraph HCl Production
-        Water2["Water"] -->|"800 mB"| ES["Electrolytic Separator"]
-        ES -->|"200 mB"| H2["Hydrogen"]
-        Cl["Chlorine"] -->|"200 mB"| CIH["Chemical Infuser"]
-        H2 -->|"200 mB"| CIH
-        CIH -->|"200 mB"| HCl
+    subgraph PathB["Path B -- Hydrofluoric Acid"]
+        Coal["Coal"] -->|"1 item"| PRC["Pressurized Reaction Chamber"]
+        Water1["Water"] -->|"400 mB"| PRC
+        O2a["$$O_2$$"] -->|"200 mB"| PRC
+        PRC -->|"1 item"| SD["Sulfur Dust"]
+        SD -->|"1 item"| COs["Chemical Oxidizer"]
+        COs -->|"1000 mB"| SO2["$$SO_2$$"]
+        O2b["$$O_2$$"] -->|"1000 mB"| CI1["Chemical Infuser"]
+        SO2 -->|"1000 mB"| CI1
+        CI1 -->|"2000 mB"| SO3["$$SO_3$$"]
+        Water2["Water"] -->|"1 mB : 1 mB"| RC["Rotary Condensentrator"]
+        RC -->|"Water Vapor"| WV["Water Vapor"]
+        SO3 -->|"1000 mB"| CI2["Chemical Infuser"]
+        WV -->|"1000 mB"| CI2
+        CI2 -->|"2000 mB"| H2SO4["$$H_2SO_4$$"]
+        Fluorite["Fluorite"] -->|"1 item"| CDC["Chemical Dissolution Chamber"]
+        H2SO4 -->|"1000 mB"| CDC
+        CDC -->|"1000 mB"| HF["Hydrofluoric Acid"]
+    end
+
+    subgraph Final["Final Assembly"]
+        HF -->|"1000 mB"| CI3["Chemical Infuser"]
+        UO -->|"1000 mB"| CI3
+        CI3 -->|"2000 mB"| UF6["$$UF_6$$"]
+        UF6 -->|"1000 mB"| IC["Isotopic Centrifuge"]
+        IC -->|"1000 mB"| FF["Fissile Fuel"]
     end
 ```
 
@@ -32,7 +46,7 @@ flowchart TD
 
 | Symbol | Meaning |
 | ------ | ------- |
-| $u$ | Number of speed upgrades installed (0--8) |
+| $u$ | Number of speed upgrades installed ($0 \leq u \leq 8$) |
 | $t_{\text{base}}$ | Base processing time of a machine (in ticks) |
 | $t_{\text{eff}}$ | Effective processing time after speed upgrades (in ticks) |
 | $R$ | Target Fissile Fuel output rate (mB/t) |
@@ -40,23 +54,28 @@ flowchart TD
 | $N_i$ | Number of machines required at stage $i$ |
 | $\varepsilon_i$ | Base energy per operation at stage $i$ (J) |
 | $\mathcal{E}$ | Total energy consumption across all stages (J/t) |
-| $\omega$ | Ore consumption rate (ore/t) |
+| $\omega_U$ | Uranium Ingot consumption rate (items/t) |
+| $\omega_F$ | Fluorite consumption rate (items/t) |
+| $\omega_C$ | Coal consumption rate (items/t) |
 | $\eta_w$ | Total water consumption rate (mB/t) |
-| $\eta_{Cl}$ | Chlorine consumption rate (mB/t) |
+| $\eta_{O_2}$ | Total oxygen consumption rate (mB/t) |
 
 ## Constants Table
 
 Machine specs from `PRODUCTION_CHAIN.*` in `constants.ts`:
 
-| Stage | Machine | $t_{\text{base}}$ | Input | Output | $\varepsilon_i$ (J) |
-| ----- | ------- | ------------------ | ----- | ------ | -------------------- |
-| 1 | `Dissolution Chamber` | 100 | 1 Ore | 1{,}800 mB Dirty Slurry | 80{,}000 |
-| 2 | `Chemical Washer` | 100 | 1{,}000 mB Dirty + Water | 1{,}000 mB Clean Slurry | 40{,}000 |
-| 3 | `Chemical Crystallizer` | 100 | 200 mB Clean Slurry | 1 Yellow Cake | 40{,}000 |
-| 4 | `Enrichment Chamber` | 200 | 1 Yellow Cake | 1 Enriched Uranium | 16{,}000 |
-| 5 | `Chemical Infuser (Fuel)` | 100 | 1 Enriched + 1{,}000 mB HCl | 2{,}000 mB Fissile Fuel | 40{,}000 |
-| A | `Electrolytic Separator` | 100 | 800 mB Water | 200 mB H$_2$ + 200 mB O$_2$ | 80{,}000 |
-| B | `Chemical Infuser (HCl)` | 100 | 200 mB H$_2$ + 200 mB Cl | 200 mB HCl | 40{,}000 |
+| # | Stage | Machine | $t_{\text{base}}$ | Input | Output | $\varepsilon_i$ (J) |
+| - | ----- | ------- | ------------------ | ----- | ------ | -------------------- |
+| A1 | Path A | `Enrichment Chamber` | 200 | 1 Uranium Ingot | 1 Yellow Cake | 16{,}000 |
+| A2 | Path A | `Chemical Oxidizer` | 100 | 1 Yellow Cake | 1{,}000 mB UO | 40{,}000 |
+| B1 | Path B | `Pressurized Reaction Chamber` | 200 | 1 Coal + 400 mB Water + 200 mB O$_2$ | 1 Sulfur Dust | 20{,}000 |
+| B2 | Path B | `Chemical Oxidizer` | 100 | 1 Sulfur Dust | 1{,}000 mB SO$_2$ | 40{,}000 |
+| B3 | Path B | `Chemical Infuser (SO$_3$)` | 100 | 1{,}000 mB SO$_2$ + 1{,}000 mB O$_2$ | 2{,}000 mB SO$_3$ | 40{,}000 |
+| B4 | Path B | `Rotary Condensentrator` | 1 | 1 mB Water | 1 mB Water Vapor | 400 |
+| B5 | Path B | `Chemical Infuser (H$_2$SO$_4$)` | 100 | 1{,}000 mB SO$_3$ + 1{,}000 mB Vapor | 2{,}000 mB H$_2$SO$_4$ | 40{,}000 |
+| B6 | Path B | `Chemical Dissolution Chamber` | 100 | 1 Fluorite + 1{,}000 mB H$_2$SO$_4$ | 1{,}000 mB HF | 80{,}000 |
+| F1 | Final | `Chemical Infuser (UF$_6$)` | 100 | 1{,}000 mB HF + 1{,}000 mB UO | 2{,}000 mB UF$_6$ | 40{,}000 |
+| F2 | Final | `Isotopic Centrifuge` | 100 | 1{,}000 mB UF$_6$ | 1{,}000 mB Fissile Fuel | 40{,}000 |
 
 Maximum speed upgrades: $u_{\max} = 8$ (`PRODUCTION_CHAIN.MAX_SPEED_UPGRADES`).
 
@@ -66,19 +85,21 @@ Each Mekanism machine can hold up to 8 speed upgrades. The effective processing 
 
 $$t_{\text{eff}} = \left\lceil\dfrac{t_{\text{base}}}{1 + u}\right\rceil$$
 
-For the two base tick values used in this chain:
+For the three distinct base tick values used in this chain:
 
-| $u$ | $t_{\text{eff}}$ ($t_{\text{base}} = 100$) | $t_{\text{eff}}$ ($t_{\text{base}} = 200$) |
-| --- | ------------------------------------------- | ------------------------------------------- |
-| 0 | 100 | 200 |
-| 1 | 50 | 100 |
-| 2 | 34 | 67 |
-| 3 | 25 | 50 |
-| 4 | 20 | 40 |
-| 5 | 17 | 34 |
-| 6 | 15 | 29 |
-| 7 | 13 | 25 |
-| 8 | 12 | 23 |
+| $u$ | $t_{\text{eff}}$ ($t_{\text{base}} = 200$) | $t_{\text{eff}}$ ($t_{\text{base}} = 100$) | $t_{\text{eff}}$ ($t_{\text{base}} = 1$) |
+| --- | ------------------------------------------- | ------------------------------------------- | ----------------------------------------- |
+| 0 | 200 | 100 | 1 |
+| 1 | 100 | 50 | 1 |
+| 2 | 67 | 34 | 1 |
+| 3 | 50 | 25 | 1 |
+| 4 | 40 | 20 | 1 |
+| 5 | 34 | 17 | 1 |
+| 6 | 29 | 15 | 1 |
+| 7 | 25 | 13 | 1 |
+| 8 | 23 | 12 | 1 |
+
+Note that the `Rotary Condensentrator` has $t_{\text{base}} = 1$, so $t_{\text{eff}} = 1$ regardless of speed upgrades.
 
 ## Throughput Calculations
 
@@ -86,111 +107,171 @@ For the two base tick values used in this chain:
 
 The output rate of a single machine at each stage is determined by dividing its output quantity per operation by $t_{\text{eff}}$:
 
-$$\lambda_5 = \dfrac{2{,}000}{t_{\text{eff},5}} \text{ mB/t (Fissile Fuel)}$$
+**Final Assembly:**
 
-$$\lambda_4 = \dfrac{1}{t_{\text{eff},4}} \text{ items/t (Enriched Uranium)}$$
+$$\lambda_{F2} = \dfrac{1{,}000}{t_{\text{eff},F2}} \text{ mB/t (Fissile Fuel)}$$
 
-$$\lambda_3 = \dfrac{1}{t_{\text{eff},3}} \text{ items/t (Yellow Cake)}$$
+$$\lambda_{F1} = \dfrac{2{,}000}{t_{\text{eff},F1}} \text{ mB/t (UF}_6\text{)}$$
 
-$$\lambda_2 = \dfrac{1{,}000}{t_{\text{eff},2}} \text{ mB/t (Clean Slurry)}$$
+**Path A:**
 
-$$\lambda_1 = \dfrac{1{,}800}{t_{\text{eff},1}} \text{ mB/t (Dirty Slurry)}$$
+$$\lambda_{A1} = \dfrac{1}{t_{\text{eff},A1}} \text{ items/t (Yellow Cake)}$$
 
-$$\lambda_A = \dfrac{200}{t_{\text{eff},A}} \text{ mB/t (H}_2\text{)}$$
+$$\lambda_{A2} = \dfrac{1{,}000}{t_{\text{eff},A2}} \text{ mB/t (UO)}$$
 
-$$\lambda_B = \dfrac{200}{t_{\text{eff},B}} \text{ mB/t (HCl)}$$
+**Path B:**
+
+$$\lambda_{B1} = \dfrac{1}{t_{\text{eff},B1}} \text{ items/t (Sulfur Dust)}$$
+
+$$\lambda_{B2} = \dfrac{1{,}000}{t_{\text{eff},B2}} \text{ mB/t (SO}_2\text{)}$$
+
+$$\lambda_{B3} = \dfrac{2{,}000}{t_{\text{eff},B3}} \text{ mB/t (SO}_3\text{)}$$
+
+$$\lambda_{B4} = \dfrac{1}{t_{\text{eff},B4}} \text{ mB/t (Water Vapor)}$$
+
+$$\lambda_{B5} = \dfrac{2{,}000}{t_{\text{eff},B5}} \text{ mB/t (H}_2\text{SO}_4\text{)}$$
+
+$$\lambda_{B6} = \dfrac{1{,}000}{t_{\text{eff},B6}} \text{ mB/t (HF)}$$
 
 ## Machine Count Formulas
 
-We work backwards from a target Fissile Fuel production rate $R$ (mB/t).
+We work backwards from a target Fissile Fuel production rate $R$ (mB/t). At each stage we compute the demand rate flowing into that machine and divide by its single-machine output to obtain the machine count (rounded up).
 
-### Stage 5 -- Chemical Infuser (Fuel)
+### Stage F2 -- Isotopic Centrifuge
 
-Each operation produces 2{,}000 mB of Fissile Fuel and consumes 1 Enriched Uranium + 1{,}000 mB HCl.
+Each operation converts 1{,}000 mB UF$_6$ into 1{,}000 mB Fissile Fuel.
 
-$$N_5 = \left\lceil\dfrac{R}{\lambda_5}\right\rceil = \left\lceil\dfrac{R \cdot t_{\text{eff},5}}{2{,}000}\right\rceil$$
+$$N_{F2} = \left\lceil\dfrac{R}{\lambda_{F2}}\right\rceil = \left\lceil\dfrac{R \cdot t_{\text{eff},F2}}{1{,}000}\right\rceil$$
 
-The required Enriched Uranium rate is:
+The required UF$_6$ rate is:
 
-$$\alpha = \dfrac{R}{2{,}000} \text{ items/t}$$
+$$D_{UF_6} = R \text{ mB/t}$$
 
-The required HCl rate is:
+### Stage F1 -- Chemical Infuser (UF$_6$)
 
-$$\eta_{\text{HCl}} = \dfrac{R \cdot 1{,}000}{2{,}000} = \dfrac{R}{2} \text{ mB/t}$$
+Each operation combines 1{,}000 mB HF + 1{,}000 mB UO into 2{,}000 mB UF$_6$.
 
-### Stage 4 -- Enrichment Chamber
+$$N_{F1} = \left\lceil\dfrac{D_{UF_6}}{\lambda_{F1}}\right\rceil = \left\lceil\dfrac{R \cdot t_{\text{eff},F1}}{2{,}000}\right\rceil$$
 
-Each operation converts 1 Yellow Cake into 1 Enriched Uranium (1:1).
+The required HF and UO rates are each:
 
-$$N_4 = \left\lceil\dfrac{\alpha}{\lambda_4}\right\rceil = \left\lceil\dfrac{\alpha \cdot t_{\text{eff},4}}{1}\right\rceil = \left\lceil\alpha \cdot t_{\text{eff},4}\right\rceil$$
+$$D_{HF} = D_{UO} = \dfrac{R}{2} \text{ mB/t}$$
 
-### Stage 3 -- Chemical Crystallizer
+### Path A -- Uranium Oxide
 
-Each operation converts 200 mB Clean Slurry into 1 Yellow Cake. The required Clean Slurry rate is:
+**Stage A2 -- Chemical Oxidizer (UO):**
+Each operation converts 1 Yellow Cake into 1{,}000 mB UO.
 
-$$\sigma = \alpha \cdot 200 \text{ mB/t}$$
+$$N_{A2} = \left\lceil\dfrac{D_{UO}}{\lambda_{A2}}\right\rceil = \left\lceil\dfrac{D_{UO} \cdot t_{\text{eff},A2}}{1{,}000}\right\rceil$$
 
-$$N_3 = \left\lceil\dfrac{\alpha}{\lambda_3}\right\rceil = \left\lceil\alpha \cdot t_{\text{eff},3}\right\rceil$$
+The required Yellow Cake rate is:
 
-### Stage 2 -- Chemical Washer
+$$D_{YC} = \dfrac{D_{UO}}{1{,}000} = \dfrac{R}{2{,}000} \text{ items/t}$$
 
-Each operation converts 1{,}000 mB Dirty Slurry into 1{,}000 mB Clean Slurry (1:1 by volume), consuming 1{,}000 mB Water.
+**Stage A1 -- Enrichment Chamber:**
+Each operation converts 1 Uranium Ingot into 1 Yellow Cake.
 
-$$N_2 = \left\lceil\dfrac{\sigma}{\lambda_2}\right\rceil = \left\lceil\dfrac{\sigma \cdot t_{\text{eff},2}}{1{,}000}\right\rceil$$
+$$N_{A1} = \left\lceil\dfrac{D_{YC}}{\lambda_{A1}}\right\rceil = \left\lceil D_{YC} \cdot t_{\text{eff},A1} \right\rceil$$
 
-### Stage 1 -- Chemical Dissolution Chamber
+### Path B -- Hydrofluoric Acid
 
-Each operation converts 1 Uranium Ore into 1{,}800 mB Dirty Slurry. The required Dirty Slurry rate equals the Clean Slurry rate $\sigma$ (since the washer converts 1:1).
+**Stage B6 -- Chemical Dissolution Chamber:**
+Each operation converts 1 Fluorite + 1{,}000 mB H$_2$SO$_4$ into 1{,}000 mB HF.
 
-$$N_1 = \left\lceil\dfrac{\sigma}{\lambda_1}\right\rceil = \left\lceil\dfrac{\sigma \cdot t_{\text{eff},1}}{1{,}800}\right\rceil$$
+$$N_{B6} = \left\lceil\dfrac{D_{HF}}{\lambda_{B6}}\right\rceil = \left\lceil\dfrac{D_{HF} \cdot t_{\text{eff},B6}}{1{,}000}\right\rceil$$
 
-### Support B -- Chemical Infuser (HCl)
+The required H$_2$SO$_4$ rate is:
 
-Each operation produces 200 mB HCl from 200 mB H$_2$ + 200 mB Cl. The required H$_2$ (and Cl) rate is:
+$$D_{H_2SO_4} = D_{HF} = \dfrac{R}{2} \text{ mB/t}$$
 
-$$\eta_{H_2} = \eta_{Cl} = \eta_{\text{HCl}}$$
+**Stage B5 -- Chemical Infuser (H$_2$SO$_4$):**
+Each operation combines 1{,}000 mB SO$_3$ + 1{,}000 mB Water Vapor into 2{,}000 mB H$_2$SO$_4$.
 
-$$N_B = \left\lceil\dfrac{\eta_{\text{HCl}}}{\lambda_B}\right\rceil = \left\lceil\dfrac{\eta_{\text{HCl}} \cdot t_{\text{eff},B}}{200}\right\rceil$$
+$$N_{B5} = \left\lceil\dfrac{D_{H_2SO_4}}{\lambda_{B5}}\right\rceil = \left\lceil\dfrac{D_{H_2SO_4} \cdot t_{\text{eff},B5}}{2{,}000}\right\rceil$$
 
-### Support A -- Electrolytic Separator
+The required SO$_3$ and Water Vapor rates are each:
 
-Each operation produces 200 mB H$_2$ (and 200 mB O$_2$) from 800 mB Water.
+$$D_{SO_3} = D_{\text{Vapor}} = \dfrac{D_{H_2SO_4}}{2} = \dfrac{R}{4} \text{ mB/t}$$
 
-$$N_A = \left\lceil\dfrac{\eta_{H_2}}{\lambda_A}\right\rceil = \left\lceil\dfrac{\eta_{H_2} \cdot t_{\text{eff},A}}{200}\right\rceil$$
+**Stage B4 -- Rotary Condensentrator:**
+Converts Water to Water Vapor at 1 mB : 1 mB, 1 tick per operation. This machine is effectively a passthrough at 1 mB/t per machine.
+
+$$N_{B4} = \left\lceil\dfrac{D_{\text{Vapor}}}{\lambda_{B4}}\right\rceil = \left\lceil D_{\text{Vapor}} \right\rceil = \left\lceil\dfrac{R}{4}\right\rceil$$
+
+> Note: In practice the Rotary Condensentrator processes fluid continuously at high throughput, so a small number of machines suffices. The formula above gives the theoretical count; consult in-game pipe bandwidth.
+
+**Stage B3 -- Chemical Infuser (SO$_3$):**
+Each operation combines 1{,}000 mB SO$_2$ + 1{,}000 mB O$_2$ into 2{,}000 mB SO$_3$.
+
+$$N_{B3} = \left\lceil\dfrac{D_{SO_3}}{\lambda_{B3}}\right\rceil = \left\lceil\dfrac{D_{SO_3} \cdot t_{\text{eff},B3}}{2{,}000}\right\rceil$$
+
+The required SO$_2$ and O$_2$ (for this stage) rates are each:
+
+$$D_{SO_2} = D_{O_2}^{(B3)} = \dfrac{D_{SO_3}}{2} = \dfrac{R}{8} \text{ mB/t}$$
+
+**Stage B2 -- Chemical Oxidizer (SO$_2$):**
+Each operation converts 1 Sulfur Dust into 1{,}000 mB SO$_2$.
+
+$$N_{B2} = \left\lceil\dfrac{D_{SO_2}}{\lambda_{B2}}\right\rceil = \left\lceil\dfrac{D_{SO_2} \cdot t_{\text{eff},B2}}{1{,}000}\right\rceil$$
+
+The required Sulfur Dust rate is:
+
+$$D_{\text{Sulfur}} = \dfrac{D_{SO_2}}{1{,}000} = \dfrac{R}{8{,}000} \text{ items/t}$$
+
+**Stage B1 -- Pressurized Reaction Chamber:**
+Each operation consumes 1 Coal + 400 mB Water + 200 mB O$_2$ and produces 1 Sulfur Dust.
+
+$$N_{B1} = \left\lceil\dfrac{D_{\text{Sulfur}}}{\lambda_{B1}}\right\rceil = \left\lceil D_{\text{Sulfur}} \cdot t_{\text{eff},B1} \right\rceil$$
 
 ```mermaid
 flowchart RL
-    FF["Fissile Fuel\n$$R$$ mB/t"] --> CI["Infuser\n$$R/2000$$ ops/t"]
-    CI --> EC["Enrichment\n$$R/2000$$ items/t"]
-    CI --> HCl["HCl\n$$R/2$$ mB/t"]
-    EC --> CC["Crystallizer\n$$R/2000$$ items/t"]
-    CC --> CW["Washer\n$$R/10$$ mB/t"]
-    CW --> DC["Dissolution\n$$R/10$$ mB/t"]
-    HCl --> CIH["Infuser HCl\n$$R/2$$ mB/t"]
-    CIH --> ES["Separator\n$$R/2$$ mB/t H₂"]
-    DC --> Ore["Ore: $$R/18000$$ /t"]
-    CW --> Water1["Water (washer)"]
-    ES --> Water2["Water (separator)"]
-    CIH --> Chlorine["Chlorine: $$R/2$$ mB/t"]
+    FF["Fissile Fuel\n$$R$$ mB/t"] --> IC["Isotopic Centrifuge\n$$R$$ mB/t UF₆"]
+    IC --> CIuf["Infuser UF₆\n$$R/2$$ mB/t each"]
+    CIuf --> UO["UO demand\n$$R/2$$ mB/t"]
+    CIuf --> HF["HF demand\n$$R/2$$ mB/t"]
+
+    UO --> COu["Chem. Oxidizer\n$$R/2000$$ items/t YC"]
+    COu --> ECh["Enrichment Chamber\n$$R/2000$$ items/t ingots"]
+    ECh --> Ingots["Uranium Ingots\n$$R/2000$$ /t"]
+
+    HF --> CDC["Dissolution Chamber\n$$R/2$$ mB/t H₂SO₄"]
+    CDC --> Fl["Fluorite\n$$R/2000$$ /t"]
+    CDC --> CIh2so4["Infuser H₂SO₄\n$$R/4$$ mB/t SO₃ + Vapor"]
+    CIh2so4 --> Vapor["Condensentrator\n$$R/4$$ mB/t Water"]
+    CIh2so4 --> CIso3["Infuser SO₃\n$$R/8$$ mB/t SO₂ + O₂"]
+    CIso3 --> COs["Oxidizer SO₂\n$$R/8000$$ items/t Sulfur"]
+    COs --> PRC["PRC\n$$R/8000$$ /t Coal"]
+    PRC --> Coal["Coal\n$$R/8000$$ /t"]
+    PRC --> WaterB["Water\n$$R/20000 \times 400$$ mB/t"]
+    PRC --> O2prc["O₂ (PRC)\n$$R/40$$ mB/t"]
+    CIso3 --> O2so3["O₂ (SO₃)\n$$R/8$$ mB/t"]
 ```
 
 ## Resource Input Rates
 
-### Ore Consumption
+### Uranium Ingot Consumption
 
-$$\omega = \dfrac{\sigma}{1{,}800} = \dfrac{\alpha \cdot 200}{1{,}800} = \dfrac{R}{18{,}000} \text{ ore/t}$$
+$$\omega_U = D_{YC} = \dfrac{R}{2{,}000} \text{ items/t}$$
+
+### Fluorite Consumption
+
+$$\omega_F = \dfrac{D_{HF}}{1{,}000} = \dfrac{R}{2{,}000} \text{ items/t}$$
+
+### Coal Consumption
+
+$$\omega_C = D_{\text{Sulfur}} = \dfrac{R}{8{,}000} \text{ items/t}$$
 
 ### Water Consumption
 
-Water is consumed by the `Chemical Washer` (Stage 2) and the `Electrolytic Separator` (Support A):
+Water is consumed by the `Pressurized Reaction Chamber` (B1) and the `Rotary Condensentrator` (B4):
 
-$$\eta_w = \underbrace{\sigma}_{\text{Washer}} + \underbrace{\eta_{H_2} \cdot \dfrac{800}{200}}_{\text{Separator}} = \alpha \cdot 200 + \eta_{\text{HCl}} \cdot 4$$
+$$\eta_w = \underbrace{D_{\text{Sulfur}} \cdot 400}_{\text{PRC}} + \underbrace{D_{\text{Vapor}}}_{\text{Condensentrator}} = \dfrac{R \cdot 400}{8{,}000} + \dfrac{R}{4} = \dfrac{R}{20} + \dfrac{R}{4} = \dfrac{3R}{10} \text{ mB/t}$$
 
-$$\eta_w = \dfrac{R \cdot 200}{2{,}000} + \dfrac{R}{2} \cdot 4 = \dfrac{R}{10} + 2R = \dfrac{21R}{10} \text{ mB/t}$$
+### Oxygen Consumption
 
-### Chlorine Consumption
+Oxygen is consumed by the `Pressurized Reaction Chamber` (B1, 200 mB per op) and the `Chemical Infuser SO$_3$` (B3, 1{,}000 mB per op):
 
-$$\eta_{Cl} = \eta_{\text{HCl}} = \dfrac{R}{2} \text{ mB/t}$$
+$$\eta_{O_2} = \underbrace{D_{\text{Sulfur}} \cdot 200}_{\text{PRC}} + \underbrace{D_{O_2}^{(B3)}}_{\text{SO}_3\text{ Infuser}} = \dfrac{R \cdot 200}{8{,}000} + \dfrac{R}{8} = \dfrac{R}{40} + \dfrac{R}{8} = \dfrac{R}{8} + \dfrac{R}{40} = \dfrac{3R}{20} \text{ mB/t}$$
 
 ### Total Energy Consumption
 
@@ -200,7 +281,9 @@ $$\mathcal{E} = \sum_{i} N_i \cdot \dfrac{\varepsilon_i}{t_{\text{eff},i}} \text
 
 Expanded:
 
-$$\mathcal{E} = N_1 \cdot \dfrac{80{,}000}{t_{\text{eff},1}} + N_2 \cdot \dfrac{40{,}000}{t_{\text{eff},2}} + N_3 \cdot \dfrac{40{,}000}{t_{\text{eff},3}} + N_4 \cdot \dfrac{16{,}000}{t_{\text{eff},4}} + N_5 \cdot \dfrac{40{,}000}{t_{\text{eff},5}} + N_A \cdot \dfrac{80{,}000}{t_{\text{eff},A}} + N_B \cdot \dfrac{40{,}000}{t_{\text{eff},B}}$$
+$$\mathcal{E} = N_{A1} \cdot \dfrac{16{,}000}{t_{\text{eff},A1}} + N_{A2} \cdot \dfrac{40{,}000}{t_{\text{eff},A2}} + N_{B1} \cdot \dfrac{20{,}000}{t_{\text{eff},B1}} + N_{B2} \cdot \dfrac{40{,}000}{t_{\text{eff},B2}} + N_{B3} \cdot \dfrac{40{,}000}{t_{\text{eff},B3}}$$
+
+$$+ N_{B4} \cdot \dfrac{400}{t_{\text{eff},B4}} + N_{B5} \cdot \dfrac{40{,}000}{t_{\text{eff},B5}} + N_{B6} \cdot \dfrac{80{,}000}{t_{\text{eff},B6}} + N_{F1} \cdot \dfrac{40{,}000}{t_{\text{eff},F1}} + N_{F2} \cdot \dfrac{40{,}000}{t_{\text{eff},F2}}$$
 
 ## Worked Example
 
@@ -212,116 +295,166 @@ From the speed upgrade formula with $u = 8$:
 
 $$t_{\text{eff}} = \left\lceil\dfrac{t_{\text{base}}}{1 + 8}\right\rceil = \left\lceil\dfrac{t_{\text{base}}}{9}\right\rceil$$
 
-- Stages 1, 2, 3, 5, A, B ($t_{\text{base}} = 100$): $t_{\text{eff}} = \left\lceil\dfrac{100}{9}\right\rceil = 12$ ticks
-- Stage 4 ($t_{\text{base}} = 200$): $t_{\text{eff}} = \left\lceil\dfrac{200}{9}\right\rceil = 23$ ticks
+- Stages with $t_{\text{base}} = 100$ (A2, B2, B3, B5, B6, F1, F2): $t_{\text{eff}} = \left\lceil\dfrac{100}{9}\right\rceil = 12$ ticks
+- Stages with $t_{\text{base}} = 200$ (A1, B1): $t_{\text{eff}} = \left\lceil\dfrac{200}{9}\right\rceil = 23$ ticks
+- Stage B4 ($t_{\text{base}} = 1$): $t_{\text{eff}} = 1$ tick
 
-### Intermediate Rates
+### Intermediate Demand Rates
 
 Working backwards from $R = 288$ mB/t:
 
-$$\alpha = \dfrac{288}{2{,}000} = 0.144 \text{ items/t (Enriched Uranium)}$$
+$$D_{UF_6} = R = 288 \text{ mB/t}$$
 
-$$\sigma = 0.144 \times 200 = 28.8 \text{ mB/t (Clean/Dirty Slurry)}$$
+$$D_{HF} = D_{UO} = \dfrac{288}{2} = 144 \text{ mB/t}$$
 
-$$\eta_{\text{HCl}} = \dfrac{288}{2} = 144 \text{ mB/t}$$
+$$D_{YC} = \dfrac{144}{1{,}000} = 0.144 \text{ items/t}$$
 
-$$\eta_{H_2} = \eta_{Cl} = 144 \text{ mB/t}$$
+$$D_{H_2SO_4} = 144 \text{ mB/t}$$
+
+$$D_{SO_3} = D_{\text{Vapor}} = \dfrac{144}{2} = 72 \text{ mB/t}$$
+
+$$D_{SO_2} = D_{O_2}^{(B3)} = \dfrac{72}{2} = 36 \text{ mB/t}$$
+
+$$D_{\text{Sulfur}} = \dfrac{36}{1{,}000} = 0.036 \text{ items/t}$$
 
 ### Per-Machine Output Rates
 
-$$\lambda_5 = \dfrac{2{,}000}{12} \approx 166.67 \text{ mB/t}$$
+$$\lambda_{F2} = \dfrac{1{,}000}{12} \approx 83.33 \text{ mB/t}$$
 
-$$\lambda_4 = \dfrac{1}{23} \approx 0.0435 \text{ items/t}$$
+$$\lambda_{F1} = \dfrac{2{,}000}{12} \approx 166.67 \text{ mB/t}$$
 
-$$\lambda_3 = \dfrac{1}{12} \approx 0.0833 \text{ items/t}$$
+$$\lambda_{A2} = \dfrac{1{,}000}{12} \approx 83.33 \text{ mB/t}$$
 
-$$\lambda_2 = \dfrac{1{,}000}{12} \approx 83.33 \text{ mB/t}$$
+$$\lambda_{A1} = \dfrac{1}{23} \approx 0.0435 \text{ items/t}$$
 
-$$\lambda_1 = \dfrac{1{,}800}{12} = 150 \text{ mB/t}$$
+$$\lambda_{B6} = \dfrac{1{,}000}{12} \approx 83.33 \text{ mB/t}$$
 
-$$\lambda_A = \dfrac{200}{12} \approx 16.67 \text{ mB/t}$$
+$$\lambda_{B5} = \dfrac{2{,}000}{12} \approx 166.67 \text{ mB/t}$$
 
-$$\lambda_B = \dfrac{200}{12} \approx 16.67 \text{ mB/t}$$
+$$\lambda_{B4} = 1 \text{ mB/t}$$
+
+$$\lambda_{B3} = \dfrac{2{,}000}{12} \approx 166.67 \text{ mB/t}$$
+
+$$\lambda_{B2} = \dfrac{1{,}000}{12} \approx 83.33 \text{ mB/t}$$
+
+$$\lambda_{B1} = \dfrac{1}{23} \approx 0.0435 \text{ items/t}$$
 
 ### Machine Counts
 
-$$N_5 = \left\lceil\dfrac{288}{166.67}\right\rceil = \left\lceil 1.728 \right\rceil = 2$$
+**Final Assembly:**
 
-$$N_4 = \left\lceil 0.144 \times 23 \right\rceil = \left\lceil 3.312 \right\rceil = 4$$
+$$N_{F2} = \left\lceil\dfrac{288}{83.33}\right\rceil = \left\lceil 3.456 \right\rceil = 4$$
 
-$$N_3 = \left\lceil 0.144 \times 12 \right\rceil = \left\lceil 1.728 \right\rceil = 2$$
+$$N_{F1} = \left\lceil\dfrac{288}{166.67}\right\rceil = \left\lceil 1.728 \right\rceil = 2$$
 
-$$N_2 = \left\lceil\dfrac{28.8 \times 12}{1{,}000}\right\rceil = \left\lceil 0.346 \right\rceil = 1$$
+**Path A:**
 
-$$N_1 = \left\lceil\dfrac{28.8 \times 12}{1{,}800}\right\rceil = \left\lceil 0.192 \right\rceil = 1$$
+$$N_{A2} = \left\lceil\dfrac{144}{83.33}\right\rceil = \left\lceil 1.728 \right\rceil = 2$$
 
-$$N_B = \left\lceil\dfrac{144 \times 12}{200}\right\rceil = \left\lceil 8.64 \right\rceil = 9$$
+$$N_{A1} = \left\lceil 0.144 \times 23 \right\rceil = \left\lceil 3.312 \right\rceil = 4$$
 
-$$N_A = \left\lceil\dfrac{144 \times 12}{200}\right\rceil = \left\lceil 8.64 \right\rceil = 9$$
+**Path B:**
+
+$$N_{B6} = \left\lceil\dfrac{144}{83.33}\right\rceil = \left\lceil 1.728 \right\rceil = 2$$
+
+$$N_{B5} = \left\lceil\dfrac{144}{166.67}\right\rceil = \left\lceil 0.864 \right\rceil = 1$$
+
+$$N_{B4} = \left\lceil\dfrac{72}{1}\right\rceil = 72$$
+
+$$N_{B3} = \left\lceil\dfrac{72}{166.67}\right\rceil = \left\lceil 0.432 \right\rceil = 1$$
+
+$$N_{B2} = \left\lceil\dfrac{36}{83.33}\right\rceil = \left\lceil 0.432 \right\rceil = 1$$
+
+$$N_{B1} = \left\lceil 0.036 \times 23 \right\rceil = \left\lceil 0.828 \right\rceil = 1$$
 
 ### Resource Rates
 
-**Ore consumption:**
+**Uranium Ingot consumption:**
 
-$$\omega = \dfrac{288}{18{,}000} = 0.016 \text{ ore/t} = 0.32 \text{ ore/s}$$
+$$\omega_U = \dfrac{288}{2{,}000} = 0.144 \text{ items/t} = 2.88 \text{ items/s}$$
+
+**Fluorite consumption:**
+
+$$\omega_F = \dfrac{288}{2{,}000} = 0.144 \text{ items/t} = 2.88 \text{ items/s}$$
+
+**Coal consumption:**
+
+$$\omega_C = \dfrac{288}{8{,}000} = 0.036 \text{ items/t} = 0.72 \text{ items/s}$$
 
 **Water consumption:**
 
-$$\eta_w = \dfrac{21 \times 288}{10} = 604.8 \text{ mB/t}$$
+$$\eta_w = \dfrac{3 \times 288}{10} = 86.4 \text{ mB/t}$$
 
 Broken down:
 
-- Washer: $28.8$ mB/t
-- Separators: $144 \times 4 = 576$ mB/t
+- PRC: $0.036 \times 400 = 14.4$ mB/t
+- Condensentrator: $72$ mB/t
 
-**Chlorine consumption:**
+**Oxygen consumption:**
 
-$$\eta_{Cl} = 144 \text{ mB/t}$$
+$$\eta_{O_2} = \dfrac{3 \times 288}{20} = 43.2 \text{ mB/t}$$
+
+Broken down:
+
+- PRC: $0.036 \times 200 = 7.2$ mB/t
+- SO$_3$ Infuser: $36$ mB/t
 
 ### Energy Consumption
 
-$$\mathcal{E} = 1 \cdot \dfrac{80{,}000}{12} + 1 \cdot \dfrac{40{,}000}{12} + 2 \cdot \dfrac{40{,}000}{12} + 4 \cdot \dfrac{16{,}000}{23} + 2 \cdot \dfrac{40{,}000}{12} + 9 \cdot \dfrac{80{,}000}{12} + 9 \cdot \dfrac{40{,}000}{12}$$
+$$\mathcal{E} = 4 \cdot \dfrac{16{,}000}{23} + 2 \cdot \dfrac{40{,}000}{12} + 1 \cdot \dfrac{20{,}000}{23} + 1 \cdot \dfrac{40{,}000}{12} + 1 \cdot \dfrac{40{,}000}{12}$$
+
+$$+ 72 \cdot \dfrac{400}{1} + 1 \cdot \dfrac{40{,}000}{12} + 2 \cdot \dfrac{80{,}000}{12} + 2 \cdot \dfrac{40{,}000}{12} + 4 \cdot \dfrac{40{,}000}{12}$$
 
 $$\downarrow$$
 
-$$\mathcal{E} = 6{,}666.67 + 3{,}333.33 + 6{,}666.67 + 2{,}782.61 + 6{,}666.67 + 60{,}000 + 30{,}000$$
+$$\mathcal{E} = 2{,}782.61 + 6{,}666.67 + 869.57 + 3{,}333.33 + 3{,}333.33$$
+
+$$+ 28{,}800 + 3{,}333.33 + 13{,}333.33 + 6{,}666.67 + 13{,}333.33$$
 
 $$\downarrow$$
 
-$$\mathcal{E} \approx 116{,}115.94 \text{ J/t} \approx 116.12 \text{ kJ/t} \approx 46.45 \text{ kFE/t}$$
+$$\mathcal{E} \approx 82{,}452.17 \text{ J/t} \approx 82.45 \text{ kJ/t} \approx 32.98 \text{ kFE/t}$$
 
 ### Summary
 
 | Stage | Machine | Count | Rate |
 | ----- | ------- | ----- | ---- |
-| 1 | `Dissolution Chamber` | 1 | 150 mB/t (slurry) |
-| 2 | `Chemical Washer` | 1 | 83.33 mB/t (clean slurry) |
-| 3 | `Chemical Crystallizer` | 2 | 0.0833 items/t each |
-| 4 | `Enrichment Chamber` | 4 | 0.0435 items/t each |
-| 5 | `Chemical Infuser (Fuel)` | 2 | 166.67 mB/t each |
-| A | `Electrolytic Separator` | 9 | 16.67 mB/t H$_2$ each |
-| B | `Chemical Infuser (HCl)` | 9 | 16.67 mB/t HCl each |
-| **Total** | | **28** | **288 mB/t Fissile Fuel** |
+| A1 | `Enrichment Chamber` | 4 | 0.0435 items/t each |
+| A2 | `Chemical Oxidizer (UO)` | 2 | 83.33 mB/t each |
+| B1 | `Pressurized Reaction Chamber` | 1 | 0.0435 items/t |
+| B2 | `Chemical Oxidizer (SO$_2$)` | 1 | 83.33 mB/t |
+| B3 | `Chemical Infuser (SO$_3$)` | 1 | 166.67 mB/t |
+| B4 | `Rotary Condensentrator` | 72 | 1 mB/t each |
+| B5 | `Chemical Infuser (H$_2$SO$_4$)` | 1 | 166.67 mB/t |
+| B6 | `Chemical Dissolution Chamber` | 2 | 83.33 mB/t each |
+| F1 | `Chemical Infuser (UF$_6$)` | 2 | 166.67 mB/t each |
+| F2 | `Isotopic Centrifuge` | 4 | 83.33 mB/t each |
+| **Total** | | **90** | **288 mB/t Fissile Fuel** |
 
 | Resource | Rate |
 | -------- | ---- |
-| Uranium Ore | 0.016 ore/t (0.32 ore/s) |
-| Water | 604.8 mB/t |
-| Chlorine | 144 mB/t |
-| Energy | ~116.12 kJ/t |
+| Uranium Ingots | 0.144 items/t (2.88 items/s) |
+| Fluorite | 0.144 items/t (2.88 items/s) |
+| Coal | 0.036 items/t (0.72 items/s) |
+| Water | 86.4 mB/t |
+| Oxygen (O$_2$) | 43.2 mB/t |
+| Energy | ~82.45 kJ/t (~32.98 kFE/t) |
 
 ```mermaid
 pie title Machine Distribution (R=288, u=8)
-    "Electrolytic Separator" : 9
-    "Chemical Infuser (HCl)" : 9
+    "Rotary Condensentrator" : 72
     "Enrichment Chamber" : 4
-    "Chemical Infuser (Fuel)" : 2
-    "Chemical Crystallizer" : 2
-    "Dissolution Chamber" : 1
-    "Chemical Washer" : 1
+    "Isotopic Centrifuge" : 4
+    "Chemical Oxidizer (UO)" : 2
+    "Chemical Dissolution Chamber" : 2
+    "Chemical Infuser (UF6)" : 2
+    "Pressurized Reaction Chamber" : 1
+    "Chemical Oxidizer (SO2)" : 1
+    "Chemical Infuser (SO3)" : 1
+    "Chemical Infuser (H2SO4)" : 1
 ```
 
-> **Note:** The HCl support chain (Stages A and B) dominates the machine count and energy budget. The 9 Electrolytic Separators alone account for over half the total energy draw.
+> **Note:** The Rotary Condensentrator dominates the machine count at 72 units (80% of the total). In practice, the Condensentrator's effective throughput is often much higher than the 1 mB/t theoretical minimum used here -- the machine processes continuously when supplied with fluid, so far fewer physical machines may be needed. Always verify actual throughput in-game.
 
 ## Modpack Notice
 

@@ -86,47 +86,83 @@ export const STEAM_PIPE = {
 export const ENERGY_PER_STEAM = 10;
 export const FE_TO_JOULES = 2.5;
 
+/**
+ * Fissile Fuel production chain constants (Mekanism 1.20 defaults).
+ *
+ * The chain has two parallel paths that merge:
+ *   Path A (Uranium Oxide): Ore → Ingots → Yellow Cake → Uranium Oxide
+ *   Path B (Hydrofluoric Acid): Coal+Water+O₂ → Sulfur → SO₂ → SO₃ → H₂SO₄ + Fluorite → HF
+ *   Final: HF + UO → UF₆ → Fissile Fuel (via Isotopic Centrifuge)
+ */
 export const PRODUCTION_CHAIN = {
-    DISSOLUTION_CHAMBER: {
-        BASE_TICKS: 100,
-        OUTPUT_MB: 1800,
-        BASE_ENERGY: 80_000,
-    },
-    CHEMICAL_WASHER: {
-        BASE_TICKS: 100,
-        INPUT_MB: 1000,
-        OUTPUT_MB: 1000,
-        WATER_MB: 1000,
-        BASE_ENERGY: 40_000,
-    },
-    CHEMICAL_CRYSTALLIZER: {
-        BASE_TICKS: 100,
-        INPUT_MB: 200,
-        BASE_ENERGY: 40_000,
-    },
+    // Path A: Uranium Oxide
     ENRICHMENT_CHAMBER: {
         BASE_TICKS: 200,
         BASE_ENERGY: 16_000,
+        // 1 Uranium Ingot → 1 Yellow Cake Uranium
     },
-    CHEMICAL_INFUSER_FUEL: {
+    CHEMICAL_OXIDIZER_URANIUM: {
         BASE_TICKS: 100,
-        OUTPUT_MB: 2000,
-        INPUT_HCL_MB: 1000,
+        OUTPUT_MB: 1000,    // 1 Yellow Cake → 1000 mB Uranium Oxide
         BASE_ENERGY: 40_000,
     },
-    ELECTROLYTIC_SEPARATOR: {
+
+    // Path B: Sulfuric Acid
+    PRESSURIZED_REACTION_CHAMBER: {
+        BASE_TICKS: 200,
+        INPUT_WATER_MB: 400,
+        INPUT_OXYGEN_MB: 200,
+        // + 1 Coal → 1 Sulfur Dust
+        BASE_ENERGY: 20_000,
+    },
+    CHEMICAL_OXIDIZER_SULFUR: {
         BASE_TICKS: 100,
-        INPUT_WATER_MB: 800,
-        OUTPUT_H2_MB: 200,
-        OUTPUT_O2_MB: 200,
+        OUTPUT_MB: 1000,    // 1 Sulfur Dust → 1000 mB Sulfur Dioxide
+        BASE_ENERGY: 40_000,
+    },
+    CHEMICAL_INFUSER_SO3: {
+        BASE_TICKS: 100,
+        INPUT_SO2_MB: 1000,
+        INPUT_O2_MB: 1000,
+        OUTPUT_MB: 2000,    // SO₂ + O₂ → 2000 mB Sulfur Trioxide
+        BASE_ENERGY: 40_000,
+    },
+    ROTARY_CONDENSENTRATOR: {
+        BASE_TICKS: 1,
+        INPUT_WATER_MB: 1,
+        OUTPUT_VAPOR_MB: 1, // Water → Water Vapor (1:1)
+        BASE_ENERGY: 400,
+    },
+    CHEMICAL_INFUSER_H2SO4: {
+        BASE_TICKS: 100,
+        INPUT_SO3_MB: 1000,
+        INPUT_VAPOR_MB: 1000,
+        OUTPUT_MB: 2000,    // SO₃ + Water Vapor → 2000 mB Sulfuric Acid
+        BASE_ENERGY: 40_000,
+    },
+
+    // Path B continued: Hydrofluoric Acid
+    DISSOLUTION_CHAMBER: {
+        BASE_TICKS: 100,
+        INPUT_H2SO4_MB: 1000,
+        OUTPUT_MB: 1000,    // Fluorite + H₂SO₄ → 1000 mB Hydrofluoric Acid
         BASE_ENERGY: 80_000,
     },
-    CHEMICAL_INFUSER_HCL: {
+
+    // Final Assembly
+    CHEMICAL_INFUSER_UF6: {
         BASE_TICKS: 100,
-        INPUT_H2_MB: 200,
-        INPUT_CL_MB: 200,
-        OUTPUT_MB: 200,
+        INPUT_HF_MB: 1000,
+        INPUT_UO_MB: 1000,
+        OUTPUT_MB: 2000,    // HF + Uranium Oxide → 2000 mB Uranium Hexafluoride
         BASE_ENERGY: 40_000,
     },
+    ISOTOPIC_CENTRIFUGE: {
+        BASE_TICKS: 100,
+        INPUT_UF6_MB: 1000,
+        OUTPUT_MB: 1000,    // UF₆ → 1000 mB Fissile Fuel
+        BASE_ENERGY: 40_000,
+    },
+
     MAX_SPEED_UPGRADES: 8,
 }

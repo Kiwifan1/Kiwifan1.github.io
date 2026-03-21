@@ -352,7 +352,7 @@ flowchart BT
     L["$$L$$ (length)"] --> A["$$A = (L-2)^2$$"]
     L --> B["$$B = (L-2)$$"]
     H["$$H$$ (height)"] --> h["$$h = H-2$$"]
-    A --> r_opt["$$r = \lceil\frac{4Bh+A}{8B}\rceil$$"]
+    A --> r_opt["$$r = \left\lceil\frac{4Bh+A}{8B}\right\rceil$$"]
     B --> r_opt
     h --> r_opt
     r_opt --> Fblade["$$F_{blade} = \frac{2r}{\phi}$$"]
@@ -530,5 +530,3 @@ $$N_{structure} = 417 + 597 + 3 = 1{,}017$$
 | `Turbine Rotors`        | 10       |
 | `Rotational Complex`    | 1        |
 | Structural Blocks       | 1,017    |
-
-
