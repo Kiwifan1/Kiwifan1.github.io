@@ -1,0 +1,16 @@
+.construction-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--tool-muted);
+}
+
+.construction-note {
+  margin-top: 0.5rem;
+  color: var(--tool-muted);
+  font-size: 0.85rem;
+}
