@@ -38,7 +38,7 @@
           <li><strong>Target fuel rate:</strong> {{ asDecimal(data.targetFuelRate) }} mB/t</li>
           <li><strong>Speed upgrades:</strong> {{ data.speedUpgrades }}</li>
           <li><strong>Total machines:</strong> {{ asNumber(data.totalMachines) }}</li>
-          <li><strong>Total energy:</strong> {{ asDecimal(data.resources.totalEnergyPerTick) }} J/t</li>
+          <li><strong>Total energy:</strong> {{ formatEnergy(data.resources.totalEnergyPerTick) }}</li>
         </ul>
       </section>
 
@@ -48,15 +48,15 @@
         <div class="fuel-chain__resource-grid">
           <div class="fuel-chain__resource">
             <span class="fuel-chain__resource-label">Uranium Ingots</span>
-            <span class="fuel-chain__resource-value">{{ asDecimal(data.resources.uraniumIngotsPerTick, 4) }} /t</span>
+            <span class="fuel-chain__resource-value">{{ formatItemRate(data.resources.uraniumIngotsPerTick) }}</span>
           </div>
           <div class="fuel-chain__resource">
             <span class="fuel-chain__resource-label">Fluorite</span>
-            <span class="fuel-chain__resource-value">{{ asDecimal(data.resources.fluoritePerTick, 4) }} /t</span>
+            <span class="fuel-chain__resource-value">{{ formatItemRate(data.resources.fluoritePerTick) }}</span>
           </div>
           <div class="fuel-chain__resource">
             <span class="fuel-chain__resource-label">Coal</span>
-            <span class="fuel-chain__resource-value">{{ asDecimal(data.resources.coalPerTick, 4) }} /t</span>
+            <span class="fuel-chain__resource-value">{{ formatItemRate(data.resources.coalPerTick) }}</span>
           </div>
           <div class="fuel-chain__resource">
             <span class="fuel-chain__resource-label">Water</span>
@@ -80,14 +80,14 @@
               <span class="fuel-chain__machine-name">{{ stage.name }}</span>
               <span class="fuel-chain__machine-detail">
                 @if (stage.type === 'batch') {
-                  {{ asNumber(stage.count) }} machines &middot;
+                  {{ stage.count === 1 ? '1 machine' : asNumber(stage.count) + ' machines' }} &middot;
                   {{ asDecimal(stage.opsPerTick, 4) }} ops/t &middot;
                   {{ asNumber(stage.ticksPerOp) }} ticks/op &middot;
-                  {{ asDecimal(stage.energyPerTick, 2) }} J/t
+                  {{ formatEnergy(stage.energyPerTick) }}
                 } @else {
-                  {{ asNumber(stage.count) }} machine &middot;
+                  1 machine (flow) &middot;
                   {{ asDecimal(stage.flowRateMbPerTick, 2) }} mB/t &middot;
-                  {{ asDecimal(stage.energyPerTick, 2) }} J/t
+                  {{ formatEnergy(stage.energyPerTick) }}
                 }
               </span>
             </li>

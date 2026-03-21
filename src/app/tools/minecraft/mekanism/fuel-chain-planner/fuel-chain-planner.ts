@@ -43,6 +43,23 @@ export class FuelChainPlanner {
   public readonly asNumber = asNumber;
   public readonly asDecimal = asDecimal;
 
+  public formatEnergy(joulesPerTick: number): string {
+    if (joulesPerTick >= 1_000_000) {
+      return asDecimal(joulesPerTick / 1_000_000, 2) + ' MJ/t';
+    }
+    if (joulesPerTick >= 1_000) {
+      return asDecimal(joulesPerTick / 1_000, 2) + ' kJ/t';
+    }
+    return asDecimal(joulesPerTick, 2) + ' J/t';
+  }
+
+  public formatItemRate(rate: number): string {
+    if (rate < 0.001) {
+      return rate.toExponential(2) + ' items/t';
+    }
+    return asDecimal(rate, 4) + ' items/t';
+  }
+
   constructor() {
     effect(() => {
       const value = this.form.getRawValue();
