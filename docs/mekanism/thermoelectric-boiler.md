@@ -86,10 +86,10 @@ Our goal is to choose $w$ and $N$ that maximise $F$ while respecting the structu
 flowchart LR
     HC["Heated Coolant In"] --> WC["Water Cavity"]
     WC --> SH["Superheating Elements"]
-    SH -->|"C_boil = phi*N"| Steam["Steam"]
-    WC -->|"C_water = alpha*V_water"| Steam
-    Steam -->|"C_steam = beta*V_steam"| Out["Steam Out"]
-    Out --> Note["F = min(C_water, C_steam, C_boil)"]
+    SH -->|"$$C_{boil} = \phi N$$"| Steam["Steam"]
+    WC -->|"$$C_{water} = \alpha V_{water}$$"| Steam
+    Steam -->|"$$C_{steam} = \beta V_{steam}$$"| Out["Steam Out"]
+    Out --> Note["$$F = \min(C_{water},\, C_{steam},\, C_{boil})$$"]
 ```
 
 ## Balanced Superheater Count
@@ -147,15 +147,15 @@ subject to the practical cap $N \le w^{\star} A$ (which is always satisfied for 
 
 ```mermaid
 flowchart TD
-    Start["Pick W, L, H"] --> Compute["h = H-2, A = W*L"]
-    Compute --> Water["Set w = h-2 (max water)"]
-    Water --> Steam["s = 1 (min steam)"]
-    Steam --> Balance["N = floor((w+1)*A / 11)"]
-    Balance --> Check{"N <= w*A?"}
-    Check -->|"Yes"| Build["Build boiler with N superheaters"]
-    Check -->|"No"| Cap["N = w*A"]
+    Start["Pick W, L, H"] --> Compute["$$h = H-2, \quad A = W \cdot L$$"]
+    Compute --> Water["$$w = h-2$$ (max water)"]
+    Water --> Steam["$$s = 1$$ (min steam)"]
+    Steam --> Balance["$$N = \lfloor\frac{(w+1)A}{11}\rfloor$$"]
+    Balance --> Check{"$$N \leq wA$$?"}
+    Check -->|"Yes"| Build["Build with N superheaters"]
+    Check -->|"No"| Cap["$$N = wA$$"]
     Cap --> Build
-    Build --> Throughput["F_max = alpha*phi/(alpha+phi) * (w+1)*A"]
+    Build --> Throughput["$$F_{max} = \frac{\alpha\phi}{\alpha+\phi}(w+1)A$$"]
 ```
 
 ## Worked Example — 18 × 18 × 18 Boiler
