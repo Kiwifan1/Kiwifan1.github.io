@@ -99,78 +99,78 @@ export const PRODUCTION_CHAIN = {
     // Path A: Uranium Oxide
     ENRICHMENT_CHAMBER: {
         BASE_TICKS: 200,
+        OUTPUT_COUNT: 2,        // 1 Uranium Ingot → 2 Yellow Cake Uranium
         BASE_ENERGY: 16_000,
-        // 1 Uranium Ingot → 1 Yellow Cake Uranium
     },
     CHEMICAL_OXIDIZER_URANIUM: {
         BASE_TICKS: 100,
-        OUTPUT_MB: 1000,    // 1 Yellow Cake → 1000 mB Uranium Oxide
+        OUTPUT_MB: 250,         // 1 Yellow Cake → 250 mB Uranium Oxide
         BASE_ENERGY: 40_000,
     },
 
     // Oxygen production (feeds PRC and SO₃ Infuser)
+    // Per-operation ratio: 2 mB Water → 2 mB H₂ + 1 mB O₂
     ELECTROLYTIC_SEPARATOR: {
-        BASE_TICKS: 100,
-        INPUT_WATER_MB: 800,
-        OUTPUT_O2_MB: 200,     // Water → 200 mB O₂ + 200 mB H₂
-        OUTPUT_H2_MB: 200,
+        INPUT_WATER_MB: 2,
+        OUTPUT_O2_MB: 1,
+        OUTPUT_H2_MB: 2,
         BASE_ENERGY: 80_000,
     },
 
     // Path B: Sulfuric Acid
     PRESSURIZED_REACTION_CHAMBER: {
-        BASE_TICKS: 200,
-        INPUT_WATER_MB: 400,
-        INPUT_OXYGEN_MB: 200,
+        BASE_TICKS: 100,
+        INPUT_WATER_MB: 100,
+        INPUT_OXYGEN_MB: 100,
+        OUTPUT_H2_MB: 100,      // byproduct hydrogen
         // + 1 Coal → 1 Sulfur Dust
         BASE_ENERGY: 20_000,
     },
     CHEMICAL_OXIDIZER_SULFUR: {
         BASE_TICKS: 100,
-        OUTPUT_MB: 1000,    // 1 Sulfur Dust → 1000 mB Sulfur Dioxide
+        OUTPUT_MB: 100,         // 1 Sulfur Dust → 100 mB Sulfur Dioxide
         BASE_ENERGY: 40_000,
     },
+    // Per-mB ratio: 2 mB SO₂ + 1 mB O₂ → 2 mB SO₃
     CHEMICAL_INFUSER_SO3: {
-        BASE_TICKS: 100,
-        INPUT_SO2_MB: 1000,
-        INPUT_O2_MB: 1000,
-        OUTPUT_MB: 2000,    // SO₂ + O₂ → 2000 mB Sulfur Trioxide
+        INPUT_SO2_MB: 2,
+        INPUT_O2_MB: 1,
+        OUTPUT_MB: 2,
         BASE_ENERGY: 40_000,
     },
     ROTARY_CONDENSENTRATOR: {
-        BASE_TICKS: 1,
         INPUT_WATER_MB: 1,
-        OUTPUT_VAPOR_MB: 1, // Water → Water Vapor (1:1)
+        OUTPUT_VAPOR_MB: 1,     // Water → Water Vapor (1:1)
         BASE_ENERGY: 400,
     },
+    // Per-mB ratio: 1 mB SO₃ + 1 mB Water Vapor → 1 mB H₂SO₄
     CHEMICAL_INFUSER_H2SO4: {
-        BASE_TICKS: 100,
-        INPUT_SO3_MB: 1000,
-        INPUT_VAPOR_MB: 1000,
-        OUTPUT_MB: 2000,    // SO₃ + Water Vapor → 2000 mB Sulfuric Acid
+        INPUT_SO3_MB: 1,
+        INPUT_VAPOR_MB: 1,
+        OUTPUT_MB: 1,
         BASE_ENERGY: 40_000,
     },
 
     // Path B continued: Hydrofluoric Acid
     DISSOLUTION_CHAMBER: {
         BASE_TICKS: 100,
-        INPUT_H2SO4_MB: 1000,
-        OUTPUT_MB: 1000,    // Fluorite + H₂SO₄ → 1000 mB Hydrofluoric Acid
+        INPUT_H2SO4_MB: 1,     // 1 Fluorite + 1 mB H₂SO₄ → 1000 mB HF
+        OUTPUT_MB: 1000,
         BASE_ENERGY: 80_000,
     },
 
     // Final Assembly
+    // Per-mB ratio: 1 mB HF + 1 mB UO → 2 mB UF₆
     CHEMICAL_INFUSER_UF6: {
-        BASE_TICKS: 100,
-        INPUT_HF_MB: 1000,
-        INPUT_UO_MB: 1000,
-        OUTPUT_MB: 2000,    // HF + Uranium Oxide → 2000 mB Uranium Hexafluoride
+        INPUT_HF_MB: 1,
+        INPUT_UO_MB: 1,
+        OUTPUT_MB: 2,
         BASE_ENERGY: 40_000,
     },
+    // Per-mB ratio: 1 mB UF₆ → 1 mB Fissile Fuel
     ISOTOPIC_CENTRIFUGE: {
-        BASE_TICKS: 100,
-        INPUT_UF6_MB: 1000,
-        OUTPUT_MB: 1000,    // UF₆ → 1000 mB Fissile Fuel
+        INPUT_UF6_MB: 1,
+        OUTPUT_MB: 1,
         BASE_ENERGY: 40_000,
     },
 
