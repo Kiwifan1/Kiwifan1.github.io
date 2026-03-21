@@ -18,7 +18,17 @@ export class ChemicalMachine implements ProcessingMachine {
 	public readonly baseEnergy: number;
 	public readonly speedUpgrades: number;
 	public readonly energyUpgrades: number;
+	public readonly gasUpgrades: number;
 	public readonly supportsGasUpgrade: boolean;
+
+	/**
+	 * Gas usage multiplier: 10^(2s - g) for gas-supporting machines, 10^(s) otherwise.
+	 * This multiplies the input consumption rate per tick.
+	 * At max speed (8) + max gas (8): 10^(2-1) = 10× base consumption/tick.
+	 * At max speed (8) + no gas: 10^(2) = 100× base consumption/tick.
+	 * Since throughput also scales, net effect on resource/output is 10^(s-g) for gas machines.
+	 */
+	public readonly gasUsageMultiplier: number;
 
 	/** Total output mB per recipe operation (sum of all outputs). */
 	public readonly recipeOutputMb: number;
@@ -33,7 +43,8 @@ export class ChemicalMachine implements ProcessingMachine {
 		baseEnergy: number,
 		speedUpgrades: number = 0,
 		supportsGasUpgrade: boolean = false,
-		energyUpgrades: number = 0
+		energyUpgrades: number = 0,
+		gasUpgrades: number = 0
 	) {
 		if (speedUpgrades < 0 || speedUpgrades > ChemicalMachine.MAX_SPEED_UPGRADES) {
 			throw new Error(`Speed upgrades must be between 0 and ${ChemicalMachine.MAX_SPEED_UPGRADES}`);
@@ -44,7 +55,14 @@ export class ChemicalMachine implements ProcessingMachine {
 		this.baseEnergy = baseEnergy;
 		this.speedUpgrades = speedUpgrades;
 		this.energyUpgrades = energyUpgrades;
+		this.gasUpgrades = gasUpgrades;
 		this.supportsGasUpgrade = supportsGasUpgrade;
+
+		const s = speedUpgrades / ChemicalMachine.MAX_SPEED_UPGRADES;
+		const g = supportsGasUpgrade ? gasUpgrades / ChemicalMachine.MAX_SPEED_UPGRADES : 0;
+		this.gasUsageMultiplier = supportsGasUpgrade
+			? Math.pow(10, 2 * s - g)
+			: Math.pow(10, s);
 
 		// Total output per recipe = sum of all output mB
 		this.recipeOutputMb = Object.values(outputs).reduce((sum, v) => sum + v, 0);
@@ -66,7 +84,11 @@ export class ChemicalMachine implements ProcessingMachine {
 		return machineCount * this.baseEnergy * Math.pow(10, 2 * s - e);
 	}
 
-	/** Given a required output rate (mB/t), compute the input rate for a specific input. */
+	/**
+	 * Given a required output rate (mB/t), compute the input rate for a specific input.
+	 * Uses stoichiometric ratios — gas upgrades don't change the chemistry,
+	 * they reduce waste/overconsumption from speed penalties.
+	 */
 	public getInputRate(outputName: string, outputRate: number, inputName: string): number {
 		const outputRatio = this.outputs.get(outputName);
 		const inputRatio = this.inputs.get(inputName);

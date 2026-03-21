@@ -37,14 +37,8 @@
 
 .fuel-chain__inputs {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-}
-
-@media (max-width: 720px) {
-  .fuel-chain__inputs {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 @media (max-width: 480px) {
@@ -70,6 +64,10 @@
 
 .fuel-chain__upgrade-value--energy {
   background: var(--kiwi-blue);
+}
+
+.fuel-chain__upgrade-value--gas {
+  background: var(--flow-b, #ff9800);
 }
 
 .fuel-chain__upgrade-value {
