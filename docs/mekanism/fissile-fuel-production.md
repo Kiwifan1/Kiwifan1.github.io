@@ -16,18 +16,18 @@ flowchart TD
     subgraph PathB["Path B -- Hydrofluoric Acid"]
         Coal["Coal"] -->|"1 item"| PRC["Pressurized Reaction Chamber"]
         Water1["Water"] -->|"100 mB"| PRC
-        O2a["$$O_2$$"] -->|"100 mB"| PRC
+        O2a["O₂"] -->|"100 mB"| PRC
         PRC -->|"1 item + 100 mB H₂"| SD["Sulfur Dust"]
         SD -->|"1 item"| COs["Chemical Oxidizer"]
-        COs -->|"100 mB"| SO2["$$SO_2$$"]
-        O2b["$$O_2$$"] -->|"1 mB"| CI1["Chemical Infuser"]
+        COs -->|"100 mB"| SO2["SO₂"]
+        O2b["O₂"] -->|"1 mB"| CI1["Chemical Infuser"]
         SO2 -->|"2 mB"| CI1
-        CI1 -->|"2 mB"| SO3["$$SO_3$$"]
+        CI1 -->|"2 mB"| SO3["SO₃"]
         Water2["Water"] -->|"1 mB : 1 mB"| RC["Rotary Condensentrator"]
         RC -->|"Water Vapor"| WV["Water Vapor"]
         SO3 -->|"1 mB"| CI2["Chemical Infuser"]
         WV -->|"1 mB"| CI2
-        CI2 -->|"1 mB"| H2SO4["$$H_2SO_4$$"]
+        CI2 -->|"1 mB"| H2SO4["H₂SO₄"]
         Fluorite["Fluorite"] -->|"1 item"| CDC["Chemical Dissolution Chamber"]
         H2SO4 -->|"1 mB"| CDC
         CDC -->|"1000 mB"| HF["Hydrofluoric Acid"]
@@ -36,7 +36,7 @@ flowchart TD
     subgraph Final["Final Assembly"]
         HF -->|"1 mB"| CI3["Chemical Infuser"]
         UO -->|"1 mB"| CI3
-        CI3 -->|"2 mB"| UF6["$$UF_6$$"]
+        CI3 -->|"2 mB"| UF6["UF₆"]
         UF6 -->|"1 mB"| IC["Isotopic Centrifuge"]
         IC -->|"1 mB"| FF["Fissile Fuel"]
     end
@@ -95,7 +95,9 @@ Maximum speed upgrades (batch machines only): $u_{\max} = 8$ (`PRODUCTION_CHAIN.
 
 Each **batch** Mekanism machine can hold up to 8 speed upgrades. The effective processing time for a machine with $u$ speed upgrades ($0 \leq u \leq 8$) is:
 
-$$t_{\text{eff}} = \left\lceil\dfrac{t_{\text{base}}}{1 + u}\right\rceil$$
+$$t_{\text{eff}} = \left\lceil t_{\text{base}} \times M^{-u/u_{\max}} \right\rceil$$
+
+where $M = 10$ (maxUpgradeMultiplier), $u$ = speed upgrades installed, $u_{\max} = 8$.
 
 Flow-rate machines (Chemical Infusers, Isotopic Centrifuge, Electrolytic Separator, Rotary Condensentrator) do not have a ticks-per-operation cycle, so speed upgrades do not apply to them.
 
@@ -104,14 +106,14 @@ For the two distinct base tick values used by batch machines in this chain:
 | $u$ | $t_{\text{eff}}$ ($t_{\text{base}} = 200$) | $t_{\text{eff}}$ ($t_{\text{base}} = 100$) |
 | --- | ------------------------------------------- | ------------------------------------------- |
 | 0 | 200 | 100 |
-| 1 | 100 | 50 |
-| 2 | 67 | 34 |
-| 3 | 50 | 25 |
-| 4 | 40 | 20 |
-| 5 | 34 | 17 |
-| 6 | 29 | 15 |
-| 7 | 25 | 13 |
-| 8 | 23 | 12 |
+| 1 | 150 | 75 |
+| 2 | 113 | 57 |
+| 3 | 85 | 43 |
+| 4 | 64 | 32 |
+| 5 | 48 | 24 |
+| 6 | 36 | 18 |
+| 7 | 27 | 14 |
+| 8 | 20 | 10 |
 
 Batch machines with $t_{\text{base}} = 200$: Enrichment Chamber (A1).
 Batch machines with $t_{\text{base}} = 100$: Chemical Oxidizer UO (A2), PRC (B1), Chemical Oxidizer SO$_2$ (B2), Dissolution Chamber (B6).
@@ -240,28 +242,40 @@ Converts 2 mB Water → 2 mB H$_2$ + 1 mB O$_2$ continuously. Supplies all O$_2$
 $$N_{ES} = 1$$
 
 ```mermaid
-flowchart RL
-    FF["Fissile Fuel"] -->|"$$R$$ mB/t"| IC["Isotopic Centrifuge"]
-    IC -->|"$$R$$ mB/t UF₆"| CIuf["Infuser (UF₆)"]
-    CIuf -->|"$$R/2$$ mB/t"| UO["UO demand"]
-    CIuf -->|"$$R/2$$ mB/t"| HF["HF demand"]
+flowchart LR
+    subgraph Inputs
+        Ingots["Uranium Ingots"]
+        Fl["Fluorite"]
+        Coal["Coal"]
+        Water["Water"]
+    end
 
-    UO -->|"$$R/500$$ items/t"| COu["Chem. Oxidizer"]
-    COu -->|"$$R/1000$$ items/t"| ECh["Enrichment Chamber"]
-    ECh --> Ingots["Uranium Ingots"]
+    subgraph PathA["Path A"]
+        Ingots --> ECh["Enrichment"]
+        ECh -->|"Yellow Cake"| COu["Oxidizer UO"]
+    end
 
-    HF -->|"$$R/2$$ mB/t"| CDC["Dissolution Chamber"]
-    CDC --> Fl["Fluorite"]
-    CDC -->|"$$R/2000$$ mB/t H₂SO₄"| CIh2so4["Infuser (H₂SO₄)"]
-    CIh2so4 -->|"$$R/2000$$ mB/t"| Vapor["Condensentrator"]
-    CIh2so4 -->|"$$R/2000$$ mB/t"| CIso3["Infuser (SO₃)"]
-    CIso3 -->|"$$R/2000$$ mB/t"| COs["Oxidizer (SO₂)"]
-    COs -->|"$$R/200000$$ /t"| PRC["PRC"]
-    PRC --> Coal["Coal"]
-    CIso3 --> ES["Electrolytic Separator"]
-    PRC --> ES
-    ES -->|"$$3R/4000$$ mB/t O₂"| O2["O₂ supply"]
-    ES -->|"$$3R/2000$$ mB/t Water"| WaterES["Water (ES)"]
+    subgraph PathB["Path B"]
+        Coal --> PRC
+        Water -->|"to PRC"| PRC["PRC"]
+        Water -->|"to ES"| ES["Electrolytic Separator"]
+        ES -->|"O₂"| PRC
+        ES -->|"O₂"| CIso3["Infuser SO₃"]
+        PRC -->|"Sulfur"| COs["Oxidizer SO₂"]
+        COs --> CIso3
+        Water -->|"to RC"| RC["Condensentrator"]
+        RC -->|"Vapor"| CIh2so4["Infuser H₂SO₄"]
+        CIso3 -->|"SO₃"| CIh2so4
+        Fl --> CDC["Dissolution"]
+        CIh2so4 -->|"H₂SO₄"| CDC
+    end
+
+    subgraph Final
+        COu -->|"UO"| CIuf["Infuser UF₆"]
+        CDC -->|"HF"| CIuf
+        CIuf -->|"UF₆"| IC["Centrifuge"]
+        IC --> FF["Fissile Fuel"]
+    end
 ```
 
 ## Resource Input Rates
@@ -308,10 +322,10 @@ Consider a default $10 \times 10 \times 12$ `Fission Reactor` with a burn rate o
 
 From the speed upgrade formula with $u = 8$:
 
-$$t_{\text{eff}} = \left\lceil\dfrac{t_{\text{base}}}{1 + 8}\right\rceil = \left\lceil\dfrac{t_{\text{base}}}{9}\right\rceil$$
+$$t_{\text{eff}} = \left\lceil t_{\text{base}} \times 10^{-8/8} \right\rceil = \left\lceil t_{\text{base}} \times 0.1 \right\rceil$$
 
-- Batch stages with $t_{\text{base}} = 100$ (A2, B1, B2, B6): $t_{\text{eff}} = \left\lceil\dfrac{100}{9}\right\rceil = 12$ ticks
-- Batch stage with $t_{\text{base}} = 200$ (A1): $t_{\text{eff}} = \left\lceil\dfrac{200}{9}\right\rceil = 23$ ticks
+- Batch stages with $t_{\text{base}} = 100$ (A2, B1, B2, B6): $t_{\text{eff}} = \left\lceil 100 \times 0.1 \right\rceil = 10$ ticks
+- Batch stage with $t_{\text{base}} = 200$ (A1): $t_{\text{eff}} = \left\lceil 200 \times 0.1 \right\rceil = 20$ ticks
 - Flow-rate machines (B3, B4, B5, F1, F2, ES): no tick cycle -- 1 machine each
 
 ### Intermediate Demand Rates
@@ -338,15 +352,15 @@ $$D_{\text{Coal}} = D_{\text{Sulfur}} = 0.00144 \text{ items/t}$$
 
 ### Per-Machine Output Rates (batch machines only)
 
-$$\lambda_{A1} = \dfrac{2}{23} \approx 0.0870 \text{ items/t (Yellow Cake)}$$
+$$\lambda_{A1} = \dfrac{2}{20} = 0.1 \text{ items/t (Yellow Cake)}$$
 
-$$\lambda_{A2} = \dfrac{250}{12} \approx 20.833 \text{ mB/t (UO)}$$
+$$\lambda_{A2} = \dfrac{250}{10} = 25 \text{ mB/t (UO)}$$
 
-$$\lambda_{B1} = \dfrac{1}{12} \approx 0.0833 \text{ items/t (Sulfur)}$$
+$$\lambda_{B1} = \dfrac{1}{10} = 0.1 \text{ items/t (Sulfur)}$$
 
-$$\lambda_{B2} = \dfrac{100}{12} \approx 8.333 \text{ mB/t (SO}_2\text{)}$$
+$$\lambda_{B2} = \dfrac{100}{10} = 10 \text{ mB/t (SO}_2\text{)}$$
 
-$$\lambda_{B6} = \dfrac{1{,}000}{12} \approx 83.33 \text{ mB/t (HF)}$$
+$$\lambda_{B6} = \dfrac{1{,}000}{10} = 100 \text{ mB/t (HF)}$$
 
 ### Machine Counts
 
@@ -358,13 +372,13 @@ $$N_{F1} = 1 \quad \text{(Chemical Infuser UF}_6\text{)}$$
 
 **Path A:**
 
-$$N_{A2} = \left\lceil\dfrac{144}{20.833}\right\rceil = \left\lceil 6.912 \right\rceil = 7$$
+$$N_{A2} = \left\lceil\dfrac{144}{25}\right\rceil = \left\lceil 5.76 \right\rceil = 6$$
 
-$$N_{A1} = \left\lceil\dfrac{0.576}{0.0870}\right\rceil = \left\lceil\dfrac{0.576 \times 23}{2}\right\rceil = \left\lceil 6.624 \right\rceil = 7$$
+$$N_{A1} = \left\lceil\dfrac{0.576}{0.1}\right\rceil = \left\lceil\dfrac{0.576 \times 20}{2}\right\rceil = \left\lceil 5.76 \right\rceil = 6$$
 
 **Path B:**
 
-$$N_{B6} = \left\lceil\dfrac{144}{83.33}\right\rceil = \left\lceil 1.728 \right\rceil = 2$$
+$$N_{B6} = \left\lceil\dfrac{144}{100}\right\rceil = \left\lceil 1.44 \right\rceil = 2$$
 
 $$N_{B5} = 1 \quad \text{(Chemical Infuser H}_2\text{SO}_4\text{, flow-rate)}$$
 
@@ -372,9 +386,9 @@ $$N_{B4} = 1 \quad \text{(Rotary Condensentrator, flow-rate)}$$
 
 $$N_{B3} = 1 \quad \text{(Chemical Infuser SO}_3\text{, flow-rate)}$$
 
-$$N_{B2} = \left\lceil\dfrac{0.144}{8.333}\right\rceil = \left\lceil 0.01728 \right\rceil = 1$$
+$$N_{B2} = \left\lceil\dfrac{0.144}{10}\right\rceil = \left\lceil 0.0144 \right\rceil = 1$$
 
-$$N_{B1} = \left\lceil 0.00144 \times 12 \right\rceil = \left\lceil 0.01728 \right\rceil = 1$$
+$$N_{B1} = \left\lceil 0.00144 \times 10 \right\rceil = \left\lceil 0.0144 \right\rceil = 1$$
 
 **Support:**
 
@@ -421,15 +435,15 @@ Broken down:
 
 ### Energy Consumption (batch machines)
 
-$$\mathcal{E}_{\text{batch}} = 7 \cdot \dfrac{16{,}000}{23} + 7 \cdot \dfrac{40{,}000}{12} + 1 \cdot \dfrac{20{,}000}{12} + 1 \cdot \dfrac{40{,}000}{12} + 2 \cdot \dfrac{80{,}000}{12}$$
+$$\mathcal{E}_{\text{batch}} = 6 \cdot \dfrac{16{,}000}{20} + 6 \cdot \dfrac{40{,}000}{10} + 1 \cdot \dfrac{20{,}000}{10} + 1 \cdot \dfrac{40{,}000}{10} + 2 \cdot \dfrac{80{,}000}{10}$$
 
 $$\downarrow$$
 
-$$\mathcal{E}_{\text{batch}} = 4{,}869.57 + 23{,}333.33 + 1{,}666.67 + 3{,}333.33 + 13{,}333.33$$
+$$\mathcal{E}_{\text{batch}} = 4{,}800 + 24{,}000 + 2{,}000 + 4{,}000 + 16{,}000$$
 
 $$\downarrow$$
 
-$$\mathcal{E}_{\text{batch}} \approx 46{,}536.23 \text{ J/t} \approx 46.54 \text{ kJ/t} \approx 18.61 \text{ kFE/t}$$
+$$\mathcal{E}_{\text{batch}} = 50{,}800 \text{ J/t} \approx 50.8 \text{ kJ/t} \approx 20.32 \text{ kFE/t}$$
 
 > Flow-rate machine energy (B3, B4, B5, F1, F2, ES) is additional and depends on actual throughput.
 
@@ -437,18 +451,18 @@ $$\mathcal{E}_{\text{batch}} \approx 46{,}536.23 \text{ J/t} \approx 46.54 \text
 
 | Stage | Machine | Count | Rate |
 | ----- | ------- | ----- | ---- |
-| A1 | `Enrichment Chamber` | 7 | 0.0870 items/t each |
-| A2 | `Chemical Oxidizer (UO)` | 7 | 20.833 mB/t each |
-| B1 | `Pressurized Reaction Chamber` | 1 | 0.0833 items/t |
-| B2 | `Chemical Oxidizer (SO$_2$)` | 1 | 8.333 mB/t |
+| A1 | `Enrichment Chamber` | 6 | 0.1 items/t each |
+| A2 | `Chemical Oxidizer (UO)` | 6 | 25 mB/t each |
+| B1 | `Pressurized Reaction Chamber` | 1 | 0.1 items/t |
+| B2 | `Chemical Oxidizer (SO$_2$)` | 1 | 10 mB/t |
 | B3 | `Chemical Infuser (SO$_3$)` | 1 | flow-rate |
 | B4 | `Rotary Condensentrator` | 1 | flow-rate |
 | B5 | `Chemical Infuser (H$_2$SO$_4$)` | 1 | flow-rate |
-| B6 | `Chemical Dissolution Chamber` | 2 | 83.33 mB/t each |
+| B6 | `Chemical Dissolution Chamber` | 2 | 100 mB/t each |
 | F1 | `Chemical Infuser (UF$_6$)` | 1 | flow-rate |
 | F2 | `Isotopic Centrifuge` | 1 | flow-rate |
 | ES | `Electrolytic Separator` | 1 | flow-rate |
-| **Total** | | **24** | **288 mB/t Fissile Fuel** |
+| **Total** | | **22** | **288 mB/t Fissile Fuel** |
 
 | Resource | Rate |
 | -------- | ---- |
@@ -458,12 +472,12 @@ $$\mathcal{E}_{\text{batch}} \approx 46{,}536.23 \text{ J/t} \approx 46.54 \text
 | Water | 0.72 mB/t |
 | Oxygen (O$_2$) | 0.216 mB/t (produced by ES) |
 | H$_2$ byproduct | 0.576 mB/t |
-| Batch energy | ~46.54 kJ/t (~18.61 kFE/t) |
+| Batch energy | ~50.8 kJ/t (~20.32 kFE/t) |
 
 ```mermaid
 pie title Machine Distribution (R=288, u=8)
-    "Enrichment Chamber" : 7
-    "Chemical Oxidizer (UO)" : 7
+    "Enrichment Chamber" : 6
+    "Chemical Oxidizer (UO)" : 6
     "Chemical Dissolution Chamber" : 2
     "Pressurized Reaction Chamber" : 1
     "Chemical Oxidizer (SO2)" : 1
@@ -475,7 +489,7 @@ pie title Machine Distribution (R=288, u=8)
     "Electrolytic Separator" : 1
 ```
 
-> **Note:** Flow-rate machines (Chemical Infusers, Isotopic Centrifuge, Electrolytic Separator, Rotary Condensentrator) each need only 1 unit regardless of throughput -- they process continuously at whatever rate inputs are supplied, limited only by pipe bandwidth. The batch machines (Enrichment Chamber, Oxidizers, PRC, Dissolution Chamber) dominate the machine count at 18 of 24 total.
+> **Note:** Flow-rate machines (Chemical Infusers, Isotopic Centrifuge, Electrolytic Separator, Rotary Condensentrator) each need only 1 unit regardless of throughput -- they process continuously at whatever rate inputs are supplied, limited only by pipe bandwidth. The batch machines (Enrichment Chamber, Oxidizers, PRC, Dissolution Chamber) dominate the machine count at 16 of 22 total.
 
 ## Modpack Notice
 

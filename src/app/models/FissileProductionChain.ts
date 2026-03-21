@@ -60,11 +60,22 @@ export class FissileProductionChain {
 	}
 
 	/**
+	 * Default max upgrade multiplier from Mekanism config (GeneralConfig.java).
+	 * Formula: baseTicks × M^(-speedFraction) where speedFraction = upgrades/8.
+	 */
+	public static readonly MAX_UPGRADE_MULTIPLIER = 10;
+
+	/**
 	 * Returns the effective ticks per operation for a batch machine after
 	 * applying speed upgrades.
+	 *
+	 * Mekanism formula (MekanismUtils.getTicks):
+	 *   effectiveTicks = ceil(baseTicks × M^(-speedFraction))
+	 * where M = maxUpgradeMultiplier (default 10), speedFraction = upgrades / maxUpgrades.
 	 */
 	public static getEffectiveTicks(baseTicks: number, speedUpgrades: number): number {
-		return Math.ceil(baseTicks / (1 + speedUpgrades));
+		const fraction = speedUpgrades / PRODUCTION_CHAIN.MAX_SPEED_UPGRADES;
+		return Math.ceil(baseTicks * Math.pow(FissileProductionChain.MAX_UPGRADE_MULTIPLIER, -fraction));
 	}
 
 	/**
