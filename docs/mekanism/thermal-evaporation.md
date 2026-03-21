@@ -130,10 +130,10 @@ $$\text{rate} = \left\lfloor 277.5 \times H \right\rfloor \quad \text{mB/t}.$$
 
 ```mermaid
 flowchart LR
-    Solar["Solar Panels"] -->|"$$Q_{in} = 120n$$"| Heat["Heat Accumulation"]
-    Heat -->|"clamp at 3000"| TM["Temp Multiplier"]
-    TM -->|"$$m = 2700 \times 1.85 \times H/18$$"| Rate["Production Rate"]
-    Rate --> Output["$$\lfloor m \rfloor$$ mB/t"]
+    Solar["Solar Panels"] -->|"Q_in = 120n"| Heat["Heat Accumulation"]
+    Heat -->|"clamp at 3000K"| TM["Temp Multiplier"]
+    TM -->|"m = tempDelta × 1.85 × H/18"| Rate["Production Rate"]
+    Rate --> Output["floor(m) mB/t"]
 ```
 
 ## Tank Capacity
