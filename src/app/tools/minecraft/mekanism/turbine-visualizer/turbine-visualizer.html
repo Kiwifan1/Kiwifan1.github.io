@@ -1,0 +1,65 @@
+<section class="visualizer" aria-label="Industrial turbine assembly guide">
+  @if (activeLayer(); as layer) {
+    <header class="visualizer__header">
+      <div class="visualizer__layer">
+        <label class="visualizer__slider">
+          <span class="visualizer__slider-label">
+            Layer {{ displayIndex() }} / {{ layerCount() }}
+          </span>
+          <input
+            type="range"
+            [min]="0"
+            [max]="maxIndex()"
+            [value]="activeIndex()"
+            [disabled]="layerCount() <= 1"
+            (input)="onSliderInput($event)"
+          />
+        </label>
+        <p class="visualizer__layer-name">{{ layer.name }}</p>
+        <p class="visualizer__layer-description">{{ layer.description }}</p>
+        @if (layer.repeatHint) {
+          <p class="visualizer__layer-repeat">{{ layer.repeatHint }}</p>
+        }
+        @if (layer.materials.length > 0) {
+          <ul class="visualizer__materials">
+            @for (material of layer.materials; track material.type) {
+              <li>
+                <span class="visualizer__materials-count">{{ material.count }}</span>
+                <span class="visualizer__materials-label">{{ material.label }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </header>
+
+    <div class="visualizer__content">
+      <div
+        class="visualizer__grid"
+        [style.gridTemplateColumns]="gridTemplateColumns(layer)"
+        [style.gridTemplateRows]="gridTemplateRows(layer)"
+      >
+        @for (row of layer.grid; track $index) {
+          @for (cell of row; track $index) {
+            <div
+              class="visualizer__cell visualizer__cell--{{ cell.type }}"
+              role="img"
+              [attr.aria-label]="cell.label"
+              [title]="cell.label"
+            ></div>
+          }
+        }
+      </div>
+      <ul class="visualizer__legend">
+        @for (entry of legend; track entry.type) {
+          <li>
+            <span class="visualizer__legend-swatch visualizer__legend-swatch--{{ entry.type }}"></span>
+            <span>{{ entry.label }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  } @else {
+    <p class="visualizer__empty">Turbine data is unavailable.</p>
+  }
+</section>
