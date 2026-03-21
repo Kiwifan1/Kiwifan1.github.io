@@ -5,17 +5,17 @@
     <h3 class="chain-flow__section-title">Path A &mdash; Uranium Oxide</h3>
     <div class="chain-flow__pipeline">
       <div class="chain-flow__input">Uranium Ingots</div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--batch chain-flow__node--a">
         <span class="chain-flow__node-name">Enrichment Chamber</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Enrichment Chamber') }}</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--batch chain-flow__node--a">
         <span class="chain-flow__node-name">Chemical Oxidizer</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Chemical Oxidizer (Uranium Oxide)') }}</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__product chain-flow__product--a">Uranium Oxide</div>
     </div>
   </div>
@@ -27,17 +27,17 @@
     <!-- Sub-pipeline: Coal → PRC → Oxidizer SO₂ -->
     <div class="chain-flow__pipeline">
       <div class="chain-flow__input">Coal</div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
         <span class="chain-flow__node-name">Pressurized Reaction Chamber</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Pressurized Reaction Chamber') }}</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
         <span class="chain-flow__node-name">Chemical Oxidizer (SO&#x2082;)</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Chemical Oxidizer (Sulfur Dioxide)') }}</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
         <span class="chain-flow__node-name">Chemical Infuser (SO&#x2083;)</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--outline">flow</span>
@@ -47,24 +47,24 @@
     <!-- Sub-pipeline: Water → Electrolytic Separator → O₂ -->
     <div class="chain-flow__pipeline chain-flow__pipeline--sub">
       <div class="chain-flow__input">Water</div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
         <span class="chain-flow__node-name">Electrolytic Separator</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--outline">flow</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
-      <div class="chain-flow__product chain-flow__product--b">O&#x2082; &rarr; PRC &amp; SO&#x2083; Infuser</div>
+      <div class="chain-flow__arrow"></div>
+      <div class="chain-flow__product chain-flow__product--b">O&#x2082; → PRC &amp; SO&#x2083; Infuser</div>
     </div>
 
     <!-- Sub-pipeline: Water → Condensentrator → Water Vapor → H₂SO₄ Infuser -->
     <div class="chain-flow__pipeline chain-flow__pipeline--sub">
       <div class="chain-flow__input">Water</div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
         <span class="chain-flow__node-name">Rotary Condensentrator</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--outline">flow</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
         <span class="chain-flow__node-name">Chemical Infuser (H&#x2082;SO&#x2084;)</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--outline">flow</span>
@@ -74,12 +74,12 @@
     <!-- Sub-pipeline: Fluorite + H₂SO₄ → Dissolution Chamber → HF -->
     <div class="chain-flow__pipeline chain-flow__pipeline--sub">
       <div class="chain-flow__input">Fluorite + H&#x2082;SO&#x2084;</div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
         <span class="chain-flow__node-name">Dissolution Chamber</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Chemical Dissolution Chamber') }}</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__product chain-flow__product--b">Hydrofluoric Acid</div>
     </div>
   </div>
@@ -93,17 +93,17 @@
         <span class="chain-flow__merge-plus">+</span>
         <span>Hydrofluoric Acid</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--flow chain-flow__node--final">
         <span class="chain-flow__node-name">Chemical Infuser (UF&#x2086;)</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--outline">flow</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__node chain-flow__node--flow chain-flow__node--final">
         <span class="chain-flow__node-name">Isotopic Centrifuge</span>
         <span class="chain-flow__node-badge chain-flow__node-badge--outline">flow</span>
       </div>
-      <div class="chain-flow__arrow">&rarr;</div>
+      <div class="chain-flow__arrow"></div>
       <div class="chain-flow__product chain-flow__product--final">Fissile Fuel</div>
     </div>
   </div>
