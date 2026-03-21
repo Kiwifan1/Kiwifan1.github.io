@@ -54,16 +54,15 @@ export class FuelChainPlanner {
   }
 
   public formatItemRate(rate: number): string {
-    // Show per-second (×20) if per-tick is tiny
     const perSecond = rate * 20;
     if (perSecond < 0.01) {
       const perMinute = rate * 1200;
       return asDecimal(perMinute, 2) + ' items/min';
     }
     if (rate < 0.01) {
-      return asDecimal(perSecond, 3) + ' items/s';
+      return asDecimal(perSecond, 2) + ' items/s';
     }
-    return asDecimal(rate, 4) + ' items/t';
+    return asDecimal(rate, 2) + ' items/t';
   }
 
   constructor() {
