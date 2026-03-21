@@ -124,21 +124,20 @@
         <h2>Machine Breakdown</h2>
         <div class="fuel-chain__machine-grid">
           @for (stage of data.stages; track stage.name) {
-            <div class="fuel-chain__machine-item" [class.fuel-chain__machine-item--flow]="stage.type === 'flow'">
+            <div class="fuel-chain__machine-item" [class.fuel-chain__machine-item--chemical]="stage.type === 'chemical'">
               <div class="fuel-chain__machine-header">
                 <span class="fuel-chain__machine-name">{{ stage.name }}</span>
-                @if (stage.type === 'batch') {
-                  <span class="fuel-chain__machine-badge">{{ stage.count === 1 ? '×1' : '×' + asNumber(stage.count) }}</span>
-                } @else {
-                  <span class="fuel-chain__machine-badge fuel-chain__machine-badge--flow">flow</span>
-                }
+                <span class="fuel-chain__machine-badge" [class.fuel-chain__machine-badge--flow]="stage.type === 'chemical'">
+                  {{ stage.count === 1 ? '×1' : '×' + asNumber(stage.count) }}
+                </span>
               </div>
               <div class="fuel-chain__machine-stats">
                 @if (stage.type === 'batch') {
                   <span>{{ asDecimal(stage.opsPerTick, 4) }} ops/t</span>
                   <span>{{ asNumber(stage.ticksPerOp) }} ticks/op</span>
                 } @else {
-                  <span>{{ asDecimal(stage.flowRateMbPerTick, 2) }} mB/t</span>
+                  <span>{{ asDecimal(stage.flowRateMbPerTick, 2) }} mB/t needed</span>
+                  <span>{{ asDecimal(stage.throughputPerTick, 0) }} mB/t capacity</span>
                 }
                 <span>{{ formatEnergy(stage.energyPerTick) }}</span>
               </div>
@@ -146,6 +145,19 @@
           }
         </div>
       </section>
+
+      @if (data.upgradeRequirements.speed.total > 0) {
+        <section class="fuel-chain__card fuel-chain__card--wide">
+          <h2>Upgrades Required</h2>
+          <div class="fuel-chain__resource-grid">
+            <div class="fuel-chain__resource">
+              <span class="fuel-chain__resource-label">Speed Upgrades</span>
+              <span class="fuel-chain__resource-value">{{ asNumber(data.upgradeRequirements.speed.total) }}</span>
+              <span class="fuel-chain__input-hint">{{ data.upgradeRequirements.speed.perMachine }} per machine &times; {{ asNumber(data.upgradeRequirements.speed.machines) }} machines</span>
+            </div>
+          </div>
+        </section>
+      }
 
     </div>
   }

@@ -3,8 +3,6 @@ import { Component, Input } from '@angular/core';
 import {
   ProductionChainResult,
   MachineStage,
-  BatchMachineStage,
-  FlowRateMachineStage,
 } from '../../../../models/FissileProductionChain';
 
 @Component({
