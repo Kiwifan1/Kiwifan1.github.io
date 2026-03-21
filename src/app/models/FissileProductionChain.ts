@@ -212,12 +212,11 @@ function buildFlowStage(
 	constants: FlowConstants,
 	outputKey: string = 'default'
 ): FlowRateMachineStage {
-	const outputMb = constants.OUTPUT_MB ?? constants.OUTPUT_O2_MB ?? constants.OUTPUT_VAPOR_MB ?? 1;
 	return {
 		type: 'flow',
 		name: machine.name,
 		count: 1,
 		flowRateMbPerTick: flowRate,
-		energyPerTick: flowRate * constants.BASE_ENERGY / outputMb,
+		energyPerTick: constants.BASE_ENERGY,
 	};
 }
