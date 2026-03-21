@@ -1,0 +1,31 @@
+.planner__card {
+  background: var(--tool-surface);
+  border: 1px solid var(--tool-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.planner__card h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.planner__card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.planner__card li {
+  color: var(--tool-muted);
+}
+
+.planner__card strong {
+  color: var(--tool-text);
+}
