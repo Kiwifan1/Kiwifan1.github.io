@@ -1,0 +1,100 @@
+<section class="planner fuel-chain">
+  <form [formGroup]="form" class="planner__form" aria-label="Fuel chain planner">
+    <fieldset class="planner__field-set">
+      <legend>Production target</legend>
+      <div class="planner__grid">
+        <label>
+          Target fuel rate (mB/t)
+          <input type="number" formControlName="fuelRate" min="0.1" max="10000" step="0.1" />
+        </label>
+        <label class="fuel-chain__slider-label">
+          Speed upgrades: <strong>{{ form.value.speedUpgrades }}</strong>
+          <input type="range" formControlName="speedUpgrades" min="0" max="8" step="1" />
+        </label>
+      </div>
+      <p class="planner__hint">
+        Fuel rate range: 0.1 - 10,000 mB/t. Speed upgrades (0-8) reduce machine processing time.
+      </p>
+    </fieldset>
+
+    <div class="planner__actions">
+      <button type="button" class="planner__submit" [disabled]="form.invalid" (click)="computeChain()">
+        Calculate
+      </button>
+    </div>
+  </form>
+
+  @if (error(); as err) {
+    <div class="planner__feedback">
+      <p class="planner__error">{{ err }}</p>
+    </div>
+  } @else if (result(); as data) {
+    <div class="planner__results">
+
+      <!-- Summary card -->
+      <section class="planner__card fuel-chain__summary-card">
+        <h2>Summary</h2>
+        <ul>
+          <li><strong>Target fuel rate:</strong> {{ asDecimal(data.targetFuelRate) }} mB/t</li>
+          <li><strong>Speed upgrades:</strong> {{ data.speedUpgrades }}</li>
+          <li><strong>Total machines:</strong> {{ asNumber(data.totalMachines) }}</li>
+          <li><strong>Total energy:</strong> {{ asDecimal(data.resources.totalEnergyPerTick) }} J/t</li>
+        </ul>
+      </section>
+
+      <!-- Resources card -->
+      <section class="planner__card fuel-chain__resources-card">
+        <h2>Resource Requirements</h2>
+        <div class="fuel-chain__resource-grid">
+          <div class="fuel-chain__resource">
+            <span class="fuel-chain__resource-label">Uranium Ingots</span>
+            <span class="fuel-chain__resource-value">{{ asDecimal(data.resources.uraniumIngotsPerTick, 4) }} /t</span>
+          </div>
+          <div class="fuel-chain__resource">
+            <span class="fuel-chain__resource-label">Fluorite</span>
+            <span class="fuel-chain__resource-value">{{ asDecimal(data.resources.fluoritePerTick, 4) }} /t</span>
+          </div>
+          <div class="fuel-chain__resource">
+            <span class="fuel-chain__resource-label">Coal</span>
+            <span class="fuel-chain__resource-value">{{ asDecimal(data.resources.coalPerTick, 4) }} /t</span>
+          </div>
+          <div class="fuel-chain__resource">
+            <span class="fuel-chain__resource-label">Water</span>
+            <span class="fuel-chain__resource-value">{{ asDecimal(data.resources.waterMbPerTick, 2) }} mB/t</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chain flow visualization -->
+      <section class="planner__card fuel-chain__flow-card">
+        <h2>Chain Flow</h2>
+        <app-chain-flow [result]="data"></app-chain-flow>
+      </section>
+
+      <!-- Machine breakdown -->
+      <section class="planner__card fuel-chain__machines-card">
+        <h2>Machine Breakdown</h2>
+        <ul class="fuel-chain__machine-list">
+          @for (stage of data.stages; track stage.name) {
+            <li class="fuel-chain__machine-item">
+              <span class="fuel-chain__machine-name">{{ stage.name }}</span>
+              <span class="fuel-chain__machine-detail">
+                @if (stage.type === 'batch') {
+                  {{ asNumber(stage.count) }} machines &middot;
+                  {{ asDecimal(stage.opsPerTick, 4) }} ops/t &middot;
+                  {{ asNumber(stage.ticksPerOp) }} ticks/op &middot;
+                  {{ asDecimal(stage.energyPerTick, 2) }} J/t
+                } @else {
+                  {{ asNumber(stage.count) }} machine &middot;
+                  {{ asDecimal(stage.flowRateMbPerTick, 2) }} mB/t &middot;
+                  {{ asDecimal(stage.energyPerTick, 2) }} J/t
+                }
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+
+    </div>
+  }
+</section>

@@ -1,20 +1,40 @@
 <section class="mekanism">
-	<a routerLink="/tools" class="mekanism__back">← Back to Minecraft tools</a>
+	<a routerLink="/tools" class="mekanism__back">&larr; Back to Minecraft tools</a>
 
 	<h1 class="mekanism__title">Mekanism Planner</h1>
 	<p class="mekanism__lead">
-		Size a fission reactor and preview the turbines, boilers, and shell components required to run it
-		at peak efficiency.
+		Plan your Mekanism power infrastructure &mdash; from reactor sizing to fuel production chains.
 	</p>
 
-	<app-fission-planner></app-fission-planner>
+	<nav class="mekanism__tabs">
+		<button
+			class="mekanism__tab"
+			[class.mekanism__tab--active]="activeTab() === 'fission'"
+			(click)="switchTab('fission')"
+		>
+			Fission Reactor
+		</button>
+		<button
+			class="mekanism__tab"
+			[class.mekanism__tab--active]="activeTab() === 'fuel-chain'"
+			(click)="switchTab('fuel-chain')"
+		>
+			Fuel Production
+		</button>
+	</nav>
+
+	@if (activeTab() === 'fission') {
+		<app-fission-planner></app-fission-planner>
+	} @else {
+		<app-fuel-chain-planner></app-fuel-chain-planner>
+	}
 
 	<div class="mekanism__callout">
 		<h2>What else is coming?</h2>
 		<ul>
 			<li>Advanced turbine tuning for smaller footprints</li>
 			<li>Shopping lists with material breakdowns</li>
-			<li>Guided layouts for multidimensional heat loops</li>
+			<li>Fusion reactor planner</li>
 		</ul>
 		<p>
 			Have a feature in mind? <a routerLink="/links">Share feedback</a> so it can be prioritised.
