@@ -85,3 +85,48 @@ export const STEAM_PIPE = {
 
 export const ENERGY_PER_STEAM = 10;
 export const FE_TO_JOULES = 2.5;
+
+export const PRODUCTION_CHAIN = {
+    DISSOLUTION_CHAMBER: {
+        BASE_TICKS: 100,
+        OUTPUT_MB: 1800,
+        BASE_ENERGY: 80_000,
+    },
+    CHEMICAL_WASHER: {
+        BASE_TICKS: 100,
+        INPUT_MB: 1000,
+        OUTPUT_MB: 1000,
+        WATER_MB: 1000,
+        BASE_ENERGY: 40_000,
+    },
+    CHEMICAL_CRYSTALLIZER: {
+        BASE_TICKS: 100,
+        INPUT_MB: 200,
+        BASE_ENERGY: 40_000,
+    },
+    ENRICHMENT_CHAMBER: {
+        BASE_TICKS: 200,
+        BASE_ENERGY: 16_000,
+    },
+    CHEMICAL_INFUSER_FUEL: {
+        BASE_TICKS: 100,
+        OUTPUT_MB: 2000,
+        INPUT_HCL_MB: 1000,
+        BASE_ENERGY: 40_000,
+    },
+    ELECTROLYTIC_SEPARATOR: {
+        BASE_TICKS: 100,
+        INPUT_WATER_MB: 800,
+        OUTPUT_H2_MB: 200,
+        OUTPUT_O2_MB: 200,
+        BASE_ENERGY: 80_000,
+    },
+    CHEMICAL_INFUSER_HCL: {
+        BASE_TICKS: 100,
+        INPUT_H2_MB: 200,
+        INPUT_CL_MB: 200,
+        OUTPUT_MB: 200,
+        BASE_ENERGY: 40_000,
+    },
+    MAX_SPEED_UPGRADES: 8,
+}
