@@ -58,13 +58,27 @@
     </div>
   } @else if (result(); as data) {
     <div class="planner__results">
-      <app-performance-card
-        [burnRate]="data.burnRate"
-        [safeBurnRate]="data.safeBurnRate"
-        [steamDemand]="data.steamDemand"
-        [waterDemand]="data.waterDemand"
-        [powerPerTick]="data.powerPerTick"
-      ></app-performance-card>
+      <div class="planner__results-row">
+        <app-performance-card
+          [burnRate]="data.burnRate"
+          [safeBurnRate]="data.safeBurnRate"
+          [steamDemand]="data.steamDemand"
+          [waterDemand]="data.waterDemand"
+          [powerPerTick]="data.powerPerTick"
+        ></app-performance-card>
+
+        <section class="planner__card">
+          <h2>Reactor Construction</h2>
+          <ul>
+            <li>Shell casing: {{ asNumber(data.construction.Shell.solid.casing) }}</li>
+            <li>Control rods: {{ asNumber(data.construction.ControlRods) }}</li>
+            <li>Max rod height: {{ asNumber(data.construction.MaxRodHeight) }}</li>
+            <li>Fuel assemblies: {{ asNumber(data.construction.FissileFuelAssemblies) }}</li>
+            <li>Coolant capacity: {{ asNumber(data.construction.CoolantCapacity) }} mB</li>
+            <li>Hot coolant capacity: {{ asNumber(data.construction.HotCoolantCapacity) }} mB</li>
+          </ul>
+        </section>
+      </div>
 
       <section class="planner__card">
         <h2>Turbine Requirements</h2>
@@ -164,18 +178,6 @@
           }
         </section>
       }
-
-      <section class="planner__card">
-        <h2>Reactor Construction</h2>
-        <ul>
-          <li>Shell casing: {{ asNumber(data.construction.Shell.solid.casing) }}</li>
-          <li>Control rods: {{ asNumber(data.construction.ControlRods) }}</li>
-          <li>Max rod height: {{ asNumber(data.construction.MaxRodHeight) }}</li>
-          <li>Fuel assemblies: {{ asNumber(data.construction.FissileFuelAssemblies) }}</li>
-          <li>Coolant capacity: {{ asNumber(data.construction.CoolantCapacity) }} mB</li>
-          <li>Hot coolant capacity: {{ asNumber(data.construction.HotCoolantCapacity) }} mB</li>
-        </ul>
-      </section>
 
       <app-turbine-visualizer
         class="planner__visualizer"
