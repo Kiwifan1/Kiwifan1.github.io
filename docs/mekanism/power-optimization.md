@@ -90,18 +90,18 @@ This equation means that the height of the `Turbine Rotors` ($r$), the space abo
 
 ```mermaid
 flowchart TD
-    Start["Given L, H"] --> Bounds["Compute r_max, h"]
-    Bounds --> Sweep["For each r in 1..r_max"]
-    Sweep --> Fvent["Compute F_vent(r)"]
-    Sweep --> Fdisp["Compute F_disperser(r)"]
-    Fvent --> Fsteam["F_steam = min(F_vent, F_disperser)"]
+    Start["Given $$L, H$$"] --> Bounds["Compute $$r_{max}, h$$"]
+    Bounds --> Sweep["For each $$r$$ in $$1..r_{max}$$"]
+    Sweep --> Fvent["Compute $$F_{vent}(r)$$"]
+    Sweep --> Fdisp["Compute $$F_{disperser}(r)$$"]
+    Fvent --> Fsteam["$$F_{steam} = \min(F_{vent}, F_{disperser})$$"]
     Fdisp --> Fsteam
-    Sweep --> Fblade["F_blade = 2r / MAX_BLADES"]
-    Fsteam --> Power["P = ENERGY_PER_STEAM * F_blade * F_steam"]
+    Sweep --> Fblade["$$F_{blade} = \frac{2r}{\phi}$$"]
+    Fsteam --> Power["$$P = \varepsilon \cdot F_{blade} \cdot F_{steam}$$"]
     Fblade --> Power
-    Power --> Best{"P > P_best?"}
-    Best -->|"Yes"| Update["P_best = P, r_best = r"]
-    Best -->|"No"| Next["Next r"]
+    Power --> Best{"$$P > P_{best}$$?"}
+    Best -->|"Yes"| Update["$$P_{best} = P$$"]
+    Best -->|"No"| Next["Next $$r$$"]
     Update --> Next
     Next --> Sweep
 ```
@@ -184,13 +184,13 @@ Because, assuming that all available face-space is used by vents, the water flow
 
 ```mermaid
 flowchart LR
-    Steam["Steam In\nF_steam mB/t"] --> Vents["Vents"]
+    Steam["Steam In\n$$F_{steam}$$ mB/t"] --> Vents["Vents"]
     Vents --> Dispersers["Disperser Deck"]
-    Dispersers --> Rotors["Rotor Blades\nF_blade efficiency"]
-    Rotors --> Coils["EM Coils\nP = E * F_blade * F_steam"]
-    Rotors --> Condensers["Saturating Condensers\nF_water = N * CONDENSER_RATE"]
-    Condensers --> Water["Water Out\nF_water mB/t"]
-    Coils --> Energy["Energy Out\nP FE/t"]
+    Dispersers --> Rotors["Rotor Blades\n$$F_{blade}$$ efficiency"]
+    Rotors --> Coils["EM Coils\n$$P = \varepsilon \cdot F_{blade} \cdot F_{steam}$$"]
+    Rotors --> Condensers["Saturating Condensers\n$$F_{water} = N \cdot \rho$$"]
+    Condensers --> Water["Water Out\n$$F_{water}$$ mB/t"]
+    Coils --> Energy["Energy Out\n$$P$$ FE/t"]
 ```
 
 ### Calculating Steam/Water Transportation
@@ -349,18 +349,18 @@ This formula can be used to calculate the optimal power output of an `Industrial
 
 ```mermaid
 flowchart BT
-    L["L (length)"] --> A["A = (L-2)^2"]
-    L --> B["B = (L-2)"]
-    H["H (height)"] --> h["h = H-2"]
-    A --> r_opt["r = ceil((4Bh+A)/8B)"]
+    L["$$L$$ (length)"] --> A["$$A = (L-2)^2$$"]
+    L --> B["$$B = (L-2)$$"]
+    H["$$H$$ (height)"] --> h["$$h = H-2$$"]
+    A --> r_opt["$$r = \lceil\frac{4Bh+A}{8B}\rceil$$"]
     B --> r_opt
     h --> r_opt
-    r_opt --> Fblade["F_blade = 2r/phi"]
-    A --> Fvent["F_vent = gamma*(A+4B(h-r))"]
+    r_opt --> Fblade["$$F_{blade} = \frac{2r}{\phi}$$"]
+    A --> Fvent["$$F_{vent} = \gamma(A+4B(h-r))$$"]
     B --> Fvent
     h --> Fvent
     r_opt --> Fvent
-    Fblade --> P["P = epsilon * F_blade * F_vent"]
+    Fblade --> P["$$P = \varepsilon \cdot F_{blade} \cdot F_{vent}$$"]
     Fvent --> P
 ```
 

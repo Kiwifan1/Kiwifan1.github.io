@@ -160,18 +160,18 @@ $$N_A = \left\lceil\dfrac{\eta_{H_2}}{\lambda_A}\right\rceil = \left\lceil\dfrac
 
 ```mermaid
 flowchart RL
-    FF["Fissile Fuel\nR mB/t"] --> CI["Infuser\nR/2000 ops/t"]
-    CI --> EC["Enrichment\nR/2000 items/t"]
-    CI --> HCl["HCl\nR/2 mB/t"]
-    EC --> CC["Crystallizer\nR/2000 items/t"]
-    CC --> CW["Washer\nR/10 mB/t"]
-    CW --> DC["Dissolution\nR/10 mB/t"]
-    HCl --> CIH["Infuser HCl\nR/2 mB/t"]
-    CIH --> ES["Separator\nR/2 mB/t H2"]
-    DC --> Ore["Ore: R/18000 /t"]
+    FF["Fissile Fuel\n$$R$$ mB/t"] --> CI["Infuser\n$$R/2000$$ ops/t"]
+    CI --> EC["Enrichment\n$$R/2000$$ items/t"]
+    CI --> HCl["HCl\n$$R/2$$ mB/t"]
+    EC --> CC["Crystallizer\n$$R/2000$$ items/t"]
+    CC --> CW["Washer\n$$R/10$$ mB/t"]
+    CW --> DC["Dissolution\n$$R/10$$ mB/t"]
+    HCl --> CIH["Infuser HCl\n$$R/2$$ mB/t"]
+    CIH --> ES["Separator\n$$R/2$$ mB/t H₂"]
+    DC --> Ore["Ore: $$R/18000$$ /t"]
     CW --> Water1["Water (washer)"]
     ES --> Water2["Water (separator)"]
-    CIH --> Chlorine["Chlorine: R/2 mB/t"]
+    CIH --> Chlorine["Chlorine: $$R/2$$ mB/t"]
 ```
 
 ## Resource Input Rates
