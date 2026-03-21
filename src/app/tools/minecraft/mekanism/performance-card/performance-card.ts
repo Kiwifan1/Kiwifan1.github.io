@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { asNumber } from '../../../../utils/format';
+import { asNumber, asDecimal } from '../../../../utils/format';
+import { FE_TO_JOULES } from '../../../../models/constants';
 
 @Component({
   selector: 'app-performance-card',
@@ -16,5 +17,16 @@ export class PerformanceCard {
 
   public format(value: number): string {
     return asNumber(value);
+  }
+
+  public formatPower(fePerTick: number): string {
+    const joules = fePerTick * FE_TO_JOULES;
+    if (joules >= 1_000_000) {
+      return asDecimal(joules / 1_000_000, 2) + ' MJ/t';
+    }
+    if (joules >= 1_000) {
+      return asDecimal(joules / 1_000, 2) + ' kJ/t';
+    }
+    return asDecimal(joules, 2) + ' J/t';
   }
 }

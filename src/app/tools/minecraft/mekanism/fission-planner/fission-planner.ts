@@ -8,6 +8,7 @@ import {
   computeSodiumCoolingRequirements,
   computeWaterCoolingRequirements,
 } from '../../../../utils/cooling-requirements';
+import { FE_TO_JOULES } from '../../../../models/constants';
 import { BOILER } from '../../../../models/constants';
 import { ThermoelectricBoiler } from '../../../../models/ThermoelectricBoiler';
 import { selectTurbineDimensions, selectBoilerDimensions } from '../../../../utils/dimension-search';
@@ -115,6 +116,17 @@ export class FissionPlanner {
 
   public computePlan(): void {
     this.recomputePlan(this.form.getRawValue());
+  }
+
+  public formatPower(fePerTick: number): string {
+    const joules = fePerTick * FE_TO_JOULES;
+    if (joules >= 1_000_000) {
+      return this.asDecimal(joules / 1_000_000, 2) + ' MJ/t';
+    }
+    if (joules >= 1_000) {
+      return this.asDecimal(joules / 1_000, 2) + ' kJ/t';
+    }
+    return this.asDecimal(joules, 2) + ' J/t';
   }
 
   public describeCount(count: number, singular: string, plural?: string): string {
