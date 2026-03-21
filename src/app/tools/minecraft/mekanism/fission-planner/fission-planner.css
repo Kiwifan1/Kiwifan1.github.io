@@ -5,8 +5,8 @@
 }
 
 .planner__form {
-  background: var(--kiwi-surface, #111);
-  border: 1px solid var(--kiwi-border, #222);
+  background: var(--tool-surface);
+  border: 1px solid var(--tool-border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   display: flex;
@@ -39,16 +39,16 @@
 }
 
 .planner__grid input {
-  background: var(--kiwi-input-bg, #090909);
-  border: 1px solid var(--kiwi-border, #222);
+  background: var(--tool-input-bg);
+  border: 1px solid var(--tool-border);
   border-radius: 0.5rem;
-  color: var(--kiwi-text, #f5f5f5);
+  color: var(--tool-text);
   padding: 0.5rem 0.75rem;
 }
 
 .planner__hint {
   margin-top: 0.5rem;
-  color: var(--kiwi-muted, #aaa);
+  color: var(--tool-muted);
   font-size: 0.85rem;
 }
 
@@ -72,10 +72,10 @@
 }
 
 .planner__submit {
-  background: var(--kiwi-accent, #4caf50);
+  background: var(--tool-accent);
   border: none;
   border-radius: 0.5rem;
-  color: var(--kiwi-text, #fff);
+  color: var(--tool-text);
   cursor: pointer;
   font-weight: 600;
   padding: 0.6rem 1.25rem;
@@ -84,13 +84,13 @@
 
 .planner__submit:hover,
 .planner__submit:focus-visible {
-  background: var(--kiwi-accent-strong, #66bb6a);
+  background: var(--tool-accent-strong);
   transform: translateY(-1px);
 }
 
 .planner__submit:disabled {
-  background: var(--kiwi-border, #222);
-  color: var(--kiwi-muted, #aaa);
+  background: var(--tool-border);
+  color: var(--tool-muted);
   cursor: not-allowed;
   transform: none;
 }
@@ -102,8 +102,8 @@
 }
 
 .planner__card {
-  background: var(--kiwi-surface, #111);
-  border: 1px solid var(--kiwi-border, #222);
+  background: var(--tool-surface);
+  border: 1px solid var(--tool-border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   display: flex;
@@ -125,7 +125,7 @@
 }
 
 .planner__summary-detail {
-  color: var(--kiwi-muted, #bbb);
+  color: var(--tool-muted);
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -153,7 +153,7 @@
 
 .planner__construction-note {
   margin-top: 0.5rem;
-  color: var(--kiwi-muted, #909090);
+  color: var(--tool-muted);
   font-size: 0.85rem;
 }
 
@@ -163,11 +163,11 @@
 }
 
 .planner__card li {
-  color: var(--kiwi-muted, #bbb);
+  color: var(--tool-muted);
 }
 
 .planner__card strong {
-  color: var(--kiwi-text, #fff);
+  color: var(--tool-text);
 }
 
 .planner__error {
