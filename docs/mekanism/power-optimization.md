@@ -40,7 +40,7 @@ block-beta
         D["Rotational Complex + Dispersers"]
     end
     block:bot["Rotor Section"]
-        RL["Rotor Layers (r blocks)<br>Shaft + Blades"]
+        RL["Rotor Layers (r blocks) — Shaft + Blades"]
     end
     block:base["Foundation"]
         FL["Turbine Casing + Ports"]
@@ -184,13 +184,13 @@ Because, assuming that all available face-space is used by vents, the water flow
 
 ```mermaid
 flowchart LR
-    Steam["Steam In<br>$$F_{steam}$$ mB/t"] --> Vents["Vents"]
+    Steam["Steam In"] -->|"$$F_{steam}$$ mB/t"| Vents["Vents"]
     Vents --> Dispersers["Disperser Deck"]
-    Dispersers --> Rotors["Rotor Blades<br>$$F_{blade}$$ efficiency"]
-    Rotors --> Coils["EM Coils<br>$$P = \varepsilon \cdot F_{blade} \cdot F_{steam}$$"]
-    Rotors --> Condensers["Saturating Condensers<br>$$F_{water} = N \cdot \rho$$"]
-    Condensers --> Water["Water Out<br>$$F_{water}$$ mB/t"]
-    Coils --> Energy["Energy Out<br>$$P$$ FE/t"]
+    Dispersers --> Rotors["Rotor Blades"]
+    Rotors -->|"$$F_{blade}$$"| Coils["EM Coils"]
+    Rotors --> Condensers["Saturating Condensers"]
+    Condensers -->|"$$N \cdot \rho$$ mB/t"| Water["Water Out"]
+    Coils -->|"$$\varepsilon \cdot F_{blade} \cdot F_{steam}$$"| Energy["Energy Out (FE/t)"]
 ```
 
 ### Calculating Steam/Water Transportation

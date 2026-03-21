@@ -225,25 +225,25 @@ $$N_{B1} = \left\lceil\dfrac{D_{\text{Sulfur}}}{\lambda_{B1}}\right\rceil = \lef
 
 ```mermaid
 flowchart RL
-    FF["Fissile Fuel<br>$$R$$ mB/t"] --> IC["Isotopic Centrifuge<br>$$R$$ mB/t UF₆"]
-    IC --> CIuf["Infuser UF₆<br>$$R/2$$ mB/t each"]
-    CIuf --> UO["UO demand<br>$$R/2$$ mB/t"]
-    CIuf --> HF["HF demand<br>$$R/2$$ mB/t"]
+    FF["Fissile Fuel"] -->|"$$R$$ mB/t"| IC["Isotopic Centrifuge"]
+    IC -->|"$$R$$ mB/t UF₆"| CIuf["Infuser (UF₆)"]
+    CIuf -->|"$$R/2$$ mB/t"| UO["UO demand"]
+    CIuf -->|"$$R/2$$ mB/t"| HF["HF demand"]
 
-    UO --> COu["Chem. Oxidizer<br>$$R/2000$$ items/t"]
-    COu --> ECh["Enrichment Chamber<br>$$R/2000$$ items/t"]
-    ECh --> Ingots["Uranium Ingots<br>$$R/2000$$ /t"]
+    UO -->|"$$R/2000$$ items/t"| COu["Chem. Oxidizer"]
+    COu -->|"$$R/2000$$ items/t"| ECh["Enrichment Chamber"]
+    ECh --> Ingots["Uranium Ingots"]
 
-    HF --> CDC["Dissolution Chamber<br>$$R/2$$ mB/t H₂SO₄"]
-    CDC --> Fl["Fluorite<br>$$R/2000$$ /t"]
-    CDC --> CIh2so4["Infuser H₂SO₄<br>$$R/4$$ mB/t"]
-    CIh2so4 --> Vapor["Condensentrator<br>$$R/4$$ mB/t Water"]
-    CIh2so4 --> CIso3["Infuser SO₃<br>$$R/8$$ mB/t"]
-    CIso3 --> COs["Oxidizer SO₂<br>$$R/8000$$ items/t"]
-    COs --> PRC["PRC<br>$$R/8000$$ /t"]
-    PRC --> Coal["Coal<br>$$R/8000$$ /t"]
+    HF -->|"$$R/2$$ mB/t"| CDC["Dissolution Chamber"]
+    CDC --> Fl["Fluorite"]
+    CDC -->|"$$R/2$$ mB/t H₂SO₄"| CIh2so4["Infuser (H₂SO₄)"]
+    CIh2so4 -->|"$$R/4$$ mB/t"| Vapor["Condensentrator"]
+    CIh2so4 -->|"$$R/4$$ mB/t"| CIso3["Infuser (SO₃)"]
+    CIso3 -->|"$$R/8$$ mB/t"| COs["Oxidizer (SO₂)"]
+    COs -->|"$$R/8000$$ /t"| PRC["PRC"]
+    PRC --> Coal["Coal"]
     PRC --> WaterB["Water (PRC)"]
-    CIso3 --> ES["Electrolytic Separator<br>O₂ from Water"]
+    CIso3 --> ES["Electrolytic Separator"]
     PRC --> ES
 ```
 
