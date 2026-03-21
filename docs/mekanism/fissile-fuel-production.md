@@ -72,9 +72,9 @@ These machines process discrete operations with a base tick duration. Speed upgr
 | - | ----- | ------- | ------------------ | ----- | ------ | -------------------- |
 | A1 | Path A | `Enrichment Chamber` | 200 | 1 Uranium Ingot | 2 Yellow Cake | 16{,}000 |
 | A2 | Path A | `Chemical Oxidizer (UO)` | 100 | 1 Yellow Cake | 250 mB UO | 40{,}000 |
-| B1 | Path B | `Pressurized Reaction Chamber` | 100 | 1 Coal + 100 mB Water + 100 mB O$_2$ | 1 Sulfur Dust + 100 mB H$_2$ | 20{,}000 |
-| B2 | Path B | `Chemical Oxidizer (SO$_2$)` | 100 | 1 Sulfur Dust | 100 mB SO$_2$ | 40{,}000 |
-| B6 | Path B | `Chemical Dissolution Chamber` | 100 | 1 Fluorite + 1 mB H$_2$SO$_4$ | 1{,}000 mB HF | 80{,}000 |
+| B1 | Path B | `Pressurized Reaction Chamber` | 100 | 1 Coal + 100 mB Water + 100 mB O₂ | 1 Sulfur Dust + 100 mB H₂ | 20{,}000 |
+| B2 | Path B | `Chemical Oxidizer (SO₂)` | 100 | 1 Sulfur Dust | 100 mB SO₂ | 40{,}000 |
+| B6 | Path B | `Chemical Dissolution Chamber` | 100 | 1 Fluorite + 1 mB H₂SO₄ | 1{,}000 mB HF | 80{,}000 |
 
 ### Flow-Rate Machines
 
@@ -82,12 +82,12 @@ These machines operate on a **per-mB ratio** basis — they do not have a ticks-
 
 | # | Stage | Machine | Per-mB Ratio | $\varepsilon_i$ (J) |
 | - | ----- | ------- | ------------ | -------------------- |
-| B3 | Path B | `Chemical Infuser (SO$_3$)` | 2 mB SO$_2$ + 1 mB O$_2$ → 2 mB SO$_3$ | 40{,}000 |
+| B3 | Path B | `Chemical Infuser (SO₃)` | 2 mB SO₂ + 1 mB O₂ → 2 mB SO₃ | 40{,}000 |
 | B4 | Path B | `Rotary Condensentrator` | 1 mB Water → 1 mB Water Vapor | 400 |
-| B5 | Path B | `Chemical Infuser (H$_2$SO$_4$)` | 1 mB SO$_3$ + 1 mB Vapor → 1 mB H$_2$SO$_4$ | 40{,}000 |
-| F1 | Final | `Chemical Infuser (UF$_6$)` | 1 mB HF + 1 mB UO → 2 mB UF$_6$ | 40{,}000 |
-| F2 | Final | `Isotopic Centrifuge` | 1 mB UF$_6$ → 1 mB Fissile Fuel | 40{,}000 |
-| ES | Support | `Electrolytic Separator` | 2 mB Water → 2 mB H$_2$ + 1 mB O$_2$ | 80{,}000 |
+| B5 | Path B | `Chemical Infuser (H₂SO₄)` | 1 mB SO₃ + 1 mB Vapor → 1 mB H₂SO₄ | 40{,}000 |
+| F1 | Final | `Chemical Infuser (UF₆)` | 1 mB HF + 1 mB UO → 2 mB UF₆ | 40{,}000 |
+| F2 | Final | `Isotopic Centrifuge` | 1 mB UF₆ → 1 mB Fissile Fuel | 40{,}000 |
+| ES | Support | `Electrolytic Separator` | 2 mB Water → 2 mB H₂ + 1 mB O₂ | 80{,}000 |
 
 Maximum speed upgrades (batch machines only): $u_{\max} = 8$ (`PRODUCTION_CHAIN.MAX_SPEED_UPGRADES`).
 
@@ -116,7 +116,7 @@ For the two distinct base tick values used by batch machines in this chain:
 | 8 | 20 | 10 |
 
 Batch machines with $t_{\text{base}} = 200$: Enrichment Chamber (A1).
-Batch machines with $t_{\text{base}} = 100$: Chemical Oxidizer UO (A2), PRC (B1), Chemical Oxidizer SO$_2$ (B2), Dissolution Chamber (B6).
+Batch machines with $t_{\text{base}} = 100$: Chemical Oxidizer UO (A2), PRC (B1), Chemical Oxidizer SO₂ (B2), Dissolution Chamber (B6).
 
 ## Throughput Calculations
 
@@ -146,17 +146,17 @@ We work backwards from a target Fissile Fuel production rate $R$ (mB/t). At each
 
 ### Stage F2 -- Isotopic Centrifuge (flow-rate)
 
-Converts 1 mB UF$_6$ → 1 mB Fissile Fuel continuously.
+Converts 1 mB UF₆ → 1 mB Fissile Fuel continuously.
 
 $$N_{F2} = 1$$
 
-The required UF$_6$ rate is:
+The required UF₆ rate is:
 
 $$D_{UF_6} = R \text{ mB/t}$$
 
-### Stage F1 -- Chemical Infuser UF$_6$ (flow-rate)
+### Stage F1 -- Chemical Infuser UF₆ (flow-rate)
 
-Combines 1 mB HF + 1 mB UO → 2 mB UF$_6$ continuously.
+Combines 1 mB HF + 1 mB UO → 2 mB UF₆ continuously.
 
 $$N_{F1} = 1$$
 
@@ -187,22 +187,22 @@ $$D_{\text{Ingot}} = \dfrac{D_{YC}}{2} = \dfrac{R}{1{,}000} \text{ items/t}$$
 ### Path B -- Hydrofluoric Acid
 
 **Stage B6 -- Chemical Dissolution Chamber:**
-Each operation converts 1 Fluorite + 1 mB H$_2$SO$_4$ into 1{,}000 mB HF.
+Each operation converts 1 Fluorite + 1 mB H₂SO₄ into 1{,}000 mB HF.
 
 $$N_{B6} = \left\lceil\dfrac{D_{HF}}{\lambda_{B6}}\right\rceil = \left\lceil\dfrac{D_{HF} \cdot t_{\text{eff},B6}}{1{,}000}\right\rceil$$
 
-The required Fluorite and H$_2$SO$_4$ rates are:
+The required Fluorite and H₂SO₄ rates are:
 
 $$D_{\text{Fluorite}} = \dfrac{D_{HF}}{1{,}000} = \dfrac{R}{2{,}000} \text{ items/t}$$
 
 $$D_{H_2SO_4} = \dfrac{D_{HF}}{1{,}000} = \dfrac{R}{2{,}000} \text{ mB/t}$$
 
-**Stage B5 -- Chemical Infuser H$_2$SO$_4$ (flow-rate):**
-Combines 1 mB SO$_3$ + 1 mB Water Vapor → 1 mB H$_2$SO$_4$ continuously.
+**Stage B5 -- Chemical Infuser H₂SO₄ (flow-rate):**
+Combines 1 mB SO₃ + 1 mB Water Vapor → 1 mB H₂SO₄ continuously.
 
 $$N_{B5} = 1$$
 
-The required SO$_3$ and Water Vapor rates are each:
+The required SO₃ and Water Vapor rates are each:
 
 $$D_{SO_3} = D_{\text{Vapor}} = D_{H_2SO_4} = \dfrac{R}{2{,}000} \text{ mB/t}$$
 
@@ -211,19 +211,19 @@ Converts Water to Water Vapor at 1 mB : 1 mB continuously.
 
 $$N_{B4} = 1$$
 
-**Stage B3 -- Chemical Infuser SO$_3$ (flow-rate):**
-Combines 2 mB SO$_2$ + 1 mB O$_2$ → 2 mB SO$_3$ continuously (i.e., SO$_2$ passes through 1:1 in volume, while O$_2$ is consumed at half the SO$_3$ rate).
+**Stage B3 -- Chemical Infuser SO₃ (flow-rate):**
+Combines 2 mB SO₂ + 1 mB O₂ → 2 mB SO₃ continuously (i.e., SO₂ passes through 1:1 in volume, while O₂ is consumed at half the SO₃ rate).
 
 $$N_{B3} = 1$$
 
-The required SO$_2$ and O$_2$ (for this stage) rates are:
+The required SO₂ and O₂ (for this stage) rates are:
 
 $$D_{SO_2} = D_{SO_3} = \dfrac{R}{2{,}000} \text{ mB/t}$$
 
 $$D_{O_2}^{(B3)} = \dfrac{D_{SO_3}}{2} = \dfrac{R}{4{,}000} \text{ mB/t}$$
 
-**Stage B2 -- Chemical Oxidizer (SO$_2$):**
-Each operation converts 1 Sulfur Dust into 100 mB SO$_2$.
+**Stage B2 -- Chemical Oxidizer (SO₂):**
+Each operation converts 1 Sulfur Dust into 100 mB SO₂.
 
 $$N_{B2} = \left\lceil\dfrac{D_{SO_2}}{\lambda_{B2}}\right\rceil = \left\lceil\dfrac{D_{SO_2} \cdot t_{\text{eff},B2}}{100}\right\rceil$$
 
@@ -232,12 +232,12 @@ The required Sulfur Dust rate is:
 $$D_{\text{Sulfur}} = \dfrac{D_{SO_2}}{100} = \dfrac{R}{200{,}000} \text{ items/t}$$
 
 **Stage B1 -- Pressurized Reaction Chamber:**
-Each operation consumes 1 Coal + 100 mB Water + 100 mB O$_2$ and produces 1 Sulfur Dust + 100 mB H$_2$.
+Each operation consumes 1 Coal + 100 mB Water + 100 mB O₂ and produces 1 Sulfur Dust + 100 mB H₂.
 
 $$N_{B1} = \left\lceil\dfrac{D_{\text{Sulfur}}}{\lambda_{B1}}\right\rceil = \left\lceil D_{\text{Sulfur}} \cdot t_{\text{eff},B1} \right\rceil$$
 
 **Stage ES -- Electrolytic Separator (flow-rate):**
-Converts 2 mB Water → 2 mB H$_2$ + 1 mB O$_2$ continuously. Supplies all O$_2$ needed by the chain.
+Converts 2 mB Water → 2 mB H₂ + 1 mB O₂ continuously. Supplies all O₂ needed by the chain.
 
 $$N_{ES} = 1$$
 
@@ -294,15 +294,15 @@ $$\omega_C = D_{\text{Sulfur}} = \dfrac{R}{200{,}000} \text{ items/t}$$
 
 ### Oxygen Consumption
 
-Oxygen is consumed by the `Pressurized Reaction Chamber` (B1, 100 mB per op) and the `Chemical Infuser SO$_3$` (B3, 1 mB O$_2$ per 2 mB SO$_3$):
+Oxygen is consumed by the `Pressurized Reaction Chamber` (B1, 100 mB per op) and the `Chemical Infuser SO₃` (B3, 1 mB O₂ per 2 mB SO₃):
 
 $$\eta_{O_2} = \underbrace{D_{\text{Sulfur}} \cdot 100}_{\text{PRC}} + \underbrace{D_{O_2}^{(B3)}}_{\text{SO}_3\text{ Infuser}} = \dfrac{R}{2{,}000} + \dfrac{R}{4{,}000} = \dfrac{3R}{4{,}000} \text{ mB/t}$$
 
 ### Water Consumption
 
-Water is consumed by three subsystems: the `Pressurized Reaction Chamber` (B1), the `Rotary Condensentrator` (B4), and the `Electrolytic Separator` (ES, to produce all O$_2$).
+Water is consumed by three subsystems: the `Pressurized Reaction Chamber` (B1), the `Rotary Condensentrator` (B4), and the `Electrolytic Separator` (ES, to produce all O₂).
 
-The ES must produce $\eta_{O_2} = \dfrac{3R}{4{,}000}$ mB/t of O$_2$. Since 2 mB Water yields 1 mB O$_2$, the ES water demand is $2 \cdot \dfrac{3R}{4{,}000} = \dfrac{3R}{2{,}000}$ mB/t.
+The ES must produce $\eta_{O_2} = \dfrac{3R}{4{,}000}$ mB/t of O₂. Since 2 mB Water yields 1 mB O₂, the ES water demand is $2 \cdot \dfrac{3R}{4{,}000} = \dfrac{3R}{2{,}000}$ mB/t.
 
 $$\eta_w = \underbrace{D_{\text{Sulfur}} \cdot 100}_{\text{PRC}} + \underbrace{D_{\text{Vapor}}}_{\text{Condensentrator}} + \underbrace{\dfrac{3R}{2{,}000}}_{\text{ES}} = \dfrac{R}{2{,}000} + \dfrac{R}{2{,}000} + \dfrac{3R}{2{,}000} = \dfrac{5R}{2{,}000} = \dfrac{R}{400} \text{ mB/t}$$
 
@@ -415,7 +415,7 @@ $$\eta_{O_2} = \dfrac{3 \times 288}{4{,}000} = 0.216 \text{ mB/t}$$
 Broken down:
 
 - PRC: $0.00144 \times 100 = 0.144$ mB/t
-- SO$_3$ Infuser: $0.072$ mB/t
+- SO₃ Infuser: $0.072$ mB/t
 
 **Water consumption:**
 
@@ -425,13 +425,13 @@ Broken down:
 
 - PRC: $0.00144 \times 100 = 0.144$ mB/t
 - Condensentrator: $0.144$ mB/t
-- ES (for O$_2$): $2 \times 0.216 = 0.432$ mB/t
+- ES (for O₂): $2 \times 0.216 = 0.432$ mB/t
 
 **Hydrogen byproduct:**
 
 - PRC: $0.00144 \times 100 = 0.144$ mB/t
 - ES: $2 \times 0.216 = 0.432$ mB/t
-- Total H$_2$: $0.576$ mB/t
+- Total H₂: $0.576$ mB/t
 
 ### Energy Consumption (batch machines)
 
@@ -454,12 +454,12 @@ $$\mathcal{E}_{\text{batch}} = 50{,}800 \text{ J/t} \approx 50.8 \text{ kJ/t} \a
 | A1 | `Enrichment Chamber` | 6 | 0.1 items/t each |
 | A2 | `Chemical Oxidizer (UO)` | 6 | 25 mB/t each |
 | B1 | `Pressurized Reaction Chamber` | 1 | 0.1 items/t |
-| B2 | `Chemical Oxidizer (SO$_2$)` | 1 | 10 mB/t |
-| B3 | `Chemical Infuser (SO$_3$)` | 1 | flow-rate |
+| B2 | `Chemical Oxidizer (SO₂)` | 1 | 10 mB/t |
+| B3 | `Chemical Infuser (SO₃)` | 1 | flow-rate |
 | B4 | `Rotary Condensentrator` | 1 | flow-rate |
-| B5 | `Chemical Infuser (H$_2$SO$_4$)` | 1 | flow-rate |
+| B5 | `Chemical Infuser (H₂SO₄)` | 1 | flow-rate |
 | B6 | `Chemical Dissolution Chamber` | 2 | 100 mB/t each |
-| F1 | `Chemical Infuser (UF$_6$)` | 1 | flow-rate |
+| F1 | `Chemical Infuser (UF₆)` | 1 | flow-rate |
 | F2 | `Isotopic Centrifuge` | 1 | flow-rate |
 | ES | `Electrolytic Separator` | 1 | flow-rate |
 | **Total** | | **22** | **288 mB/t Fissile Fuel** |
@@ -470,8 +470,8 @@ $$\mathcal{E}_{\text{batch}} = 50{,}800 \text{ J/t} \approx 50.8 \text{ kJ/t} \a
 | Fluorite | 0.144 items/t (2.88 items/s) |
 | Coal | 0.00144 items/t (0.0288 items/s) |
 | Water | 0.72 mB/t |
-| Oxygen (O$_2$) | 0.216 mB/t (produced by ES) |
-| H$_2$ byproduct | 0.576 mB/t |
+| Oxygen (O₂) | 0.216 mB/t (produced by ES) |
+| H₂ byproduct | 0.576 mB/t |
 | Batch energy | ~50.8 kJ/t (~20.32 kFE/t) |
 
 ```mermaid
