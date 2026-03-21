@@ -1,5 +1,5 @@
-import { computeShellBreakdown } from '../utils/structure-shell';
 import { CoolingMode, FISSION_REACTOR, HEATING } from './constants';
+import { MultiblockStructure } from './MultiblockStructure';
 import { ShellBreakdown } from './Shell';
 
 export interface TurbinePairing {
@@ -27,7 +27,7 @@ export interface BurnRateAnalysis {
   hotCoolantPerTick: number;
 }
 
-export class FissionReactor {
+export class FissionReactor extends MultiblockStructure {
   public static readonly MIN_WIDTH = 3;
   public static readonly MIN_HEIGHT = 4;
   public static readonly MIN_LENGTH = 3;
@@ -39,36 +39,13 @@ export class FissionReactor {
   private static readonly DAMAGE_THRESHOLD = 1200;
   private static readonly DAMAGE_CAP = 1800;
 
-  public readonly width: number;
-  public readonly height: number;
-  public readonly length: number;
   public readonly coolingMode: CoolingMode;
-  public readonly interiorWidth: number;
-  public readonly interiorHeight: number;
-  public readonly interiorLength: number;
 
   constructor(width: number, height: number, length: number, coolingMode: CoolingMode) {
     FissionReactor.validateDimensions(width, height, length);
 
-    this.width = width;
-    this.height = height;
-    this.length = length;
+    super(width, height, length);
     this.coolingMode = coolingMode;
-    this.interiorWidth = Math.max(this.width - 2, 0);
-    this.interiorHeight = Math.max(this.height - 2, 0);
-    this.interiorLength = Math.max(this.length - 2, 0);
-  }
-
-  public getVolume(): number {
-    return this.width * this.height * this.length;
-  }
-
-  public getInteriorVolume(): number {
-    return this.interiorWidth * this.interiorHeight * this.interiorLength;
-  }
-
-  public getShellVolume(): number {
-    return this.getVolume() - this.getInteriorVolume();
   }
 
   public getInteriorArea(): number {
@@ -99,13 +76,8 @@ export class FissionReactor {
     return this.getFuelAssembliesForRodHeight(this.getMaxRodHeight());
   }
 
-  public getShellBreakdown(): ShellBreakdown {
-    return computeShellBreakdown(
-      this.width,
-      this.height,
-      this.length,
-      FissionReactor.REQUIRED_PORTS
-    );
+  public override getShellBreakdown(): ShellBreakdown {
+    return super.getShellBreakdown(FissionReactor.REQUIRED_PORTS);
   }
 
   public getMaxBurnRate(): number {
@@ -249,20 +221,8 @@ export class FissionReactor {
   }
 
   private static validateDimensions(width: number, height: number, length: number): void {
-    if (width < FissionReactor.MIN_WIDTH || width > FissionReactor.MAX_WIDTH) {
-      throw new Error(
-        `Width must be between ${FissionReactor.MIN_WIDTH} and ${FissionReactor.MAX_WIDTH}`
-      );
-    }
-    if (height < FissionReactor.MIN_HEIGHT || height > FissionReactor.MAX_HEIGHT) {
-      throw new Error(
-        `Height must be between ${FissionReactor.MIN_HEIGHT} and ${FissionReactor.MAX_HEIGHT}`
-      );
-    }
-    if (length < FissionReactor.MIN_LENGTH || length > FissionReactor.MAX_LENGTH) {
-      throw new Error(
-        `Length must be between ${FissionReactor.MIN_LENGTH} and ${FissionReactor.MAX_LENGTH}`
-      );
-    }
+    MultiblockStructure.validateDimensionRange(width, FissionReactor.MIN_WIDTH, FissionReactor.MAX_WIDTH, 'Width');
+    MultiblockStructure.validateDimensionRange(height, FissionReactor.MIN_HEIGHT, FissionReactor.MAX_HEIGHT, 'Height');
+    MultiblockStructure.validateDimensionRange(length, FissionReactor.MIN_LENGTH, FissionReactor.MAX_LENGTH, 'Length');
   }
 }
