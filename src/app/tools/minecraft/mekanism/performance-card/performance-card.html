@@ -1,0 +1,12 @@
+<section class="planner__card">
+  <h2>Performance</h2>
+  <ul>
+    <li>Max burn rate: <strong>{{ format(burnRate) }} mB/t</strong></li>
+    <li>Safe burn rate with plan: <strong>{{ format(safeBurnRate) }} mB/t</strong></li>
+    <li>Steam demand: <strong>{{ format(steamDemand) }} mB/t</strong></li>
+    @if (waterDemand) {
+      <li>Water demand: <strong>{{ format(waterDemand) }} mB/t</strong></li>
+    }
+    <li>Estimated output: <strong>{{ format(powerPerTick) }} FE/t</strong></li>
+  </ul>
+</section>
