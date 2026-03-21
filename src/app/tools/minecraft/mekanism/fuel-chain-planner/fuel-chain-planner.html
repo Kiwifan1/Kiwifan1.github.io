@@ -40,6 +40,24 @@
           <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span>
         </div>
       </div>
+
+      <div class="fuel-chain__input-group">
+        <label class="fuel-chain__label">
+          Energy upgrades
+          <span class="fuel-chain__upgrade-value fuel-chain__upgrade-value--energy">{{ form.value.energyUpgrades }}</span>
+        </label>
+        <input
+          type="range"
+          formControlName="energyUpgrades"
+          min="0"
+          max="8"
+          step="1"
+          class="fuel-chain__range-input"
+        />
+        <div class="fuel-chain__range-ticks">
+          <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span>
+        </div>
+      </div>
     </div>
 
     <button
@@ -146,15 +164,24 @@
         </div>
       </section>
 
-      @if (data.upgradeRequirements.speed.total > 0) {
+      @if (data.upgradeRequirements.speed.total > 0 || data.upgradeRequirements.energy.total > 0) {
         <section class="fuel-chain__card fuel-chain__card--wide">
           <h2>Upgrades Required</h2>
           <div class="fuel-chain__resource-grid">
-            <div class="fuel-chain__resource">
-              <span class="fuel-chain__resource-label">Speed Upgrades</span>
-              <span class="fuel-chain__resource-value">{{ asNumber(data.upgradeRequirements.speed.total) }}</span>
-              <span class="fuel-chain__input-hint">{{ data.upgradeRequirements.speed.perMachine }} per machine &times; {{ asNumber(data.upgradeRequirements.speed.machines) }} machines</span>
-            </div>
+            @if (data.upgradeRequirements.speed.total > 0) {
+              <div class="fuel-chain__resource">
+                <span class="fuel-chain__resource-label">Speed Upgrades</span>
+                <span class="fuel-chain__resource-value">{{ asNumber(data.upgradeRequirements.speed.total) }}</span>
+                <span class="fuel-chain__input-hint">{{ data.upgradeRequirements.speed.perMachine }}/machine &times; {{ asNumber(data.upgradeRequirements.speed.machines) }} machines</span>
+              </div>
+            }
+            @if (data.upgradeRequirements.energy.total > 0) {
+              <div class="fuel-chain__resource">
+                <span class="fuel-chain__resource-label">Energy Upgrades</span>
+                <span class="fuel-chain__resource-value">{{ asNumber(data.upgradeRequirements.energy.total) }}</span>
+                <span class="fuel-chain__input-hint">{{ data.upgradeRequirements.energy.perMachine }}/machine &times; {{ asNumber(data.upgradeRequirements.energy.machines) }} machines</span>
+              </div>
+            }
           </div>
         </section>
       }
