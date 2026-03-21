@@ -225,26 +225,26 @@ $$N_{B1} = \left\lceil\dfrac{D_{\text{Sulfur}}}{\lambda_{B1}}\right\rceil = \lef
 
 ```mermaid
 flowchart RL
-    FF["Fissile Fuel\n$$R$$ mB/t"] --> IC["Isotopic Centrifuge\n$$R$$ mB/t UF₆"]
-    IC --> CIuf["Infuser UF₆\n$$R/2$$ mB/t each"]
-    CIuf --> UO["UO demand\n$$R/2$$ mB/t"]
-    CIuf --> HF["HF demand\n$$R/2$$ mB/t"]
+    FF["Fissile Fuel<br>$$R$$ mB/t"] --> IC["Isotopic Centrifuge<br>$$R$$ mB/t UF₆"]
+    IC --> CIuf["Infuser UF₆<br>$$R/2$$ mB/t each"]
+    CIuf --> UO["UO demand<br>$$R/2$$ mB/t"]
+    CIuf --> HF["HF demand<br>$$R/2$$ mB/t"]
 
-    UO --> COu["Chem. Oxidizer\n$$R/2000$$ items/t YC"]
-    COu --> ECh["Enrichment Chamber\n$$R/2000$$ items/t ingots"]
-    ECh --> Ingots["Uranium Ingots\n$$R/2000$$ /t"]
+    UO --> COu["Chem. Oxidizer<br>$$R/2000$$ items/t"]
+    COu --> ECh["Enrichment Chamber<br>$$R/2000$$ items/t"]
+    ECh --> Ingots["Uranium Ingots<br>$$R/2000$$ /t"]
 
-    HF --> CDC["Dissolution Chamber\n$$R/2$$ mB/t H₂SO₄"]
-    CDC --> Fl["Fluorite\n$$R/2000$$ /t"]
-    CDC --> CIh2so4["Infuser H₂SO₄\n$$R/4$$ mB/t SO₃ + Vapor"]
-    CIh2so4 --> Vapor["Condensentrator\n$$R/4$$ mB/t Water"]
-    CIh2so4 --> CIso3["Infuser SO₃\n$$R/8$$ mB/t SO₂ + O₂"]
-    CIso3 --> COs["Oxidizer SO₂\n$$R/8000$$ items/t Sulfur"]
-    COs --> PRC["PRC\n$$R/8000$$ /t Coal"]
-    PRC --> Coal["Coal\n$$R/8000$$ /t"]
-    PRC --> WaterB["Water\n$$R/20000 \times 400$$ mB/t"]
-    PRC --> O2prc["O₂ (PRC)\n$$R/40$$ mB/t"]
-    CIso3 --> O2so3["O₂ (SO₃)\n$$R/8$$ mB/t"]
+    HF --> CDC["Dissolution Chamber<br>$$R/2$$ mB/t H₂SO₄"]
+    CDC --> Fl["Fluorite<br>$$R/2000$$ /t"]
+    CDC --> CIh2so4["Infuser H₂SO₄<br>$$R/4$$ mB/t"]
+    CIh2so4 --> Vapor["Condensentrator<br>$$R/4$$ mB/t Water"]
+    CIh2so4 --> CIso3["Infuser SO₃<br>$$R/8$$ mB/t"]
+    CIso3 --> COs["Oxidizer SO₂<br>$$R/8000$$ items/t"]
+    COs --> PRC["PRC<br>$$R/8000$$ /t"]
+    PRC --> Coal["Coal<br>$$R/8000$$ /t"]
+    PRC --> WaterB["Water (PRC)"]
+    CIso3 --> ES["Electrolytic Separator<br>O₂ from Water"]
+    PRC --> ES
 ```
 
 ## Resource Input Rates

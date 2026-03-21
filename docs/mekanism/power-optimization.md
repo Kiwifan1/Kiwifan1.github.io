@@ -40,7 +40,7 @@ block-beta
         D["Rotational Complex + Dispersers"]
     end
     block:bot["Rotor Section"]
-        RL["Rotor Layers (r blocks)\nShaft + Blades"]
+        RL["Rotor Layers (r blocks)<br>Shaft + Blades"]
     end
     block:base["Foundation"]
         FL["Turbine Casing + Ports"]
@@ -184,13 +184,13 @@ Because, assuming that all available face-space is used by vents, the water flow
 
 ```mermaid
 flowchart LR
-    Steam["Steam In\n$$F_{steam}$$ mB/t"] --> Vents["Vents"]
+    Steam["Steam In<br>$$F_{steam}$$ mB/t"] --> Vents["Vents"]
     Vents --> Dispersers["Disperser Deck"]
-    Dispersers --> Rotors["Rotor Blades\n$$F_{blade}$$ efficiency"]
-    Rotors --> Coils["EM Coils\n$$P = \varepsilon \cdot F_{blade} \cdot F_{steam}$$"]
-    Rotors --> Condensers["Saturating Condensers\n$$F_{water} = N \cdot \rho$$"]
-    Condensers --> Water["Water Out\n$$F_{water}$$ mB/t"]
-    Coils --> Energy["Energy Out\n$$P$$ FE/t"]
+    Dispersers --> Rotors["Rotor Blades<br>$$F_{blade}$$ efficiency"]
+    Rotors --> Coils["EM Coils<br>$$P = \varepsilon \cdot F_{blade} \cdot F_{steam}$$"]
+    Rotors --> Condensers["Saturating Condensers<br>$$F_{water} = N \cdot \rho$$"]
+    Condensers --> Water["Water Out<br>$$F_{water}$$ mB/t"]
+    Coils --> Energy["Energy Out<br>$$P$$ FE/t"]
 ```
 
 ### Calculating Steam/Water Transportation
@@ -348,20 +348,34 @@ $$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(32{,}000 \cdot ((L - 2)^2
 This formula can be used to calculate the optimal power output of an `Industrial Turbine` given its dimensions $L$ and $H$.
 
 ```mermaid
-flowchart BT
-    L["$$L$$ (length)"] --> A["$$A = (L-2)^2$$"]
-    L --> B["$$B = (L-2)$$"]
-    H["$$H$$ (height)"] --> h["$$h = H-2$$"]
-    A --> r_opt["$$r = \left\lceil\frac{4Bh+A}{8B}\right\rceil$$"]
-    B --> r_opt
-    h --> r_opt
-    r_opt --> Fblade["$$F_{blade} = \frac{2r}{\phi}$$"]
-    A --> Fvent["$$F_{vent} = \gamma(A+4B(h-r))$$"]
-    B --> Fvent
-    h --> Fvent
-    r_opt --> Fvent
-    Fblade --> P["$$P = \varepsilon \cdot F_{blade} \cdot F_{vent}$$"]
-    Fvent --> P
+flowchart LR
+    subgraph Inputs
+        L["$$L$$"]
+        H["$$H$$"]
+    end
+
+    subgraph Derived
+        A["$$A = (L-2)^2$$"]
+        B["$$B = (L-2)$$"]
+        h["$$h = H-2$$"]
+    end
+
+    subgraph Optimization
+        r["$$r = \Big\lceil\frac{4Bh+A}{8B}\Big\rceil$$"]
+    end
+
+    subgraph Output
+        Fb["$$F_{blade} = \frac{2r}{\phi}$$"]
+        Fv["$$F_{vent} = \gamma(A+4B(h-r))$$"]
+        P["$$P = \varepsilon \cdot F_{blade} \cdot F_{vent}$$"]
+    end
+
+    L --> A & B
+    H --> h
+    A & B & h --> r
+    r --> Fb
+    r --> Fv
+    Fb & Fv --> P
 ```
 
 ## Example Calculation
