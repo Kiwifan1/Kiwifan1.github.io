@@ -2,16 +2,16 @@ import { Routes } from '@angular/router';
 import { Home } from './home/home';
 import { About } from './about/about';
 import { Links } from './links/links';
-import { Tools } from './tools/tools';
-import { Minecraft } from './tools/minecraft/minecraft';
-import { MekanismPlanner } from './tools/minecraft/mekanism/mekanism';
+import { Resume } from './resume/resume';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'about', component: About },
   { path: 'links', component: Links },
-  { path: 'tools', component: Tools },
-  { path: 'tools/minecraft', component: Minecraft },
-  { path: 'tools/minecraft/mekanism', component: MekanismPlanner },
-  { path: '**', redirectTo: '' }
+  { path: 'resume', component: Resume },
+  {
+    path: 'tools',
+    loadChildren: () => import('./tools/tools.routes'),
+  },
+  { path: '**', redirectTo: '' },
 ];

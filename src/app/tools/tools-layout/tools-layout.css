@@ -1,0 +1,19 @@
+:host {
+  display: block;
+
+  --tool-surface: var(--surface);
+  --tool-border: var(--surface-border);
+  --tool-accent: var(--kiwi-green);
+  --tool-accent-strong: var(--kiwi-lime);
+  --tool-text: var(--kiwi-fore);
+  --tool-muted: var(--text-muted);
+  --tool-input-bg: var(--surface-strong);
+}
+
+.tools-shell {
+  width: min(1100px, calc(100% - 2 * var(--space-xl)));
+  margin: 0 auto;
+  padding-block: var(--space-xxl);
+  display: grid;
+  gap: var(--space-xl);
+}
