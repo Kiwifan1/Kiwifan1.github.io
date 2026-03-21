@@ -154,7 +154,7 @@ export const PRODUCTION_CHAIN = {
     // Path B continued: Hydrofluoric Acid
     DISSOLUTION_CHAMBER: {
         BASE_TICKS: 100,
-        INPUT_H2SO4_MB: 1,     // 1 Fluorite + 1 mB H₂SO₄ → 1000 mB HF
+        INPUT_H2SO4_MB: 100,   // 1 Fluorite + 100 mB H₂SO₄ → 1000 mB HF (1 mB/tick × 100 ticks)
         OUTPUT_MB: 1000,
         BASE_ENERGY: 80_000,
     },
