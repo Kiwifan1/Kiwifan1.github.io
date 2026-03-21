@@ -213,12 +213,6 @@
   color: var(--tool-muted);
 }
 
-.fuel-chain__info-wrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
 .fuel-chain__info-icon {
   display: inline-flex;
   align-items: center;
@@ -230,7 +224,7 @@
   font-size: 0.6rem;
   font-weight: 700;
   color: var(--tool-muted);
-  cursor: help;
+  cursor: pointer;
   vertical-align: middle;
   margin-left: 0.2rem;
   text-transform: none;
@@ -238,48 +232,42 @@
   transition: border-color 120ms ease, color 120ms ease;
 }
 
-.fuel-chain__info-icon:hover,
-.fuel-chain__info-icon:focus {
+.fuel-chain__info-icon:hover {
   border-color: var(--tool-text);
   color: var(--tool-text);
 }
 
-.fuel-chain__info-tooltip {
-  display: none;
-  position: absolute;
-  top: calc(100% + 0.6rem);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 280px;
+.fuel-chain__info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: var(--surface-strong);
-  border: 1px solid var(--tool-border);
+  background: rgba(25, 149, 255, 0.08);
+  border: 1px solid rgba(25, 149, 255, 0.2);
   border-radius: 0.6rem;
-  color: var(--tool-muted);
-  font-size: 0.78rem;
-  font-weight: 400;
+  font-size: 0.82rem;
   line-height: 1.5;
-  text-transform: none;
-  letter-spacing: 0;
-  text-align: center;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-  z-index: 100;
+  color: var(--tool-muted);
 }
 
-.fuel-chain__info-tooltip::after {
-  content: '';
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-bottom-color: var(--tool-border);
+.fuel-chain__info-banner p {
+  margin: 0;
+  flex: 1;
 }
 
-.fuel-chain__info-wrap:hover .fuel-chain__info-tooltip,
-.fuel-chain__info-wrap:focus .fuel-chain__info-tooltip,
-.fuel-chain__info-wrap:focus-within .fuel-chain__info-tooltip {
-  display: block;
+.fuel-chain__info-banner button {
+  background: none;
+  border: none;
+  color: var(--tool-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.fuel-chain__info-banner button:hover {
+  color: var(--tool-text);
 }
 
 /* ── Cards ────────────────────────────────────── */
