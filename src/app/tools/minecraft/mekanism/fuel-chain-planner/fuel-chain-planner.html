@@ -64,14 +64,19 @@
           <span class="fuel-chain__stat-value">{{ asNumber(data.totalMachines) }}</span>
           <span class="fuel-chain__stat-label">Total Machines</span>
         </div>
-        <div class="fuel-chain__stat fuel-chain__stat--has-info">
+        <div class="fuel-chain__stat">
           <span class="fuel-chain__stat-value">{{ formatEnergy(data.resources.totalEnergyPerTick) }}</span>
-          <span class="fuel-chain__stat-label">Total Energy <span class="fuel-chain__info-icon" tabindex="0">?</span></span>
-          <div class="fuel-chain__info-tooltip">
-            Total energy stays roughly constant regardless of speed upgrades &mdash; faster machines
-            draw more energy per tick, but you need fewer of them to hit the same fuel rate. The small
-            variations come from rounding in machine counts.
-          </div>
+          <span class="fuel-chain__stat-label">
+            Total Energy
+            <span class="fuel-chain__info-wrap" tabindex="0">
+              <span class="fuel-chain__info-icon">?</span>
+              <span class="fuel-chain__info-tooltip">
+                Total energy stays roughly constant regardless of speed upgrades &mdash; faster machines
+                draw more energy per tick, but you need fewer of them to hit the same fuel rate. The small
+                variations come from rounding in machine counts.
+              </span>
+            </span>
+          </span>
         </div>
         <div class="fuel-chain__stat">
           <span class="fuel-chain__stat-value">{{ asDecimal(data.targetFuelRate) }}</span>

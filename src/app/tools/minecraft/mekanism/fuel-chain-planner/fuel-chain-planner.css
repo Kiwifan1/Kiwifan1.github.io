@@ -213,8 +213,10 @@
   color: var(--tool-muted);
 }
 
-.fuel-chain__stat--has-info {
+.fuel-chain__info-wrap {
   position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
 .fuel-chain__info-icon {
@@ -245,11 +247,10 @@
 .fuel-chain__info-tooltip {
   display: none;
   position: absolute;
-  bottom: calc(100% + 0.5rem);
+  bottom: calc(100% + 0.6rem);
   left: 50%;
   transform: translateX(-50%);
-  width: max(220px, 90%);
-  max-width: 320px;
+  width: 280px;
   padding: 0.75rem 1rem;
   background: var(--surface-strong);
   border: 1px solid var(--tool-border);
@@ -275,8 +276,9 @@
   border-top-color: var(--tool-border);
 }
 
-.fuel-chain__info-icon:hover + .fuel-chain__info-tooltip,
-.fuel-chain__info-icon:focus + .fuel-chain__info-tooltip {
+.fuel-chain__info-wrap:hover .fuel-chain__info-tooltip,
+.fuel-chain__info-wrap:focus .fuel-chain__info-tooltip,
+.fuel-chain__info-wrap:focus-within .fuel-chain__info-tooltip {
   display: block;
 }
 
