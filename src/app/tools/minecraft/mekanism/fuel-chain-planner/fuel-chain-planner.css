@@ -226,6 +226,50 @@
   backdrop-filter: blur(8px);
 }
 
+.fuel-chain__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.fuel-chain__card-header h2 {
+  margin: 0;
+}
+
+.fuel-chain__unit-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--tool-border);
+}
+
+.fuel-chain__unit-toggle button {
+  background: transparent;
+  border: none;
+  color: var(--tool-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  transition: background 100ms ease, color 100ms ease;
+}
+
+.fuel-chain__unit-toggle button:not(:last-child) {
+  border-right: 1px solid var(--tool-border);
+}
+
+.fuel-chain__unit-toggle button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.fuel-chain__unit-toggle button.active {
+  background: var(--tool-accent);
+  color: #0a0f14;
+}
+
 .fuel-chain__card h2 {
   font-size: 1.1rem;
   margin: 0;

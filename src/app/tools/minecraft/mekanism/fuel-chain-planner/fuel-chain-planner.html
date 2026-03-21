@@ -75,23 +75,30 @@
       </div>
 
       <section class="fuel-chain__card">
-        <h2>Resource Requirements</h2>
+        <div class="fuel-chain__card-header">
+          <h2>Resource Requirements</h2>
+          <div class="fuel-chain__unit-toggle">
+            <button [class.active]="rateUnit() === 'tick'" (click)="setRateUnit('tick')">/t</button>
+            <button [class.active]="rateUnit() === 'second'" (click)="setRateUnit('second')">/s</button>
+            <button [class.active]="rateUnit() === 'minute'" (click)="setRateUnit('minute')">/min</button>
+          </div>
+        </div>
         <div class="fuel-chain__resource-grid">
           <div class="fuel-chain__resource">
             <span class="fuel-chain__resource-label">Uranium Ingots</span>
-            <span class="fuel-chain__resource-value">{{ formatItemRate(data.resources.uraniumIngotsPerTick) }}</span>
+            <span class="fuel-chain__resource-value">{{ formatRate(data.resources.uraniumIngotsPerTick, 'items') }}</span>
           </div>
           <div class="fuel-chain__resource">
             <span class="fuel-chain__resource-label">Fluorite</span>
-            <span class="fuel-chain__resource-value">{{ formatItemRate(data.resources.fluoritePerTick) }}</span>
+            <span class="fuel-chain__resource-value">{{ formatRate(data.resources.fluoritePerTick, 'items') }}</span>
           </div>
           <div class="fuel-chain__resource">
             <span class="fuel-chain__resource-label">Coal</span>
-            <span class="fuel-chain__resource-value">{{ formatItemRate(data.resources.coalPerTick) }}</span>
+            <span class="fuel-chain__resource-value">{{ formatRate(data.resources.coalPerTick, 'items') }}</span>
           </div>
           <div class="fuel-chain__resource">
             <span class="fuel-chain__resource-label">Water</span>
-            <span class="fuel-chain__resource-value">{{ asDecimal(data.resources.waterMbPerTick, 2) }} mB/t</span>
+            <span class="fuel-chain__resource-value">{{ formatRate(data.resources.waterMbPerTick, 'mB') }}</span>
           </div>
         </div>
       </section>
