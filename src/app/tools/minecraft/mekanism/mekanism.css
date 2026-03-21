@@ -36,6 +36,35 @@
   line-height: 1.6;
 }
 
+.mekanism__tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mekanism__tab {
+  background: transparent;
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  color: var(--kiwi-fore);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.5rem 1.35rem;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.mekanism__tab:hover:not(.mekanism__tab--active) {
+  border-color: var(--kiwi-green);
+}
+
+.mekanism__tab--active {
+  background: var(--kiwi-green);
+  border-color: var(--kiwi-green);
+  color: #0f0f0f;
+}
+
 .mekanism__callout {
   display: grid;
   gap: var(--space-sm, 1rem);

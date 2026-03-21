@@ -1,0 +1,207 @@
+/* ── Flow-specific design tokens ── */
+:host {
+  --flow-a: #2a862a;
+  --flow-b: #ff9800;
+  --flow-final: #1995ff;
+}
+
+/* ── Root container ── */
+.chain-flow {
+  background: var(--tool-surface);
+  border: 1px solid var(--tool-border);
+  border-radius: 0.85rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Sections ── */
+.chain-flow__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chain-flow__section + .chain-flow__section {
+  border-top: 1px solid var(--tool-border);
+  padding-top: 1.25rem;
+}
+
+/* ── Section titles ── */
+.chain-flow__section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.chain-flow__section--a .chain-flow__section-title {
+  color: var(--flow-a);
+}
+
+.chain-flow__section--b .chain-flow__section-title {
+  color: var(--flow-b);
+}
+
+.chain-flow__section--final .chain-flow__section-title {
+  color: var(--flow-final);
+}
+
+/* ── Pipeline row ── */
+.chain-flow__pipeline {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.chain-flow__pipeline--sub {
+  padding-left: 1rem;
+  opacity: 0.92;
+}
+
+/* ── Arrow ── */
+.chain-flow__arrow {
+  color: var(--tool-muted, #888);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  user-select: none;
+  line-height: 1;
+}
+
+/* ── Input pill ── */
+.chain-flow__input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--tool-border);
+  border-radius: 999px;
+  color: var(--tool-text);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.3rem 0.75rem;
+  white-space: nowrap;
+}
+
+.chain-flow__input--merge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 0.65rem;
+}
+
+.chain-flow__merge-plus {
+  color: var(--tool-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* ── Product pill ── */
+.chain-flow__product {
+  border-radius: 999px;
+  color: var(--tool-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  white-space: nowrap;
+}
+
+.chain-flow__product--a {
+  background: rgba(42, 134, 42, 0.15);
+  border: 1px solid var(--flow-a);
+}
+
+.chain-flow__product--b {
+  background: rgba(255, 152, 0, 0.15);
+  border: 1px solid var(--flow-b);
+}
+
+.chain-flow__product--final {
+  background: rgba(25, 149, 255, 0.18);
+  border: 1px solid var(--flow-final);
+}
+
+/* ── Machine node (glassmorphism card) ── */
+.chain-flow__node {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--tool-border);
+  border-left-width: 3px;
+  border-radius: 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+}
+
+.chain-flow__node--a {
+  border-left-color: var(--flow-a);
+}
+
+.chain-flow__node--b {
+  border-left-color: var(--flow-b);
+}
+
+.chain-flow__node--final {
+  border-left-color: var(--flow-final);
+}
+
+.chain-flow__node-name {
+  color: var(--tool-text);
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Count badge ── */
+.chain-flow__node-badge {
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.15rem 0.45rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Batch machines: solid badge */
+.chain-flow__node-badge--solid {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--tool-text);
+}
+
+/* Flow-rate machines: outlined badge */
+.chain-flow__node-badge--outline {
+  background: transparent;
+  border: 1px solid var(--tool-muted, #888);
+  color: var(--tool-muted, #888);
+}
+
+/* ── Responsive: stack vertically on small screens ── */
+@media (max-width: 640px) {
+  .chain-flow {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .chain-flow__pipeline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .chain-flow__pipeline--sub {
+    padding-left: 0.5rem;
+  }
+
+  .chain-flow__arrow {
+    transform: rotate(90deg);
+    font-size: 0.9rem;
+    align-self: center;
+  }
+
+  .chain-flow__node {
+    width: 100%;
+  }
+}
