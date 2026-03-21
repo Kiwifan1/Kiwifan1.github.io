@@ -40,6 +40,7 @@ export class FuelChainPlanner {
   public readonly result = signal<ProductionChainResult | null>(null);
   public readonly error = signal<string | null>(null);
   public readonly rateUnit = signal<'tick' | 'second' | 'minute'>('tick');
+  public readonly showEnergyInfo = signal(false);
 
   public readonly asNumber = asNumber;
   public readonly asDecimal = asDecimal;
@@ -52,6 +53,10 @@ export class FuelChainPlanner {
       return asDecimal(joulesPerTick / 1_000, 2) + ' kJ/t';
     }
     return asDecimal(joulesPerTick, 2) + ' J/t';
+  }
+
+  public toggleEnergyInfo(): void {
+    this.showEnergyInfo.update(v => !v);
   }
 
   public setRateUnit(unit: 'tick' | 'second' | 'minute'): void {

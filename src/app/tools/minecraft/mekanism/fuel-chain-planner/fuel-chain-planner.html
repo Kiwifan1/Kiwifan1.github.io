@@ -66,15 +66,8 @@
         </div>
         <div class="fuel-chain__stat">
           <span class="fuel-chain__stat-value">{{ formatEnergy(data.resources.totalEnergyPerTick) }}</span>
-          <span class="fuel-chain__stat-label">
-            Total Energy
-            <span class="fuel-chain__info-wrap" tabindex="0">
-              <span class="fuel-chain__info-icon">?</span>
-              <span class="fuel-chain__info-tooltip">
-                Total energy stays roughly constant regardless of speed upgrades &mdash; faster machines
-                draw more energy per tick, but you need fewer of them to hit the same fuel rate.
-              </span>
-            </span>
+          <span class="fuel-chain__stat-label">Total Energy
+            <span class="fuel-chain__info-icon" (click)="toggleEnergyInfo()">?</span>
           </span>
         </div>
         <div class="fuel-chain__stat">
@@ -82,6 +75,16 @@
           <span class="fuel-chain__stat-label">mB/t Fissile Fuel</span>
         </div>
       </div>
+
+      @if (showEnergyInfo()) {
+        <div class="fuel-chain__info-banner">
+          <p>
+            Total energy stays roughly constant regardless of speed upgrades &mdash; faster machines
+            draw more energy per tick, but you need fewer of them to hit the same fuel rate.
+          </p>
+          <button (click)="toggleEnergyInfo()">&times;</button>
+        </div>
+      }
 
       <section class="fuel-chain__card">
         <div class="fuel-chain__card-header">
