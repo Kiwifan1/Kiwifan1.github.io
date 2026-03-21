@@ -21,6 +21,18 @@ Size:
   * One Fissile Fuel Input
   * One Waste Output
 
+```mermaid
+flowchart LR
+    F["Fissile Fuel"] --> R["Fission Reactor"]
+    W["Water/Sodium"] --> R
+    R --> S["Steam/Heated Sodium"]
+    R --> NW["Nuclear Waste"]
+    S --> T["Industrial Turbine"]
+    T --> E["Energy (FE)"]
+    T --> WR["Water Return"]
+    WR --> R
+```
+
 ## Heating Rate
 
 | Medium | Heating Rate (mB/t) |
@@ -29,6 +41,20 @@ Size:
 | Sodium | 200,000             |
 
 > Note: These numbers also match how much is heated per 1 mB of `Fissile Fuel`.
+
+```mermaid
+flowchart TD
+    subgraph Water Cooling
+        RW["Reactor"] -->|"20,000 mB Steam/mB fuel"| TW["Turbine"]
+        TW -->|"Water return"| RW
+    end
+    subgraph Sodium Cooling
+        RS["Reactor"] -->|"200,000 mB Heated Na/mB fuel"| B["Boiler"]
+        B -->|"Steam"| TS["Turbine"]
+        TS -->|"Water return"| B
+        B -->|"Cooled Sodium"| RS
+    end
+```
 
 ## Power Generation
 
@@ -56,6 +82,18 @@ $$B_{\text{safe}} = \min\big(X_{\text{steam flow}},\ X_{\text{water output}}\big
 | Red\*  | $1200 < T$          |
 
 > \*Note: Above 1200K, the reactor will take structural damage
+
+```mermaid
+stateDiagram-v2
+    [*] --> Green: T < 600K
+    Green --> Yellow: T >= 600K
+    Yellow --> Orange: T >= 1000K
+    Orange --> Red: T >= 1200K
+    Red --> Orange: T < 1200K (repairs)
+    Orange --> Yellow: T < 1000K
+    Yellow --> Green: T < 600K
+    Red --> Meltdown: Damage > 100%
+```
 
 ### Damage/Meltdown Mechanics
 
@@ -86,6 +124,17 @@ While the temperature stays below 1200K the reactor repairs itself at
 $$ \frac{1200 - T}{120{,}000}\% \text{ per tick},$$
 
 so at $T = 0\,\text{K}$ the structure heals at 0.2% per second.
+
+```mermaid
+flowchart TD
+    T{"Temperature?"} -->|"T < 1200K"| Repair["Repair: (1200-T)/120,000 %/tick"]
+    T -->|"T >= 1200K"| Damage["Damage: min(T,1800)/12,000 %/tick"]
+    Damage --> Check{"Damage > 100%?"}
+    Check -->|"No"| Accumulate["Damage accumulates"]
+    Check -->|"Yes"| Roll{"Meltdown roll: D%/1000 per tick"}
+    Roll -->|"Pass"| Accumulate
+    Roll -->|"Fail"| Boom["MELTDOWN"]
+```
 
 ## Nuclear Waste
 

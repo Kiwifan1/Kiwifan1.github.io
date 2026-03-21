@@ -9,6 +9,26 @@
 - From top to bottom the interior contains a steam cavity, a one-block `Pressure Disperser` layer, and a water cavity populated by `Superheating Elements`.
 - The water cavity and steam cavity must both be at least one block tall.
 
+```mermaid
+block-beta
+    columns 1
+    block:roof["Top Casing"]
+        R["Roof"]
+    end
+    block:steam["Steam Cavity"]
+        SC["s layers — Steam buffer"]
+    end
+    block:deck["Pressure Disperser Deck"]
+        PD["1 layer — Dispersers"]
+    end
+    block:water["Water Cavity"]
+        WC["w layers — Water + Superheaters"]
+    end
+    block:floor["Bottom Casing"]
+        F["Floor"]
+    end
+```
+
 ## Variable Definitions
 
 - Let $w$ be the height (in blocks) of the water cavity _excluding_ the disperser layer.
@@ -62,6 +82,16 @@ $$F(N, w) = \min\left(C_{\text{water}},\ C_{\text{steam}},\ C_{\text{boil}}\righ
 
 Our goal is to choose $w$ and $N$ that maximise $F$ while respecting the structural bounds.
 
+```mermaid
+flowchart LR
+    HC["Heated Coolant In"] --> WC["Water Cavity"]
+    WC --> SH["Superheating Elements"]
+    SH -->|"C_boil = phi*N"| Steam["Steam"]
+    WC -->|"C_water = alpha*V_water"| Steam
+    Steam -->|"C_steam = beta*V_steam"| Out["Steam Out"]
+    Out --> Note["F = min(C_water, C_steam, C_boil)"]
+```
+
 ## Balanced Superheater Count
 
 Water draw decreases as $N$ grows, while boil throughput increases. Setting the two terms equal provides the balanced superheater count
@@ -114,6 +144,19 @@ subject to the practical cap $N \le w^{\star} A$ (which is always satisfied for 
    $$F_{\max} = \frac{\alpha \phi}{\alpha + \phi}(w + 1)A,$$
    while $C_{\text{steam}}$, $C_{\text{hot}}$, and $C_{\text{cold}}$ follow from the height allocation above.
 6. If you adjust the layout (e.g., add extra steam headroom or remove superheaters for easier piping), recompute $F$ with the same formulas—performance degrades smoothly around the optimum, so near-by configurations remain effective.
+
+```mermaid
+flowchart TD
+    Start["Pick W, L, H"] --> Compute["h = H-2, A = W*L"]
+    Compute --> Water["Set w = h-2 (max water)"]
+    Water --> Steam["s = 1 (min steam)"]
+    Steam --> Balance["N = floor((w+1)*A / 11)"]
+    Balance --> Check{"N <= w*A?"}
+    Check -->|"Yes"| Build["Build boiler with N superheaters"]
+    Check -->|"No"| Cap["N = w*A"]
+    Cap --> Build
+    Build --> Throughput["F_max = alpha*phi/(alpha+phi) * (w+1)*A"]
+```
 
 ## Worked Example — 18 × 18 × 18 Boiler
 
