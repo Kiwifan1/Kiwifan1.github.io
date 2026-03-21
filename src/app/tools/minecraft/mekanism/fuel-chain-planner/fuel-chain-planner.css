@@ -394,7 +394,7 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-.fuel-chain__machine-item--flow {
+.fuel-chain__machine-item--chemical {
   border-left-color: var(--kiwi-blue);
 }
 

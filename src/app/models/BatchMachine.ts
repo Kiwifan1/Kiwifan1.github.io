@@ -48,8 +48,12 @@ export class BatchMachine implements ProcessingMachine {
     return Math.ceil(requiredOpsPerTick / this.getThroughput());
   }
 
-  /** Total energy per tick for N machines of this type. */
+  /** Total energy per tick for N machines.
+   *  Mekanism formula: baseEnergy × 10^(2s - e) per machine.
+   *  With speed only (e=0): baseEnergy × 10^(2s).
+   */
   public energyPerTick(machineCount: number): number {
-    return machineCount * this.baseEnergy / this.effectiveTicks;
+    const speedFraction = this.speedUpgrades / BatchMachine.MAX_SPEED_UPGRADES;
+    return machineCount * this.baseEnergy * Math.pow(10, 2 * speedFraction);
   }
 }

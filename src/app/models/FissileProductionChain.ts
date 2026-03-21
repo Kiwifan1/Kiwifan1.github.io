@@ -1,5 +1,6 @@
 import { PRODUCTION_CHAIN } from './constants';
 import { BatchMachine } from './BatchMachine';
+import { ChemicalMachine } from './ChemicalMachine';
 import {
 	createEnrichmentChamber,
 	createChemicalOxidizerUranium,
@@ -23,15 +24,17 @@ export interface BatchMachineStage {
 	energyPerTick: number;
 }
 
-export interface FlowRateMachineStage {
-	type: 'flow';
+export interface ChemicalMachineStage {
+	type: 'chemical';
 	name: string;
-	count: 1;
+	count: number;
+	throughputPerTick: number;
 	flowRateMbPerTick: number;
 	energyPerTick: number;
+	supportsGasUpgrade: boolean;
 }
 
-export type MachineStage = BatchMachineStage | FlowRateMachineStage;
+export type MachineStage = BatchMachineStage | ChemicalMachineStage;
 
 export interface ResourceRates {
 	uraniumIngotsPerTick: number;
@@ -41,12 +44,17 @@ export interface ResourceRates {
 	totalEnergyPerTick: number;
 }
 
+export interface UpgradeRequirements {
+	speed: { perMachine: number; machines: number; total: number };
+}
+
 export interface ProductionChainResult {
 	targetFuelRate: number;
 	speedUpgrades: number;
 	stages: MachineStage[];
 	resources: ResourceRates;
 	totalMachines: number;
+	upgradeRequirements: UpgradeRequirements;
 }
 
 /**
@@ -77,19 +85,19 @@ export class FissileProductionChain {
 		const u = this.speedUpgrades;
 		const C = PRODUCTION_CHAIN;
 
-		// --- Create machine instances ---
+		// --- Create machine instances (all now receive speedUpgrades) ---
 		const enrichment = createEnrichmentChamber(u);
 		const oxidizerUO = createChemicalOxidizerUranium(u);
 		const oxidizerSO2 = createChemicalOxidizerSulfur(u);
 		const prc = createPressurizedReactionChamber(u);
 		const dissolution = createDissolutionChamber(u);
 
-		const infuserSO3 = createChemicalInfuserSO3();
-		const condensentrator = createRotaryCondensentrator();
-		const infuserH2SO4 = createChemicalInfuserH2SO4();
-		const es = createElectrolyticSeparator();
-		const infuserUF6 = createChemicalInfuserUF6();
-		const centrifuge = createIsotopicCentrifuge();
+		const infuserSO3 = createChemicalInfuserSO3(u);
+		const condensentrator = createRotaryCondensentrator(u);
+		const infuserH2SO4 = createChemicalInfuserH2SO4(u);
+		const es = createElectrolyticSeparator(u);
+		const infuserUF6 = createChemicalInfuserUF6(u);
+		const centrifuge = createIsotopicCentrifuge(u);
 
 		// --- Backward demand calculation from R mB/t Fissile Fuel ---
 
@@ -141,17 +149,27 @@ export class FissileProductionChain {
 			buildBatchStage(dissolution, dcOps),
 		];
 
-		// --- Build flow stages ---
-		const flowStages: FlowRateMachineStage[] = [
-			buildFlowStage(infuserSO3, so3Needed, C.CHEMICAL_INFUSER_SO3),
-			buildFlowStage(condensentrator, vaporNeeded, C.ROTARY_CONDENSENTRATOR),
-			buildFlowStage(infuserH2SO4, h2so4Needed, C.CHEMICAL_INFUSER_H2SO4),
-			buildFlowStage(es, totalO2, C.ELECTROLYTIC_SEPARATOR, 'O2'),
-			buildFlowStage(infuserUF6, uf6Needed, C.CHEMICAL_INFUSER_UF6),
-			buildFlowStage(centrifuge, R, C.ISOTOPIC_CENTRIFUGE),
+		// --- Build chemical stages ---
+		const chemicalStages: ChemicalMachineStage[] = [
+			buildChemicalStage(infuserSO3, so3Needed),
+			buildChemicalStage(condensentrator, vaporNeeded),
+			buildChemicalStage(infuserH2SO4, h2so4Needed),
+			buildChemicalStageForOutput(es, totalO2, 'O2'),
+			buildChemicalStage(infuserUF6, uf6Needed),
+			buildChemicalStage(centrifuge, R),
 		];
 
-		const stages: MachineStage[] = [...batchStages, ...flowStages];
+		const stages: MachineStage[] = [...batchStages, ...chemicalStages];
+
+		const totalMachines = stages.reduce((sum, s) => sum + s.count, 0);
+
+		const upgradeRequirements: UpgradeRequirements = {
+			speed: {
+				perMachine: this.speedUpgrades,
+				machines: totalMachines,
+				total: this.speedUpgrades * totalMachines,
+			},
+		};
 
 		const resources: ResourceRates = {
 			uraniumIngotsPerTick: ecOps,
@@ -166,7 +184,8 @@ export class FissileProductionChain {
 			speedUpgrades: this.speedUpgrades,
 			stages,
 			resources,
-			totalMachines: stages.reduce((sum, s) => sum + s.count, 0),
+			totalMachines,
+			upgradeRequirements,
 		};
 	}
 
@@ -199,24 +218,49 @@ function buildBatchStage(machine: BatchMachine, requiredOps: number): BatchMachi
 	};
 }
 
-interface FlowConstants {
-	BASE_ENERGY: number;
-	OUTPUT_MB?: number;
-	OUTPUT_O2_MB?: number;
-	OUTPUT_VAPOR_MB?: number;
+/**
+ * Build a chemical stage where `requiredMbPerTick` is the total output demand
+ * and the machine has a single primary output (or we care about total throughput).
+ */
+function buildChemicalStage(machine: ChemicalMachine, requiredMbPerTick: number): ChemicalMachineStage {
+	const count = machine.machinesNeeded(requiredMbPerTick);
+	return {
+		type: 'chemical',
+		name: machine.name,
+		count,
+		throughputPerTick: machine.throughputPerTick,
+		flowRateMbPerTick: requiredMbPerTick,
+		energyPerTick: machine.energyPerTick(count),
+		supportsGasUpgrade: machine.supportsGasUpgrade,
+	};
 }
 
-function buildFlowStage(
-	machine: { name: string },
-	flowRate: number,
-	constants: FlowConstants,
-	outputKey: string = 'default'
-): FlowRateMachineStage {
+/**
+ * Build a chemical stage for a machine with multiple outputs, where we need
+ * a specific output at `requiredMbPerTick`. Machine count is based on that
+ * specific output's per-recipe ratio, not total throughput.
+ *
+ * Example: Electrolytic Separator outputs 1 mB O2 + 2 mB H2 per operation.
+ * If we need X mB/t of O2, machines = ceil(X / (O2_per_recipe * 2^speed)).
+ */
+function buildChemicalStageForOutput(
+	machine: ChemicalMachine,
+	requiredMbPerTick: number,
+	outputName: string
+): ChemicalMachineStage {
+	const outputPerRecipe = machine.outputs.get(outputName);
+	if (outputPerRecipe === undefined) {
+		throw new Error(`Unknown output "${outputName}" on machine "${machine.name}"`);
+	}
+	const perMachineRate = outputPerRecipe * Math.pow(2, machine.speedUpgrades);
+	const count = requiredMbPerTick <= 0 ? 0 : Math.ceil(requiredMbPerTick / perMachineRate);
 	return {
-		type: 'flow',
+		type: 'chemical',
 		name: machine.name,
-		count: 1,
-		flowRateMbPerTick: flowRate,
-		energyPerTick: constants.BASE_ENERGY,
+		count,
+		throughputPerTick: machine.throughputPerTick,
+		flowRateMbPerTick: requiredMbPerTick,
+		energyPerTick: machine.energyPerTick(count),
+		supportsGasUpgrade: machine.supportsGasUpgrade,
 	};
 }

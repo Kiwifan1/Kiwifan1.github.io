@@ -1,4 +1,4 @@
-import { FissileProductionChain, BatchMachineStage, FlowRateMachineStage } from './FissileProductionChain';
+import { FissileProductionChain, BatchMachineStage, ChemicalMachineStage } from './FissileProductionChain';
 
 describe('FissileProductionChain', () => {
 	describe('validation', () => {
@@ -60,19 +60,12 @@ describe('FissileProductionChain', () => {
 			expect(result.speedUpgrades).toBe(8);
 		});
 
-		it('has 11 stages (5 batch + 6 flow)', () => {
+		it('has 11 stages (5 batch + 6 chemical)', () => {
 			expect(result.stages.length).toBe(11);
 			const batch = result.stages.filter(s => s.type === 'batch');
-			const flow = result.stages.filter(s => s.type === 'flow');
+			const chemical = result.stages.filter(s => s.type === 'chemical');
 			expect(batch.length).toBe(5);
-			expect(flow.length).toBe(6);
-		});
-
-		it('all flow-rate machines have count=1', () => {
-			const flow = result.stages.filter(s => s.type === 'flow') as FlowRateMachineStage[];
-			for (const s of flow) {
-				expect(s.count).toBe(1);
-			}
+			expect(chemical.length).toBe(6);
 		});
 
 		it('computes correct batch machine counts', () => {
@@ -105,8 +98,8 @@ describe('FissileProductionChain', () => {
 		});
 
 		it('computes correct total machines', () => {
-			// 6+6+2+2+2 (batch) + 6 (flow) = 24
-			expect(result.totalMachines).toBe(24);
+			// Batch: 6+6+2+2+2=18. Chemical: centrifuge 2, UF6 1, ES 1, SO3 1, H2SO4 1, RC 1 = 7. Total = 25
+			expect(result.totalMachines).toBe(25);
 		});
 
 		it('computes uranium ingot rate', () => {
@@ -147,7 +140,7 @@ describe('FissileProductionChain', () => {
 			}
 		});
 
-		it('has 11 stages', () => {
+		it('has 11 stages (5 batch + 6 chemical)', () => {
 			expect(result.stages.length).toBe(11);
 		});
 
