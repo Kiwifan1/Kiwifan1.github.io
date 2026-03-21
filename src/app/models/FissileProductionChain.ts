@@ -1,6 +1,11 @@
 import { PRODUCTION_CHAIN } from './constants';
 
-export interface MachineRequirement {
+/**
+ * Represents a batch machine (has BASE_TICKS, affected by speed upgrades).
+ * Machine count = ceil(required_ops_per_tick / (1 / effective_ticks)).
+ */
+export interface BatchMachineStage {
+	type: 'batch';
 	name: string;
 	count: number;
 	opsPerTick: number;
@@ -8,18 +13,33 @@ export interface MachineRequirement {
 	energyPerTick: number;
 }
 
+/**
+ * Represents a flow-rate machine (per-mB ratio, no BASE_TICKS).
+ * These process chemicals at a configurable throughput rate and scale with
+ * pipe throughput, not machine count. Count is always 1.
+ */
+export interface FlowRateMachineStage {
+	type: 'flow';
+	name: string;
+	count: 1;
+	flowRateMbPerTick: number;
+	energyPerTick: number;
+}
+
+export type MachineStage = BatchMachineStage | FlowRateMachineStage;
+
 export interface ResourceRates {
 	uraniumIngotsPerTick: number;
 	fluoritePerTick: number;
 	coalPerTick: number;
-	waterPerTick: number;
+	waterMbPerTick: number;
 	totalEnergyPerTick: number;
 }
 
 export interface ProductionChainResult {
 	targetFuelRate: number;
 	speedUpgrades: number;
-	stages: MachineRequirement[];
+	stages: MachineStage[];
 	resources: ResourceRates;
 	totalMachines: number;
 }
@@ -27,7 +47,7 @@ export interface ProductionChainResult {
 export class FissileProductionChain {
 	public static readonly MIN_FUEL_RATE = 0.1;
 	public static readonly MAX_FUEL_RATE = 10000;
-	public static readonly MAX_SPEED_UPGRADES = 8;
+	public static readonly MAX_SPEED_UPGRADES = PRODUCTION_CHAIN.MAX_SPEED_UPGRADES;
 
 	public readonly targetFuelRate: number;
 	public readonly speedUpgrades: number;
@@ -39,17 +59,27 @@ export class FissileProductionChain {
 		this.speedUpgrades = speedUpgrades;
 	}
 
+	/**
+	 * Returns the effective ticks per operation for a batch machine after
+	 * applying speed upgrades.
+	 */
 	public static getEffectiveTicks(baseTicks: number, speedUpgrades: number): number {
 		return Math.ceil(baseTicks / (1 + speedUpgrades));
 	}
 
-	public static getMachineThroughput(outputPerOp: number, baseTicks: number, speedUpgrades: number): number {
-		const effectiveTicks = FissileProductionChain.getEffectiveTicks(baseTicks, speedUpgrades);
-		return outputPerOp / effectiveTicks;
+	/**
+	 * Returns how many operations per tick a single batch machine can perform.
+	 */
+	public static batchThroughput(baseTicks: number, speedUpgrades: number): number {
+		return 1 / FissileProductionChain.getEffectiveTicks(baseTicks, speedUpgrades);
 	}
 
-	public static machinesNeeded(requiredRate: number, throughputPerMachine: number): number {
-		return Math.ceil(requiredRate / throughputPerMachine);
+	/**
+	 * Returns ceil(requiredOpsPerTick / throughputPerMachine).
+	 */
+	public static machinesNeeded(requiredOpsPerTick: number, throughputPerMachine: number): number {
+		if (requiredOpsPerTick <= 0) return 0;
+		return Math.ceil(requiredOpsPerTick / throughputPerMachine);
 	}
 
 	public calculate(): ProductionChainResult {
@@ -68,85 +98,125 @@ export class FissileProductionChain {
 		const CI_UF6 = PRODUCTION_CHAIN.CHEMICAL_INFUSER_UF6;
 		const IC = PRODUCTION_CHAIN.ISOTOPIC_CENTRIFUGE;
 
-		// -------------------------------------------------------
-		// Working backwards from target fuel rate R (mB/t)
-		// -------------------------------------------------------
+		// =============================================================
+		// Backward calculation from R mB/t Fissile Fuel
+		// =============================================================
 
-		// Isotopic Centrifuge: 1000 mB UF6 -> 1000 mB Fissile Fuel
-		const centrifugeOpsPerTick = R / IC.OUTPUT_MB;
+		// 1. Isotopic Centrifuge: 1 UF6 -> 1 Fissile Fuel (1:1)
+		//    Needs R mB/t UF6
+		const uf6Needed = R; // mB/t
 
-		// UF6 Infuser: 1000 mB HF + 1000 mB UO -> 2000 mB UF6
-		const uf6Needed = R; // 1:1 ratio with fuel
-		const uf6InfuserOpsPerTick = uf6Needed / CI_UF6.OUTPUT_MB;
-		const hfNeeded = uf6InfuserOpsPerTick * CI_UF6.INPUT_HF_MB;   // R/2
-		const uoNeeded = uf6InfuserOpsPerTick * CI_UF6.INPUT_UO_MB;   // R/2
+		// 2. UF6 Infuser: 1 HF + 1 UO -> 2 UF6
+		//    Needs R/2 mB/t HF and R/2 mB/t UO
+		const hfNeeded = R / 2;  // mB/t
+		const uoNeeded = R / 2;  // mB/t
 
 		// --- Path A: Uranium Oxide ---
-		// Chemical Oxidizer (Uranium): 1 Yellow Cake -> 1000 mB UO
-		const oxidizerUOpsPerTick = uoNeeded / OX_U.OUTPUT_MB;        // R/2000
-		const yellowCakePerTick = oxidizerUOpsPerTick;                 // R/2000
+		// 3. Chemical Oxidizer (UO): 1 Yellow Cake -> 250 mB UO
+		//    Needs R/2 / 250 = R/500 yellow cake/t (ops/t)
+		const oxUOpsPerTick = uoNeeded / OX_U.OUTPUT_MB; // R/500
 
-		// Enrichment Chamber: 1 Uranium Ingot -> 1 Yellow Cake
-		const enrichmentOpsPerTick = yellowCakePerTick;                // R/2000
+		// 4. Enrichment Chamber: 1 Ingot -> 2 Yellow Cake
+		//    Needs R/500 / 2 = R/1000 ingots/t (ops/t)
+		const ecOpsPerTick = oxUOpsPerTick / EC.OUTPUT_COUNT; // R/1000
 
 		// --- Path B: Hydrofluoric Acid ---
-		// Dissolution Chamber: Fluorite + 1000 mB H2SO4 -> 1000 mB HF
-		const dissolutionOpsPerTick = hfNeeded / DC.OUTPUT_MB;         // R/2000
-		const h2so4Needed = dissolutionOpsPerTick * DC.INPUT_H2SO4_MB; // R/2
+		// 5. Dissolution Chamber: 1 Fluorite + 1 mB H2SO4 -> 1000 mB HF
+		//    Needs R/2 / 1000 = R/2000 fluorite/t (ops/t), R/2000 mB/t H2SO4
+		const dcOpsPerTick = hfNeeded / DC.OUTPUT_MB; // R/2000
+		const h2so4Needed = dcOpsPerTick * DC.INPUT_H2SO4_MB; // R/2000 mB/t
 
-		// H2SO4 Infuser: 1000 mB SO3 + 1000 mB Water Vapor -> 2000 mB H2SO4
-		const h2so4InfuserOpsPerTick = h2so4Needed / CI_H2SO4.OUTPUT_MB; // R/4000
-		const so3Needed = h2so4InfuserOpsPerTick * CI_H2SO4.INPUT_SO3_MB;     // R/4
-		const waterVaporNeeded = h2so4InfuserOpsPerTick * CI_H2SO4.INPUT_VAPOR_MB; // R/4
+		// 6. H2SO4 Infuser: 1 SO3 + 1 Vapor -> 1 H2SO4
+		//    Needs R/2000 mB/t SO3 and R/2000 mB/t Water Vapor
+		const so3Needed = h2so4Needed; // R/2000 mB/t
+		const waterVaporNeeded = h2so4Needed; // R/2000 mB/t
 
-		// Rotary Condensentrator: Water -> Water Vapor (1:1, 1 tick)
-		const condensentratorRate = waterVaporNeeded; // R/4 mB/t
+		// 7. SO3 Infuser: 2 SO2 + 1 O2 -> 2 SO3
+		//    Needs R/2000 mB/t SO2 and R/4000 mB/t O2
+		const so2Needed = so3Needed; // R/2000 mB/t (2:2 ratio)
+		const o2ForSO3 = so3Needed / (CI_SO3.OUTPUT_MB / CI_SO3.INPUT_O2_MB); // R/4000 mB/t
 
-		// SO3 Infuser: 1000 mB SO2 + 1000 mB O2 -> 2000 mB SO3
-		const so3InfuserOpsPerTick = so3Needed / CI_SO3.OUTPUT_MB;     // R/8000
-		const so2Needed = so3InfuserOpsPerTick * CI_SO3.INPUT_SO2_MB;  // R/8
-		const o2ForSO3 = so3InfuserOpsPerTick * CI_SO3.INPUT_O2_MB;   // R/8
+		// 8. Sulfur Oxidizer: 1 Sulfur -> 100 mB SO2
+		//    Needs R/2000 / 100 = R/200000 sulfur/t (ops/t)
+		const oxSOpsPerTick = so2Needed / OX_S.OUTPUT_MB; // R/200000
 
-		// Sulfur Oxidizer: 1 Sulfur Dust -> 1000 mB SO2
-		const sulfurOxidizerOpsPerTick = so2Needed / OX_S.OUTPUT_MB;   // R/8000
-		const sulfurDustPerTick = sulfurOxidizerOpsPerTick;            // R/8000
+		// 9. PRC: 1 Coal + 100 Water + 100 O2 -> 1 Sulfur + 100 H2
+		//    Needs R/200000 ops/t
+		const prcOpsPerTick = oxSOpsPerTick; // R/200000
 
-		// PRC: Water + Oxygen + Coal -> 1 Sulfur Dust
-		const prcOpsPerTick = sulfurDustPerTick;                       // R/8000
+		// --- Oxygen ---
+		// PRC O2: R/200000 * 100 = R/2000 mB/t
+		// SO3 O2: R/4000 mB/t
+		// Total O2: R/2000 + R/4000 = 3R/4000 mB/t
+		const o2ForPRC = prcOpsPerTick * PRC.INPUT_OXYGEN_MB; // R/2000
+		const totalO2Needed = o2ForPRC + o2ForSO3; // 3R/4000
 
-		// -------------------------------------------------------
-		// Machine counts
-		// -------------------------------------------------------
+		// Electrolytic Separator: 2 Water -> 1 O2
+		// Water for ES: 3R/4000 * 2 = 3R/2000 mB/t
+		const esWaterNeeded = totalO2Needed * (ES.INPUT_WATER_MB / ES.OUTPUT_O2_MB); // 3R/2000
 
-		// Stage 1: Enrichment Chamber (Path A)
+		// --- Condensentrator ---
+		// Water Vapor needed: R/2000 mB/t -> Water input: R/2000 mB/t (1:1)
+		const rcWaterNeeded = waterVaporNeeded * (RC.INPUT_WATER_MB / RC.OUTPUT_VAPOR_MB); // R/2000
+
+		// --- PRC Water ---
+		const prcWaterNeeded = prcOpsPerTick * PRC.INPUT_WATER_MB; // R/2000
+
+		// --- Total Water ---
+		// PRC (R/2000) + Condensentrator (R/2000) + ES (3R/2000) = 5R/2000 = R/400
+		const totalWater = prcWaterNeeded + rcWaterNeeded + esWaterNeeded; // R/400
+
+		// =============================================================
+		// Build stages
+		// =============================================================
+
+		// --- Batch machines: need machine count calculation ---
+
+		// Enrichment Chamber
 		const ecEffTicks = FissileProductionChain.getEffectiveTicks(EC.BASE_TICKS, upgrades);
-		const ecThroughput = FissileProductionChain.getMachineThroughput(1, EC.BASE_TICKS, upgrades);
-		const ecCount = FissileProductionChain.machinesNeeded(enrichmentOpsPerTick, ecThroughput);
-		const ecStage: MachineRequirement = {
+		const ecThroughput = FissileProductionChain.batchThroughput(EC.BASE_TICKS, upgrades);
+		const ecCount = FissileProductionChain.machinesNeeded(ecOpsPerTick, ecThroughput);
+		const ecStage: BatchMachineStage = {
+			type: 'batch',
 			name: 'Enrichment Chamber',
 			count: ecCount,
-			opsPerTick: enrichmentOpsPerTick,
+			opsPerTick: ecOpsPerTick,
 			ticksPerOp: ecEffTicks,
 			energyPerTick: ecCount * EC.BASE_ENERGY / ecEffTicks,
 		};
 
-		// Stage 2: Chemical Oxidizer (Uranium Oxide) (Path A)
+		// Chemical Oxidizer (Uranium Oxide)
 		const oxUEffTicks = FissileProductionChain.getEffectiveTicks(OX_U.BASE_TICKS, upgrades);
-		const oxUThroughput = FissileProductionChain.getMachineThroughput(OX_U.OUTPUT_MB, OX_U.BASE_TICKS, upgrades);
-		const oxUCount = FissileProductionChain.machinesNeeded(uoNeeded, oxUThroughput);
-		const oxUStage: MachineRequirement = {
+		const oxUThroughput = FissileProductionChain.batchThroughput(OX_U.BASE_TICKS, upgrades);
+		const oxUCount = FissileProductionChain.machinesNeeded(oxUOpsPerTick, oxUThroughput);
+		const oxUStage: BatchMachineStage = {
+			type: 'batch',
 			name: 'Chemical Oxidizer (Uranium Oxide)',
 			count: oxUCount,
-			opsPerTick: oxidizerUOpsPerTick,
+			opsPerTick: oxUOpsPerTick,
 			ticksPerOp: oxUEffTicks,
 			energyPerTick: oxUCount * OX_U.BASE_ENERGY / oxUEffTicks,
 		};
 
-		// Stage 3: Pressurized Reaction Chamber (Path B)
+		// Chemical Oxidizer (Sulfur Dioxide)
+		const oxSEffTicks = FissileProductionChain.getEffectiveTicks(OX_S.BASE_TICKS, upgrades);
+		const oxSThroughput = FissileProductionChain.batchThroughput(OX_S.BASE_TICKS, upgrades);
+		const oxSCount = FissileProductionChain.machinesNeeded(oxSOpsPerTick, oxSThroughput);
+		const oxSStage: BatchMachineStage = {
+			type: 'batch',
+			name: 'Chemical Oxidizer (Sulfur Dioxide)',
+			count: oxSCount,
+			opsPerTick: oxSOpsPerTick,
+			ticksPerOp: oxSEffTicks,
+			energyPerTick: oxSCount * OX_S.BASE_ENERGY / oxSEffTicks,
+		};
+
+		// Pressurized Reaction Chamber
 		const prcEffTicks = FissileProductionChain.getEffectiveTicks(PRC.BASE_TICKS, upgrades);
-		const prcThroughput = FissileProductionChain.getMachineThroughput(1, PRC.BASE_TICKS, upgrades);
+		const prcThroughput = FissileProductionChain.batchThroughput(PRC.BASE_TICKS, upgrades);
 		const prcCount = FissileProductionChain.machinesNeeded(prcOpsPerTick, prcThroughput);
-		const prcStage: MachineRequirement = {
+		const prcStage: BatchMachineStage = {
+			type: 'batch',
 			name: 'Pressurized Reaction Chamber',
 			count: prcCount,
 			opsPerTick: prcOpsPerTick,
@@ -154,139 +224,101 @@ export class FissileProductionChain {
 			energyPerTick: prcCount * PRC.BASE_ENERGY / prcEffTicks,
 		};
 
-		// Stage 4: Chemical Oxidizer (Sulfur Dioxide) (Path B)
-		const oxSEffTicks = FissileProductionChain.getEffectiveTicks(OX_S.BASE_TICKS, upgrades);
-		const oxSThroughput = FissileProductionChain.getMachineThroughput(OX_S.OUTPUT_MB, OX_S.BASE_TICKS, upgrades);
-		const oxSCount = FissileProductionChain.machinesNeeded(so2Needed, oxSThroughput);
-		const oxSStage: MachineRequirement = {
-			name: 'Chemical Oxidizer (Sulfur Dioxide)',
-			count: oxSCount,
-			opsPerTick: sulfurOxidizerOpsPerTick,
-			ticksPerOp: oxSEffTicks,
-			energyPerTick: oxSCount * OX_S.BASE_ENERGY / oxSEffTicks,
-		};
-
-		// Stage 5: Chemical Infuser (SO3) (Path B)
-		const so3EffTicks = FissileProductionChain.getEffectiveTicks(CI_SO3.BASE_TICKS, upgrades);
-		const so3Throughput = FissileProductionChain.getMachineThroughput(CI_SO3.OUTPUT_MB, CI_SO3.BASE_TICKS, upgrades);
-		const so3Count = FissileProductionChain.machinesNeeded(so3Needed, so3Throughput);
-		const so3Stage: MachineRequirement = {
-			name: 'Chemical Infuser (SO\u2083)',
-			count: so3Count,
-			opsPerTick: so3InfuserOpsPerTick,
-			ticksPerOp: so3EffTicks,
-			energyPerTick: so3Count * CI_SO3.BASE_ENERGY / so3EffTicks,
-		};
-
-		// Stage 6: Rotary Condensentrator (Path B)
-		const rcEffTicks = FissileProductionChain.getEffectiveTicks(RC.BASE_TICKS, upgrades);
-		const rcThroughput = FissileProductionChain.getMachineThroughput(RC.OUTPUT_VAPOR_MB, RC.BASE_TICKS, upgrades);
-		const rcCount = FissileProductionChain.machinesNeeded(condensentratorRate, rcThroughput);
-		const rcStage: MachineRequirement = {
-			name: 'Rotary Condensentrator',
-			count: rcCount,
-			opsPerTick: condensentratorRate / RC.OUTPUT_VAPOR_MB,
-			ticksPerOp: rcEffTicks,
-			energyPerTick: rcCount * RC.BASE_ENERGY / rcEffTicks,
-		};
-
-		// Stage 7: Chemical Infuser (H2SO4) (Path B)
-		const h2so4EffTicks = FissileProductionChain.getEffectiveTicks(CI_H2SO4.BASE_TICKS, upgrades);
-		const h2so4Throughput = FissileProductionChain.getMachineThroughput(CI_H2SO4.OUTPUT_MB, CI_H2SO4.BASE_TICKS, upgrades);
-		const h2so4Count = FissileProductionChain.machinesNeeded(h2so4Needed, h2so4Throughput);
-		const h2so4Stage: MachineRequirement = {
-			name: 'Chemical Infuser (H\u2082SO\u2084)',
-			count: h2so4Count,
-			opsPerTick: h2so4InfuserOpsPerTick,
-			ticksPerOp: h2so4EffTicks,
-			energyPerTick: h2so4Count * CI_H2SO4.BASE_ENERGY / h2so4EffTicks,
-		};
-
-		// Stage 8: Chemical Dissolution Chamber (Path B)
+		// Dissolution Chamber
 		const dcEffTicks = FissileProductionChain.getEffectiveTicks(DC.BASE_TICKS, upgrades);
-		const dcThroughput = FissileProductionChain.getMachineThroughput(DC.OUTPUT_MB, DC.BASE_TICKS, upgrades);
-		const dcCount = FissileProductionChain.machinesNeeded(hfNeeded, dcThroughput);
-		const dcStage: MachineRequirement = {
+		const dcThroughput = FissileProductionChain.batchThroughput(DC.BASE_TICKS, upgrades);
+		const dcCount = FissileProductionChain.machinesNeeded(dcOpsPerTick, dcThroughput);
+		const dcStage: BatchMachineStage = {
+			type: 'batch',
 			name: 'Chemical Dissolution Chamber',
 			count: dcCount,
-			opsPerTick: dissolutionOpsPerTick,
+			opsPerTick: dcOpsPerTick,
 			ticksPerOp: dcEffTicks,
 			energyPerTick: dcCount * DC.BASE_ENERGY / dcEffTicks,
 		};
 
-		// Stage 9: Chemical Infuser (UF6) (Final Assembly)
-		const uf6EffTicks = FissileProductionChain.getEffectiveTicks(CI_UF6.BASE_TICKS, upgrades);
-		const uf6Throughput = FissileProductionChain.getMachineThroughput(CI_UF6.OUTPUT_MB, CI_UF6.BASE_TICKS, upgrades);
-		const uf6Count = FissileProductionChain.machinesNeeded(uf6Needed, uf6Throughput);
-		const uf6Stage: MachineRequirement = {
-			name: 'Chemical Infuser (UF\u2086)',
-			count: uf6Count,
-			opsPerTick: uf6InfuserOpsPerTick,
-			ticksPerOp: uf6EffTicks,
-			energyPerTick: uf6Count * CI_UF6.BASE_ENERGY / uf6EffTicks,
+		// --- Flow-rate machines: count = 1, they handle any required flow rate ---
+
+		// Chemical Infuser (SO3): 2 SO2 + 1 O2 -> 2 SO3
+		const ciSo3Stage: FlowRateMachineStage = {
+			type: 'flow',
+			name: 'Chemical Infuser (SO\u2083)',
+			count: 1,
+			flowRateMbPerTick: so3Needed,
+			energyPerTick: so3Needed * CI_SO3.BASE_ENERGY / CI_SO3.OUTPUT_MB,
 		};
 
-		// Stage 10: Isotopic Centrifuge (Final Assembly)
-		const icEffTicks = FissileProductionChain.getEffectiveTicks(IC.BASE_TICKS, upgrades);
-		const icThroughput = FissileProductionChain.getMachineThroughput(IC.OUTPUT_MB, IC.BASE_TICKS, upgrades);
-		const icCount = FissileProductionChain.machinesNeeded(R, icThroughput);
-		const icStage: MachineRequirement = {
-			name: 'Isotopic Centrifuge',
-			count: icCount,
-			opsPerTick: centrifugeOpsPerTick,
-			ticksPerOp: icEffTicks,
-			energyPerTick: icCount * IC.BASE_ENERGY / icEffTicks,
+		// Rotary Condensentrator: Water -> Water Vapor (1:1)
+		const rcStage: FlowRateMachineStage = {
+			type: 'flow',
+			name: 'Rotary Condensentrator',
+			count: 1,
+			flowRateMbPerTick: waterVaporNeeded,
+			energyPerTick: waterVaporNeeded * RC.BASE_ENERGY / RC.OUTPUT_VAPOR_MB,
 		};
 
-		// Electrolytic Separator: produces O₂ (and H₂ byproduct) from water
-		// Total O₂ needed = PRC oxygen + SO₃ infuser O₂
-		const totalO2Needed = (prcOpsPerTick * PRC.INPUT_OXYGEN_MB) + o2ForSO3;
-		const esEffTicks = FissileProductionChain.getEffectiveTicks(ES.BASE_TICKS, upgrades);
-		const esThroughput = FissileProductionChain.getMachineThroughput(ES.OUTPUT_O2_MB, ES.BASE_TICKS, upgrades);
-		const esCount = FissileProductionChain.machinesNeeded(totalO2Needed, esThroughput);
-		const esStage: MachineRequirement = {
+		// Chemical Infuser (H2SO4): 1 SO3 + 1 Vapor -> 1 H2SO4
+		const ciH2so4Stage: FlowRateMachineStage = {
+			type: 'flow',
+			name: 'Chemical Infuser (H\u2082SO\u2084)',
+			count: 1,
+			flowRateMbPerTick: h2so4Needed,
+			energyPerTick: h2so4Needed * CI_H2SO4.BASE_ENERGY / CI_H2SO4.OUTPUT_MB,
+		};
+
+		// Electrolytic Separator: 2 Water -> 1 O2
+		const esStage: FlowRateMachineStage = {
+			type: 'flow',
 			name: 'Electrolytic Separator',
-			count: esCount,
-			opsPerTick: totalO2Needed / ES.OUTPUT_O2_MB,
-			ticksPerOp: esEffTicks,
-			energyPerTick: esCount * ES.BASE_ENERGY / esEffTicks,
+			count: 1,
+			flowRateMbPerTick: totalO2Needed,
+			energyPerTick: totalO2Needed * ES.BASE_ENERGY / ES.OUTPUT_O2_MB,
 		};
 
-		const stages = [
-			ecStage,       // Path A: Enrichment Chamber
-			oxUStage,      // Path A: Chemical Oxidizer (UO)
-			esStage,       // Oxygen production: Electrolytic Separator
-			prcStage,      // Path B: Pressurized Reaction Chamber
-			oxSStage,      // Path B: Chemical Oxidizer (SO2)
-			so3Stage,      // Path B: Chemical Infuser (SO3)
-			rcStage,       // Path B: Rotary Condensentrator
-			h2so4Stage,    // Path B: Chemical Infuser (H2SO4)
-			dcStage,       // Path B: Chemical Dissolution Chamber
-			uf6Stage,      // Final: Chemical Infuser (UF6)
-			icStage,       // Final: Isotopic Centrifuge
+		// Chemical Infuser (UF6): 1 HF + 1 UO -> 2 UF6
+		const ciUf6Stage: FlowRateMachineStage = {
+			type: 'flow',
+			name: 'Chemical Infuser (UF\u2086)',
+			count: 1,
+			flowRateMbPerTick: uf6Needed,
+			energyPerTick: uf6Needed * CI_UF6.BASE_ENERGY / CI_UF6.OUTPUT_MB,
+		};
+
+		// Isotopic Centrifuge: 1 UF6 -> 1 Fissile Fuel
+		const icStage: FlowRateMachineStage = {
+			type: 'flow',
+			name: 'Isotopic Centrifuge',
+			count: 1,
+			flowRateMbPerTick: R,
+			energyPerTick: R * IC.BASE_ENERGY / IC.OUTPUT_MB,
+		};
+
+		// =============================================================
+		// All 11 stages in logical order
+		// =============================================================
+		const stages: MachineStage[] = [
+			ecStage,        // 1.  Path A: Enrichment Chamber (batch)
+			oxUStage,       // 2.  Path A: Chemical Oxidizer - UO (batch)
+			prcStage,       // 3.  Path B: Pressurized Reaction Chamber (batch)
+			oxSStage,       // 4.  Path B: Chemical Oxidizer - SO2 (batch)
+			ciSo3Stage,     // 5.  Path B: Chemical Infuser - SO3 (flow)
+			rcStage,        // 6.  Path B: Rotary Condensentrator (flow)
+			ciH2so4Stage,   // 7.  Path B: Chemical Infuser - H2SO4 (flow)
+			dcStage,        // 8.  Path B: Chemical Dissolution Chamber (batch)
+			esStage,        // 9.  Shared: Electrolytic Separator (flow)
+			ciUf6Stage,     // 10. Final: Chemical Infuser - UF6 (flow)
+			icStage,        // 11. Final: Isotopic Centrifuge (flow)
 		];
 
-		// -------------------------------------------------------
-		// Resource rates (all inputs are now just water, coal, fluorite, uranium)
-		// -------------------------------------------------------
-		const uraniumIngotsPerTick = enrichmentOpsPerTick;              // R/2000
-		const fluoritePerTick = dissolutionOpsPerTick;                 // R/2000
-		const coalPerTick = prcOpsPerTick;                             // R/8000
-
-		// Water: PRC water + Condensentrator water + ES water (for O₂ production)
-		const prcWaterPerTick = prcOpsPerTick * PRC.INPUT_WATER_MB;
-		const condensentratorWaterPerTick = condensentratorRate * RC.INPUT_WATER_MB;
-		const esWaterPerTick = esCount * ES.INPUT_WATER_MB / esEffTicks;
-		const waterPerTick = prcWaterPerTick + condensentratorWaterPerTick + esWaterPerTick;
-
-		const totalEnergyPerTick = stages.reduce((sum, s) => sum + s.energyPerTick, 0);
-
+		// =============================================================
+		// Resource rates (external inputs only -- O2 is produced internally by ES)
+		// =============================================================
 		const resources: ResourceRates = {
-			uraniumIngotsPerTick,
-			fluoritePerTick,
-			coalPerTick,
-			waterPerTick,
-			totalEnergyPerTick,
+			uraniumIngotsPerTick: ecOpsPerTick,    // R/1000
+			fluoritePerTick: dcOpsPerTick,         // R/2000
+			coalPerTick: prcOpsPerTick,            // R/200000
+			waterMbPerTick: totalWater,            // R/400
+			totalEnergyPerTick: stages.reduce((sum, s) => sum + s.energyPerTick, 0),
 		};
 
 		const totalMachines = stages.reduce((sum, s) => sum + s.count, 0);

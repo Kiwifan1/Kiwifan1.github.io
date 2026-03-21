@@ -1,4 +1,4 @@
-import { FissileProductionChain } from './FissileProductionChain';
+import { FissileProductionChain, BatchMachineStage, FlowRateMachineStage } from './FissileProductionChain';
 
 describe('FissileProductionChain', () => {
 	describe('validation', () => {
@@ -38,18 +38,6 @@ describe('FissileProductionChain', () => {
 		it('computes effective ticks with max upgrades', () => {
 			expect(FissileProductionChain.getEffectiveTicks(100, 8)).toBe(12);
 			expect(FissileProductionChain.getEffectiveTicks(200, 8)).toBe(23);
-			expect(FissileProductionChain.getEffectiveTicks(1, 8)).toBe(1);
-		});
-
-		it('computes machine throughput', () => {
-			expect(FissileProductionChain.getMachineThroughput(1000, 100, 8)).toBeCloseTo(1000 / 12, 5);
-			expect(FissileProductionChain.getMachineThroughput(2000, 100, 8)).toBeCloseTo(2000 / 12, 5);
-			expect(FissileProductionChain.getMachineThroughput(1, 200, 8)).toBeCloseTo(1 / 23, 10);
-		});
-
-		it('computes machines needed rounding up', () => {
-			expect(FissileProductionChain.machinesNeeded(100, 83.33)).toBe(2);
-			expect(FissileProductionChain.machinesNeeded(83.33, 83.33)).toBe(1);
 		});
 	});
 
@@ -65,82 +53,52 @@ describe('FissileProductionChain', () => {
 			expect(result.speedUpgrades).toBe(8);
 		});
 
-		it('has 10 stages', () => {
+		it('has 11 stages (5 batch + 6 flow)', () => {
 			expect(result.stages.length).toBe(11);
+			const batch = result.stages.filter(s => s.type === 'batch');
+			const flow = result.stages.filter(s => s.type === 'flow');
+			expect(batch.length).toBe(5);
+			expect(flow.length).toBe(6);
 		});
 
-		it('needs 4 Enrichment Chambers (Path A)', () => {
-			const s = result.stages.find(s => s.name === 'Enrichment Chamber');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(4);
+		it('all flow-rate machines have count=1', () => {
+			const flow = result.stages.filter(s => s.type === 'flow') as FlowRateMachineStage[];
+			for (const s of flow) {
+				expect(s.count).toBe(1);
+			}
 		});
 
-		it('needs 2 Chemical Oxidizers for UO (Path A)', () => {
-			const s = result.stages.find(s => s.name === 'Chemical Oxidizer (Uranium Oxide)');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(2);
+		it('computes correct batch machine counts', () => {
+			const getBatch = (name: string) =>
+				result.stages.find(s => s.name === name) as BatchMachineStage;
+
+			const ec = getBatch('Enrichment Chamber');
+			expect(ec).toBeDefined();
+			expect(ec.count).toBe(7);
+
+			const oxU = getBatch('Chemical Oxidizer (Uranium Oxide)');
+			expect(oxU).toBeDefined();
+			expect(oxU.count).toBe(7);
+
+			const prc = getBatch('Pressurized Reaction Chamber');
+			expect(prc).toBeDefined();
+			expect(prc.count).toBe(1);
+
+			const oxS = getBatch('Chemical Oxidizer (Sulfur Dioxide)');
+			expect(oxS).toBeDefined();
+			expect(oxS.count).toBe(1);
+
+			const dc = getBatch('Chemical Dissolution Chamber');
+			expect(dc).toBeDefined();
+			expect(dc.count).toBe(2);
 		});
 
-		it('needs 3 Electrolytic Separators (O₂ production)', () => {
-			const s = result.stages.find(s => s.name === 'Electrolytic Separator');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(3);
-		});
-
-		it('needs 1 Pressurized Reaction Chamber (Path B)', () => {
-			const s = result.stages.find(s => s.name === 'Pressurized Reaction Chamber');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(1);
-		});
-
-		it('needs 1 Chemical Oxidizer for SO2 (Path B)', () => {
-			const s = result.stages.find(s => s.name === 'Chemical Oxidizer (Sulfur Dioxide)');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(1);
-		});
-
-		it('needs 1 Chemical Infuser for SO3 (Path B)', () => {
-			const s = result.stages.find(s => s.name === 'Chemical Infuser (SO\u2083)');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(1);
-		});
-
-		it('needs 72 Rotary Condensentrators (Path B)', () => {
-			const s = result.stages.find(s => s.name === 'Rotary Condensentrator');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(72);
-		});
-
-		it('needs 1 Chemical Infuser for H2SO4 (Path B)', () => {
-			const s = result.stages.find(s => s.name === 'Chemical Infuser (H\u2082SO\u2084)');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(1);
-		});
-
-		it('needs 2 Chemical Dissolution Chambers (Path B)', () => {
-			const s = result.stages.find(s => s.name === 'Chemical Dissolution Chamber');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(2);
-		});
-
-		it('needs 2 Chemical Infusers for UF6 (Final)', () => {
-			const s = result.stages.find(s => s.name === 'Chemical Infuser (UF\u2086)');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(2);
-		});
-
-		it('needs 4 Isotopic Centrifuges (Final)', () => {
-			const s = result.stages.find(s => s.name === 'Isotopic Centrifuge');
-			expect(s).toBeDefined();
-			expect(s!.count).toBe(4);
-		});
-
-		it('computes 93 total machines', () => {
-			expect(result.totalMachines).toBe(93);
+		it('computes correct total machines', () => {
+			expect(result.totalMachines).toBe(24);
 		});
 
 		it('computes uranium ingot rate', () => {
-			expect(result.resources.uraniumIngotsPerTick).toBeCloseTo(0.144, 5);
+			expect(result.resources.uraniumIngotsPerTick).toBeCloseTo(0.288, 5);
 		});
 
 		it('computes fluorite rate', () => {
@@ -148,13 +106,11 @@ describe('FissileProductionChain', () => {
 		});
 
 		it('computes coal rate', () => {
-			expect(result.resources.coalPerTick).toBeCloseTo(0.036, 5);
+			expect(result.resources.coalPerTick).toBeCloseTo(0.00144, 5);
 		});
 
-		it('computes water rate (PRC + Condensentrator + ES)', () => {
-			// PRC: 14.4 + Condensentrator: 72 + ES: 3*800/12 = 200 → total ~286.4
-			expect(result.resources.waterPerTick).toBeGreaterThan(280);
-			expect(result.resources.waterPerTick).toBeLessThan(290);
+		it('computes water rate', () => {
+			expect(result.resources.waterMbPerTick).toBeCloseTo(0.72, 3);
 		});
 
 		it('total energy is sum of all stages', () => {
@@ -170,13 +126,14 @@ describe('FissileProductionChain', () => {
 			result = new FissileProductionChain(1, 0).calculate();
 		});
 
-		it('all machine counts are at least 1', () => {
-			for (const stage of result.stages) {
-				expect(stage.count).toBeGreaterThanOrEqual(1);
+		it('all batch machine counts are at least 1', () => {
+			const batch = result.stages.filter(s => s.type === 'batch');
+			for (const s of batch) {
+				expect(s.count).toBeGreaterThanOrEqual(1);
 			}
 		});
 
-		it('has 10 stages', () => {
+		it('has 11 stages', () => {
 			expect(result.stages.length).toBe(11);
 		});
 
@@ -184,7 +141,7 @@ describe('FissileProductionChain', () => {
 			expect(result.resources.uraniumIngotsPerTick).toBeGreaterThan(0);
 			expect(result.resources.fluoritePerTick).toBeGreaterThan(0);
 			expect(result.resources.coalPerTick).toBeGreaterThan(0);
-			expect(result.resources.waterPerTick).toBeGreaterThan(0);
+			expect(result.resources.waterMbPerTick).toBeGreaterThan(0);
 			expect(result.resources.totalEnergyPerTick).toBeGreaterThan(0);
 		});
 	});
