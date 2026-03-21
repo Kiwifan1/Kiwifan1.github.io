@@ -1,9 +1,11 @@
+import { ProcessingMachine } from './ProcessingMachine';
+
 /**
  * A continuous-flow Mekanism machine.
  * Processes chemicals at per-mB ratios with no ticks-per-operation.
  * Always count=1 — throughput scales with pipe bandwidth, not machine count.
  */
-export class FlowRateMachine {
+export class FlowRateMachine implements ProcessingMachine {
   public readonly name: string;
   public readonly inputs: ReadonlyMap<string, number>;
   public readonly outputs: ReadonlyMap<string, number>;

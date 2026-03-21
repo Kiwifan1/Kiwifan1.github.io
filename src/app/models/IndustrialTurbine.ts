@@ -1,4 +1,5 @@
 import { ENERGY_PER_STEAM, STEAM_PIPE, TURBINE, WATER_PIPE } from './constants';
+import { MultiblockStructure } from './MultiblockStructure';
 
 export interface IndustrialTurbineOptions {
   bladeCount?: number;
@@ -35,15 +36,13 @@ export interface IndustrialTurbineTransportPlan {
   waterPipes: number;
 }
 
-export class IndustrialTurbine {
+export class IndustrialTurbine extends MultiblockStructure {
   public static readonly MIN_LENGTH = 5;
   public static readonly MIN_HEIGHT = 5;
   public static readonly MAX_LENGTH = 17;
   public static readonly MAX_HEIGHT = 18;
   public static readonly MAX_BLADES = 28;
 
-  public readonly length: number;
-  public readonly height: number;
   public readonly rotorCount: number;
   public readonly bladeCount: number;
   public readonly coilCount: number;
@@ -51,10 +50,9 @@ export class IndustrialTurbine {
 
   constructor(length: number, height: number, rotorCount: number, options: IndustrialTurbineOptions = {}) {
     IndustrialTurbine.validateDimensions(length, height);
+    super(length, height, length);
     IndustrialTurbine.validateRotorCount(length, height, rotorCount);
 
-    this.length = length;
-    this.height = height;
     this.rotorCount = rotorCount;
 
     const maxBladeSupport = Math.min(rotorCount * 2, IndustrialTurbine.MAX_BLADES);
@@ -88,11 +86,11 @@ export class IndustrialTurbine {
   }
 
   public getInteriorSpan(): number {
-    return Math.max(this.length - 2, 0);
+    return this.interiorWidth;
   }
 
   public getInteriorHeight(): number {
-    return Math.max(this.height - 2, 0);
+    return this.interiorHeight;
   }
 
   public getInteriorArea(): number {
@@ -192,16 +190,12 @@ export class IndustrialTurbine {
   }
 
   private static validateDimensions(length: number, height: number): void {
-    if (length < IndustrialTurbine.MIN_LENGTH || length > IndustrialTurbine.MAX_LENGTH) {
-      throw new Error(
-        `Length must be between ${IndustrialTurbine.MIN_LENGTH} and ${IndustrialTurbine.MAX_LENGTH}`
-      );
-    }
-    if (height < IndustrialTurbine.MIN_HEIGHT || height > IndustrialTurbine.MAX_HEIGHT) {
-      throw new Error(
-        `Height must be between ${IndustrialTurbine.MIN_HEIGHT} and ${IndustrialTurbine.MAX_HEIGHT}`
-      );
-    }
+    MultiblockStructure.validateDimensionRange(
+      length, IndustrialTurbine.MIN_LENGTH, IndustrialTurbine.MAX_LENGTH, 'Length'
+    );
+    MultiblockStructure.validateDimensionRange(
+      height, IndustrialTurbine.MIN_HEIGHT, IndustrialTurbine.MAX_HEIGHT, 'Height'
+    );
   }
 
   private static validateRotorCount(length: number, height: number, rotorCount: number): void {

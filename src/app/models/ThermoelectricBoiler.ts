@@ -1,4 +1,5 @@
 import { BOILER } from './constants';
+import { MultiblockStructure } from './MultiblockStructure';
 
 export interface ThermoelectricBoilerCapacities {
 	water: number;
@@ -36,7 +37,7 @@ export interface ThermoelectricBoilerOptions {
  *   N_balanced = waterLayers × area / BALANCED_RATIO
  * where BALANCED_RATIO = 1 + STEAM_PER_SUPERHEATER / WATER_PER_TANK.
  */
-export class ThermoelectricBoiler {
+export class ThermoelectricBoiler extends MultiblockStructure {
 	public static readonly MIN_WIDTH = 3;
 	public static readonly MIN_LENGTH = 3;
 	public static readonly MIN_HEIGHT = 4;
@@ -57,9 +58,6 @@ export class ThermoelectricBoiler {
 	public static readonly BALANCED_RATIO =
 		1 + ThermoelectricBoiler.STEAM_PER_SUPERHEATER / BOILER.WATER_PER_TANK;
 
-	public readonly width: number;
-	public readonly length: number;
-	public readonly height: number;
 	/** Water-side layers including the disperser contribution (doc's w + 1). */
 	public readonly waterLayers: number;
 	/** Steam-side layers including the disperser contribution (doc's s + 1). */
@@ -68,6 +66,7 @@ export class ThermoelectricBoiler {
 
 	constructor(width: number, length: number, height: number, options: ThermoelectricBoilerOptions = {}) {
 		ThermoelectricBoiler.validateDimensions(width, length, height);
+		super(width, height, length);
 
 		const waterLayers = options.waterCavityHeight ?? ThermoelectricBoiler.getDefaultWaterLayers(height);
 		if (waterLayers < 1) {
@@ -91,9 +90,6 @@ export class ThermoelectricBoiler {
 			throw new Error('Superheaters cannot exceed available water cavity volume');
 		}
 
-		this.width = width;
-		this.length = length;
-		this.height = height;
 		this.waterLayers = waterLayers;
 		this.steamLayers = steamLayers;
 		this.superheaters = superheaters;
@@ -187,20 +183,8 @@ export class ThermoelectricBoiler {
 	}
 
 	private static validateDimensions(width: number, length: number, height: number): void {
-		if (width < ThermoelectricBoiler.MIN_WIDTH || width > ThermoelectricBoiler.MAX_WIDTH) {
-			throw new Error(
-				`Width must be between ${ThermoelectricBoiler.MIN_WIDTH} and ${ThermoelectricBoiler.MAX_WIDTH}`
-			);
-		}
-		if (length < ThermoelectricBoiler.MIN_LENGTH || length > ThermoelectricBoiler.MAX_LENGTH) {
-			throw new Error(
-				`Length must be between ${ThermoelectricBoiler.MIN_LENGTH} and ${ThermoelectricBoiler.MAX_LENGTH}`
-			);
-		}
-		if (height < ThermoelectricBoiler.MIN_HEIGHT || height > ThermoelectricBoiler.MAX_HEIGHT) {
-			throw new Error(
-				`Height must be between ${ThermoelectricBoiler.MIN_HEIGHT} and ${ThermoelectricBoiler.MAX_HEIGHT}`
-			);
-		}
+		MultiblockStructure.validateDimensionRange(width, ThermoelectricBoiler.MIN_WIDTH, ThermoelectricBoiler.MAX_WIDTH, 'Width');
+		MultiblockStructure.validateDimensionRange(length, ThermoelectricBoiler.MIN_LENGTH, ThermoelectricBoiler.MAX_LENGTH, 'Length');
+		MultiblockStructure.validateDimensionRange(height, ThermoelectricBoiler.MIN_HEIGHT, ThermoelectricBoiler.MAX_HEIGHT, 'Height');
 	}
 }

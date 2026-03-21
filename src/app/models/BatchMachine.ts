@@ -1,4 +1,5 @@
 import { PRODUCTION_CHAIN } from './constants';
+import { ProcessingMachine } from './ProcessingMachine';
 
 /**
  * A batch-processing Mekanism machine.
@@ -6,7 +7,7 @@ import { PRODUCTION_CHAIN } from './constants';
  * Speed upgrades reduce ticks via: ceil(baseTicks × M^(-u/u_max))
  * where M = 10 (maxUpgradeMultiplier), u_max = 8.
  */
-export class BatchMachine {
+export class BatchMachine implements ProcessingMachine {
   public static readonly MAX_UPGRADE_MULTIPLIER = 10;
   public static readonly MAX_SPEED_UPGRADES = PRODUCTION_CHAIN.MAX_SPEED_UPGRADES;
 
