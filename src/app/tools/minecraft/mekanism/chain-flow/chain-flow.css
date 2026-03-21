@@ -1,207 +1,246 @@
-/* ── Flow-specific design tokens ── */
 :host {
   --flow-a: #2a862a;
+  --flow-a-bg: rgba(42, 134, 42, 0.08);
   --flow-b: #ff9800;
+  --flow-b-bg: rgba(255, 152, 0, 0.06);
   --flow-final: #1995ff;
+  --flow-final-bg: rgba(25, 149, 255, 0.08);
 }
 
-/* ── Root container ── */
 .chain-flow {
-  background: var(--tool-surface);
-  border: 1px solid var(--tool-border);
-  border-radius: 0.85rem;
-  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0;
 }
 
 /* ── Sections ── */
+
 .chain-flow__section {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  position: relative;
 }
 
-.chain-flow__section + .chain-flow__section {
-  border-top: 1px solid var(--tool-border);
-  padding-top: 1.25rem;
+.chain-flow__section--a {
+  background: var(--flow-a-bg);
+  border: 1px solid rgba(42, 134, 42, 0.2);
 }
 
-/* ── Section titles ── */
+.chain-flow__section--b {
+  background: var(--flow-b-bg);
+  border: 1px solid rgba(255, 152, 0, 0.15);
+  margin-top: 0.75rem;
+}
+
+.chain-flow__section--final {
+  background: var(--flow-final-bg);
+  border: 1px solid rgba(25, 149, 255, 0.2);
+  margin-top: 0.75rem;
+}
+
+/* Connector lines between sections */
+.chain-flow__section--b::before,
+.chain-flow__section--final::before {
+  content: '';
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  width: 2px;
+  height: 0.75rem;
+  background: var(--tool-border);
+}
+
 .chain-flow__section-title {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   margin: 0;
   text-transform: uppercase;
 }
 
-.chain-flow__section--a .chain-flow__section-title {
-  color: var(--flow-a);
-}
-
-.chain-flow__section--b .chain-flow__section-title {
-  color: var(--flow-b);
-}
-
-.chain-flow__section--final .chain-flow__section-title {
-  color: var(--flow-final);
-}
+.chain-flow__section--a .chain-flow__section-title { color: var(--flow-a); }
+.chain-flow__section--b .chain-flow__section-title { color: var(--flow-b); }
+.chain-flow__section--final .chain-flow__section-title { color: var(--flow-final); }
 
 /* ── Pipeline row ── */
+
 .chain-flow__pipeline {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+  gap: 0;
 }
 
-.chain-flow__pipeline--sub {
-  padding-left: 1rem;
-  opacity: 0.92;
+.chain-flow__pipeline + .chain-flow__pipeline {
+  margin-top: 0.5rem;
 }
 
-/* ── Arrow ── */
+/* ── Arrow connector ── */
+
 .chain-flow__arrow {
-  color: var(--tool-muted, #888);
-  font-size: 1.1rem;
-  flex-shrink: 0;
-  user-select: none;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  height: 2px;
+  min-width: 24px;
+  flex: 0 0 auto;
+  position: relative;
 }
+
+.chain-flow__arrow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 6px;
+  height: 2px;
+}
+
+.chain-flow__arrow::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -4px;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+
+.chain-flow__section--a .chain-flow__arrow::before { background: var(--flow-a); }
+.chain-flow__section--a .chain-flow__arrow::after { border-left: 7px solid var(--flow-a); }
+
+.chain-flow__section--b .chain-flow__arrow::before { background: var(--flow-b); }
+.chain-flow__section--b .chain-flow__arrow::after { border-left: 7px solid var(--flow-b); }
+
+.chain-flow__section--final .chain-flow__arrow::before { background: var(--flow-final); }
+.chain-flow__section--final .chain-flow__arrow::after { border-left: 7px solid var(--flow-final); }
 
 /* ── Input pill ── */
+
 .chain-flow__input {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--tool-border);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
   color: var(--tool-text);
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .chain-flow__input--merge {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  border-radius: 0.65rem;
+  gap: 0.35rem;
+  border-radius: 0.6rem;
 }
 
 .chain-flow__merge-plus {
   color: var(--tool-muted);
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 800;
+  font-size: 0.85rem;
 }
 
 /* ── Product pill ── */
+
 .chain-flow__product {
   border-radius: 999px;
-  color: var(--tool-text);
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.3rem 0.75rem;
-  white-space: nowrap;
-}
-
-.chain-flow__product--a {
-  background: rgba(42, 134, 42, 0.15);
-  border: 1px solid var(--flow-a);
-}
-
-.chain-flow__product--b {
-  background: rgba(255, 152, 0, 0.15);
-  border: 1px solid var(--flow-b);
-}
-
-.chain-flow__product--final {
-  background: rgba(25, 149, 255, 0.18);
-  border: 1px solid var(--flow-final);
-}
-
-/* ── Machine node (glassmorphism card) ── */
-.chain-flow__node {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--tool-border);
-  border-left-width: 3px;
-  border-radius: 0.55rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.7rem;
-}
-
-.chain-flow__node--a {
-  border-left-color: var(--flow-a);
-}
-
-.chain-flow__node--b {
-  border-left-color: var(--flow-b);
-}
-
-.chain-flow__node--final {
-  border-left-color: var(--flow-final);
-}
-
-.chain-flow__node-name {
-  color: var(--tool-text);
-  font-size: 0.82rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* ── Count badge ── */
-.chain-flow__node-badge {
-  border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  line-height: 1;
-  padding: 0.15rem 0.45rem;
+  padding: 0.35rem 0.85rem;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-/* Batch machines: solid badge */
+.chain-flow__product--a {
+  background: rgba(42, 134, 42, 0.2);
+  border: 1px solid var(--flow-a);
+  color: #8bc34a;
+}
+
+.chain-flow__product--b {
+  background: rgba(255, 152, 0, 0.2);
+  border: 1px solid var(--flow-b);
+  color: #ffb74d;
+}
+
+.chain-flow__product--final {
+  background: rgba(25, 149, 255, 0.25);
+  border: 1px solid var(--flow-final);
+  color: #64b5f6;
+}
+
+/* ── Machine node ── */
+
+.chain-flow__node {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+  transition: background 120ms ease;
+}
+
+.chain-flow__node:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.chain-flow__node--a { border-left-color: var(--flow-a); }
+.chain-flow__node--b { border-left-color: var(--flow-b); }
+.chain-flow__node--final { border-left-color: var(--flow-final); }
+
+.chain-flow__node-name {
+  color: var(--tool-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Badge ── */
+
+.chain-flow__node-badge {
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.2rem 0.45rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .chain-flow__node-badge--solid {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--tool-text);
 }
 
-/* Flow-rate machines: outlined badge */
 .chain-flow__node-badge--outline {
   background: transparent;
-  border: 1px solid var(--tool-muted, #888);
-  color: var(--tool-muted, #888);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--tool-muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
 }
 
-/* ── Responsive: stack vertically on small screens ── */
-@media (max-width: 640px) {
-  .chain-flow {
+/* ── Responsive ── */
+
+@media (max-width: 700px) {
+  .chain-flow__section {
     padding: 1rem;
-    gap: 1rem;
   }
 
   .chain-flow__pipeline {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 0.35rem;
   }
 
-  .chain-flow__pipeline--sub {
-    padding-left: 0.5rem;
-  }
-
   .chain-flow__arrow {
-    transform: rotate(90deg);
-    font-size: 0.9rem;
-    align-self: center;
-  }
-
-  .chain-flow__node {
-    width: 100%;
+    min-width: 16px;
   }
 }
