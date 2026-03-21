@@ -91,8 +91,9 @@ export const FE_TO_JOULES = 2.5;
  *
  * The chain has two parallel paths that merge:
  *   Path A (Uranium Oxide): Ore → Ingots → Yellow Cake → Uranium Oxide
- *   Path B (Hydrofluoric Acid): Coal+Water+O₂ → Sulfur → SO₂ → SO₃ → H₂SO₄ + Fluorite → HF
+ *   Path B (Hydrofluoric Acid): Water→O₂(ES), Coal+Water+O₂→Sulfur→SO₂→SO₃→H₂SO₄ + Fluorite→HF
  *   Final: HF + UO → UF₆ → Fissile Fuel (via Isotopic Centrifuge)
+ *   Alt sulfur: Brine→Cl, Water→H₂, Cl+H₂→HCl, HCl+Gunpowder→Sulfur (via CIC)
  */
 export const PRODUCTION_CHAIN = {
     // Path A: Uranium Oxide
@@ -105,6 +106,15 @@ export const PRODUCTION_CHAIN = {
         BASE_TICKS: 100,
         OUTPUT_MB: 1000,    // 1 Yellow Cake → 1000 mB Uranium Oxide
         BASE_ENERGY: 40_000,
+    },
+
+    // Oxygen production (feeds PRC and SO₃ Infuser)
+    ELECTROLYTIC_SEPARATOR: {
+        BASE_TICKS: 100,
+        INPUT_WATER_MB: 800,
+        OUTPUT_O2_MB: 200,     // Water → 200 mB O₂ + 200 mB H₂
+        OUTPUT_H2_MB: 200,
+        BASE_ENERGY: 80_000,
     },
 
     // Path B: Sulfuric Acid

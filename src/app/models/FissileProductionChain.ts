@@ -13,7 +13,6 @@ export interface ResourceRates {
 	fluoritePerTick: number;
 	coalPerTick: number;
 	waterPerTick: number;
-	oxygenPerTick: number;
 	totalEnergyPerTick: number;
 }
 
@@ -59,6 +58,7 @@ export class FissileProductionChain {
 
 		const EC = PRODUCTION_CHAIN.ENRICHMENT_CHAMBER;
 		const OX_U = PRODUCTION_CHAIN.CHEMICAL_OXIDIZER_URANIUM;
+		const ES = PRODUCTION_CHAIN.ELECTROLYTIC_SEPARATOR;
 		const PRC = PRODUCTION_CHAIN.PRESSURIZED_REACTION_CHAMBER;
 		const OX_S = PRODUCTION_CHAIN.CHEMICAL_OXIDIZER_SULFUR;
 		const CI_SO3 = PRODUCTION_CHAIN.CHEMICAL_INFUSER_SO3;
@@ -238,9 +238,24 @@ export class FissileProductionChain {
 			energyPerTick: icCount * IC.BASE_ENERGY / icEffTicks,
 		};
 
+		// Electrolytic Separator: produces O₂ (and H₂ byproduct) from water
+		// Total O₂ needed = PRC oxygen + SO₃ infuser O₂
+		const totalO2Needed = (prcOpsPerTick * PRC.INPUT_OXYGEN_MB) + o2ForSO3;
+		const esEffTicks = FissileProductionChain.getEffectiveTicks(ES.BASE_TICKS, upgrades);
+		const esThroughput = FissileProductionChain.getMachineThroughput(ES.OUTPUT_O2_MB, ES.BASE_TICKS, upgrades);
+		const esCount = FissileProductionChain.machinesNeeded(totalO2Needed, esThroughput);
+		const esStage: MachineRequirement = {
+			name: 'Electrolytic Separator',
+			count: esCount,
+			opsPerTick: totalO2Needed / ES.OUTPUT_O2_MB,
+			ticksPerOp: esEffTicks,
+			energyPerTick: esCount * ES.BASE_ENERGY / esEffTicks,
+		};
+
 		const stages = [
 			ecStage,       // Path A: Enrichment Chamber
 			oxUStage,      // Path A: Chemical Oxidizer (UO)
+			esStage,       // Oxygen production: Electrolytic Separator
 			prcStage,      // Path B: Pressurized Reaction Chamber
 			oxSStage,      // Path B: Chemical Oxidizer (SO2)
 			so3Stage,      // Path B: Chemical Infuser (SO3)
@@ -252,20 +267,17 @@ export class FissileProductionChain {
 		];
 
 		// -------------------------------------------------------
-		// Resource rates
+		// Resource rates (all inputs are now just water, coal, fluorite, uranium)
 		// -------------------------------------------------------
 		const uraniumIngotsPerTick = enrichmentOpsPerTick;              // R/2000
 		const fluoritePerTick = dissolutionOpsPerTick;                 // R/2000
 		const coalPerTick = prcOpsPerTick;                             // R/8000
 
-		// Water: PRC water + Condensentrator water
-		const prcWaterPerTick = prcOpsPerTick * PRC.INPUT_WATER_MB;    // R/8000 * 400
-		const condensentratorWaterPerTick = condensentratorRate * RC.INPUT_WATER_MB; // R/4
-		const waterPerTick = prcWaterPerTick + condensentratorWaterPerTick;
-
-		// Oxygen: PRC oxygen + SO3 infuser O2
-		const prcOxygenPerTick = prcOpsPerTick * PRC.INPUT_OXYGEN_MB;  // R/8000 * 200
-		const oxygenPerTick = prcOxygenPerTick + o2ForSO3;
+		// Water: PRC water + Condensentrator water + ES water (for O₂ production)
+		const prcWaterPerTick = prcOpsPerTick * PRC.INPUT_WATER_MB;
+		const condensentratorWaterPerTick = condensentratorRate * RC.INPUT_WATER_MB;
+		const esWaterPerTick = esCount * ES.INPUT_WATER_MB / esEffTicks;
+		const waterPerTick = prcWaterPerTick + condensentratorWaterPerTick + esWaterPerTick;
 
 		const totalEnergyPerTick = stages.reduce((sum, s) => sum + s.energyPerTick, 0);
 
@@ -274,7 +286,6 @@ export class FissileProductionChain {
 			fluoritePerTick,
 			coalPerTick,
 			waterPerTick,
-			oxygenPerTick,
 			totalEnergyPerTick,
 		};
 
