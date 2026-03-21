@@ -30,6 +30,23 @@ The `Industrial Turbine` structure must follow these rules for construction:
 - The faces may be `Turbine Casing`, `Turbine Valve`, or `Structural Glass` (or vents above the disperser layer).
 - Each `Industrial Turbine` needs at least three `Turbine Valve` blocks to function (Steam, Water, Energy)
 
+```mermaid
+block-beta
+    columns 1
+    block:top["Vent Crown (ceiling + sides)"]
+        VL["Vent Layers (s blocks)"]
+    end
+    block:mid["Disperser Deck"]
+        D["Rotational Complex + Dispersers"]
+    end
+    block:bot["Rotor Section"]
+        RL["Rotor Layers (r blocks)\nShaft + Blades"]
+    end
+    block:base["Foundation"]
+        FL["Turbine Casing + Ports"]
+    end
+```
+
 ## Variable Definitions
 
 - Let $h = H - 2$ be the height of the interior of the `Industrial Turbine` (in blocks)
@@ -70,6 +87,24 @@ In order to do this, we need to establish the relationship between the height of
 $$r + s + 1 = h$$
 
 This equation means that the height of the `Turbine Rotors` ($r$), the space above the disperser layer ($s$), and the disperser layer itself (1 block) must sum to the total interior height of the turbine ($h$).
+
+```mermaid
+flowchart TD
+    Start["Given L, H"] --> Bounds["Compute r_max, h"]
+    Bounds --> Sweep["For each r in 1..r_max"]
+    Sweep --> Fvent["Compute F_vent(r)"]
+    Sweep --> Fdisp["Compute F_disperser(r)"]
+    Fvent --> Fsteam["F_steam = min(F_vent, F_disperser)"]
+    Fdisp --> Fsteam
+    Sweep --> Fblade["F_blade = 2r / MAX_BLADES"]
+    Fsteam --> Power["P = ENERGY_PER_STEAM * F_blade * F_steam"]
+    Fblade --> Power
+    Power --> Best{"P > P_best?"}
+    Best -->|"Yes"| Update["P_best = P, r_best = r"]
+    Best -->|"No"| Next["Next r"]
+    Update --> Next
+    Next --> Sweep
+```
 
 ### Optimal Energy Formula
 
@@ -146,6 +181,17 @@ This means, for finding the minimum number of saturating condensers required, we
 $$N_{condenser} \ge \left\lceil\dfrac{F_{steam}}{\rho}\right\rceil$$
 
 Because, assuming that all available face-space is used by vents, the water flow will always be able to keep up with the steam flow.
+
+```mermaid
+flowchart LR
+    Steam["Steam In\nF_steam mB/t"] --> Vents["Vents"]
+    Vents --> Dispersers["Disperser Deck"]
+    Dispersers --> Rotors["Rotor Blades\nF_blade efficiency"]
+    Rotors --> Coils["EM Coils\nP = E * F_blade * F_steam"]
+    Rotors --> Condensers["Saturating Condensers\nF_water = N * CONDENSER_RATE"]
+    Condensers --> Water["Water Out\nF_water mB/t"]
+    Coils --> Energy["Energy Out\nP FE/t"]
+```
 
 ### Calculating Steam/Water Transportation
 
@@ -300,6 +346,23 @@ We can rewrite the final formula as:
 $$P = 10 \cdot \left(\dfrac{2r}{28}\right) \cdot \left(32{,}000 \cdot ((L - 2)^2 + 4(L - 2)(H - 2 - r))\right)$$
 
 This formula can be used to calculate the optimal power output of an `Industrial Turbine` given its dimensions $L$ and $H$.
+
+```mermaid
+flowchart BT
+    L["L (length)"] --> A["A = (L-2)^2"]
+    L --> B["B = (L-2)"]
+    H["H (height)"] --> h["h = H-2"]
+    A --> r_opt["r = ceil((4Bh+A)/8B)"]
+    B --> r_opt
+    h --> r_opt
+    r_opt --> Fblade["F_blade = 2r/phi"]
+    A --> Fvent["F_vent = gamma*(A+4B(h-r))"]
+    B --> Fvent
+    h --> Fvent
+    r_opt --> Fvent
+    Fblade --> P["P = epsilon * F_blade * F_vent"]
+    Fvent --> P
+```
 
 ## Example Calculation
 

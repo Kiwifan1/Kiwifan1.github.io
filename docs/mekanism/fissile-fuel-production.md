@@ -4,36 +4,28 @@
 
 The full production chain from Uranium Ore to Fissile Fuel involves five main processing stages and two support stages for HCl synthesis:
 
-```
-                         Uranium Ore
-                             |
-                   [Dissolution Chamber]         (Stage 1)
-                             |
-                     Dirty Uranium Slurry
-                             |
-                      [Chemical Washer]  <--- Water         (Stage 2)
-                             |
-                     Clean Uranium Slurry
-                             |
-                   [Chemical Crystallizer]       (Stage 3)
-                             |
-                     Yellow Cake Uranium
-                             |
-                    [Enrichment Chamber]         (Stage 4)
-                             |
-                      Enriched Uranium
-                             |
-              [Chemical Infuser (Fuel)]  <--- HCl           (Stage 5)
-                             |
-                        Fissile Fuel
+```mermaid
+flowchart TD
+    Ore["Uranium Ore"] -->|"1 ore"| DC["Chemical Dissolution Chamber"]
+    DC -->|"1,800 mB"| DS["Dirty Uranium Slurry"]
+    DS -->|"1,000 mB"| CW["Chemical Washer"]
+    Water1["Water"] -->|"1,000 mB"| CW
+    CW -->|"1,000 mB"| CS["Clean Uranium Slurry"]
+    CS -->|"200 mB"| CC["Chemical Crystallizer"]
+    CC -->|"1 item"| YC["Yellow Cake Uranium"]
+    YC -->|"1 item"| EC["Enrichment Chamber"]
+    EC -->|"1 item"| EU["Enriched Uranium"]
+    EU --> CI["Chemical Infuser"]
+    HCl["Hydrogen Chloride"] -->|"1,000 mB"| CI
+    CI -->|"2,000 mB"| FF["Fissile Fuel"]
 
-  ---- HCl Support Chain ----
-
-     Water ---> [Electrolytic Separator] ---> H2 + O2       (Support A)
-                                               |
-                Chlorine ---> [Chemical Infuser (HCl)]       (Support B)
-                                               |
-                                              HCl
+    subgraph HCl Production
+        Water2["Water"] -->|"800 mB"| ES["Electrolytic Separator"]
+        ES -->|"200 mB"| H2["Hydrogen"]
+        Cl["Chlorine"] -->|"200 mB"| CIH["Chemical Infuser"]
+        H2 -->|"200 mB"| CIH
+        CIH -->|"200 mB"| HCl
+    end
 ```
 
 ## Variable Definitions
@@ -165,6 +157,22 @@ $$N_B = \left\lceil\dfrac{\eta_{\text{HCl}}}{\lambda_B}\right\rceil = \left\lcei
 Each operation produces 200 mB H$_2$ (and 200 mB O$_2$) from 800 mB Water.
 
 $$N_A = \left\lceil\dfrac{\eta_{H_2}}{\lambda_A}\right\rceil = \left\lceil\dfrac{\eta_{H_2} \cdot t_{\text{eff},A}}{200}\right\rceil$$
+
+```mermaid
+flowchart RL
+    FF["Fissile Fuel\nR mB/t"] --> CI["Infuser\nR/2000 ops/t"]
+    CI --> EC["Enrichment\nR/2000 items/t"]
+    CI --> HCl["HCl\nR/2 mB/t"]
+    EC --> CC["Crystallizer\nR/2000 items/t"]
+    CC --> CW["Washer\nR/10 mB/t"]
+    CW --> DC["Dissolution\nR/10 mB/t"]
+    HCl --> CIH["Infuser HCl\nR/2 mB/t"]
+    CIH --> ES["Separator\nR/2 mB/t H2"]
+    DC --> Ore["Ore: R/18000 /t"]
+    CW --> Water1["Water (washer)"]
+    ES --> Water2["Water (separator)"]
+    CIH --> Chlorine["Chlorine: R/2 mB/t"]
+```
 
 ## Resource Input Rates
 
@@ -301,6 +309,17 @@ $$\mathcal{E} \approx 116{,}115.94 \text{ J/t} \approx 116.12 \text{ kJ/t} \appr
 | Water | 604.8 mB/t |
 | Chlorine | 144 mB/t |
 | Energy | ~116.12 kJ/t |
+
+```mermaid
+pie title Machine Distribution (R=288, u=8)
+    "Electrolytic Separator" : 9
+    "Chemical Infuser (HCl)" : 9
+    "Enrichment Chamber" : 4
+    "Chemical Infuser (Fuel)" : 2
+    "Chemical Crystallizer" : 2
+    "Dissolution Chamber" : 1
+    "Chemical Washer" : 1
+```
 
 > **Note:** The HCl support chain (Stages A and B) dominates the machine count and energy budget. The 9 Electrolytic Separators alone account for over half the total energy draw.
 
