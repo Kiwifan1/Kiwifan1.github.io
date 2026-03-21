@@ -25,6 +25,7 @@ describe('FissionPlanner', () => {
 
   it('switches to sodium cooling automatically enabling the boiler', () => {
     component.toggleCooling('sodium');
+    component.computePlan();
     fixture.detectChanges();
     const result = component.result();
     expect(component.form.value.includeBoiler).toBeTrue();
