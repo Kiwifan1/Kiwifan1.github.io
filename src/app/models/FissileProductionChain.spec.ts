@@ -89,13 +89,15 @@ describe('FissileProductionChain', () => {
 			expect(oxU).toBeDefined();
 			expect(oxU.count).toBe(6);
 
+			// PRC: 0.144 ops/t, throughput = 1/10, count = ceil(1.44) = 2
 			const prc = getBatch('Pressurized Reaction Chamber');
 			expect(prc).toBeDefined();
-			expect(prc.count).toBe(1);
+			expect(prc.count).toBe(2);
 
+			// Oxidizer SO₂: 0.144 ops/t, throughput = 1/10, count = ceil(1.44) = 2
 			const oxS = getBatch('Chemical Oxidizer (Sulfur Dioxide)');
 			expect(oxS).toBeDefined();
-			expect(oxS.count).toBe(1);
+			expect(oxS.count).toBe(2);
 
 			const dc = getBatch('Chemical Dissolution Chamber');
 			expect(dc).toBeDefined();
@@ -103,8 +105,8 @@ describe('FissileProductionChain', () => {
 		});
 
 		it('computes correct total machines', () => {
-			// 6+6+1+1+2 (batch) + 6 (flow) = 22
-			expect(result.totalMachines).toBe(22);
+			// 6+6+2+2+2 (batch) + 6 (flow) = 24
+			expect(result.totalMachines).toBe(24);
 		});
 
 		it('computes uranium ingot rate', () => {
@@ -116,11 +118,13 @@ describe('FissileProductionChain', () => {
 		});
 
 		it('computes coal rate', () => {
-			expect(result.resources.coalPerTick).toBeCloseTo(0.00144, 5);
+			// 0.144 coal/t (100× higher with corrected dissolution H2SO4)
+			expect(result.resources.coalPerTick).toBeCloseTo(0.144, 5);
 		});
 
 		it('computes water rate', () => {
-			expect(result.resources.waterMbPerTick).toBeCloseTo(0.72, 3);
+			// PRC(14.4) + Condensentrator(14.4) + ES(43.2) = 72
+			expect(result.resources.waterMbPerTick).toBeCloseTo(72, 1);
 		});
 
 		it('total energy is sum of all stages', () => {
