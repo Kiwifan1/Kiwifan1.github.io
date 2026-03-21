@@ -35,9 +35,16 @@ describe('FissileProductionChain', () => {
 			expect(FissileProductionChain.getEffectiveTicks(200, 0)).toBe(200);
 		});
 
-		it('computes effective ticks with max upgrades', () => {
-			expect(FissileProductionChain.getEffectiveTicks(100, 8)).toBe(12);
-			expect(FissileProductionChain.getEffectiveTicks(200, 8)).toBe(23);
+		it('computes effective ticks with max upgrades (exponential formula)', () => {
+			// ceil(100 × 10^(-1)) = ceil(10) = 10
+			expect(FissileProductionChain.getEffectiveTicks(100, 8)).toBe(10);
+			// ceil(200 × 10^(-1)) = ceil(20) = 20
+			expect(FissileProductionChain.getEffectiveTicks(200, 8)).toBe(20);
+		});
+
+		it('computes effective ticks with partial upgrades', () => {
+			// ceil(100 × 10^(-4/8)) = ceil(100 × 0.3162) = ceil(31.62) = 32
+			expect(FissileProductionChain.getEffectiveTicks(100, 4)).toBe(32);
 		});
 	});
 
@@ -72,13 +79,15 @@ describe('FissileProductionChain', () => {
 			const getBatch = (name: string) =>
 				result.stages.find(s => s.name === name) as BatchMachineStage;
 
+			// Enrichment: 0.288 ops/t, throughput = 1/20 = 0.05 ops/t, count = ceil(5.76) = 6
 			const ec = getBatch('Enrichment Chamber');
 			expect(ec).toBeDefined();
-			expect(ec.count).toBe(7);
+			expect(ec.count).toBe(6);
 
+			// Oxidizer UO: 0.576 ops/t, throughput = 1/10 = 0.1 ops/t, count = ceil(5.76) = 6
 			const oxU = getBatch('Chemical Oxidizer (Uranium Oxide)');
 			expect(oxU).toBeDefined();
-			expect(oxU.count).toBe(7);
+			expect(oxU.count).toBe(6);
 
 			const prc = getBatch('Pressurized Reaction Chamber');
 			expect(prc).toBeDefined();
@@ -94,7 +103,8 @@ describe('FissileProductionChain', () => {
 		});
 
 		it('computes correct total machines', () => {
-			expect(result.totalMachines).toBe(24);
+			// 6+6+1+1+2 (batch) + 6 (flow) = 22
+			expect(result.totalMachines).toBe(22);
 		});
 
 		it('computes uranium ingot rate', () => {

@@ -90,18 +90,18 @@ This equation means that the height of the `Turbine Rotors` ($r$), the space abo
 
 ```mermaid
 flowchart TD
-    Start["Given $$L, H$$"] --> Bounds["Compute $$r_{max}, h$$"]
-    Bounds --> Sweep["For each $$r$$ in $$1..r_{max}$$"]
-    Sweep --> Fvent["Compute $$F_{vent}(r)$$"]
-    Sweep --> Fdisp["Compute $$F_{disperser}(r)$$"]
+    Start["Given L, H"] --> Bounds["$$r_{max}, h$$"]
+    Bounds --> Sweep["For each r = 1 to r_max"]
+    Sweep --> Fvent["$$F_{vent}(r)$$"]
+    Sweep --> Fdisp["$$F_{disperser}(r)$$"]
     Fvent --> Fsteam["$$F_{steam} = \min(F_{vent}, F_{disperser})$$"]
     Fdisp --> Fsteam
     Sweep --> Fblade["$$F_{blade} = \frac{2r}{\phi}$$"]
     Fsteam --> Power["$$P = \varepsilon \cdot F_{blade} \cdot F_{steam}$$"]
     Fblade --> Power
-    Power --> Best{"$$P \gt P_{best}$$?"}
-    Best -->|"Yes"| Update["$$P_{best} = P$$"]
-    Best -->|"No"| Next["Next $$r$$"]
+    Power --> Best{"P best so far?"}
+    Best -->|"Yes"| Update["Update best"]
+    Best -->|"No"| Next["Next r"]
     Update --> Next
     Next --> Sweep
 ```
@@ -361,7 +361,7 @@ flowchart LR
     end
 
     subgraph Optimization
-        r["$$r = \lceil (4Bh+A)\, /\, 8B \rceil$$"]
+        r["$$r = \lceil \frac{4Bh+A}{8B} \rceil$$"]
     end
 
     subgraph Output
