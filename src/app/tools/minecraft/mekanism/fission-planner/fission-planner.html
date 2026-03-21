@@ -92,7 +92,7 @@
         <ul>
           <li>Per turbine steam: {{ asNumber(data.turbines.perUnitSteam) }} mB/t</li>
           <li>Per turbine return water: {{ asNumber(data.turbines.perUnitWater) }} mB/t</li>
-          <li>Per turbine output: {{ asNumber(data.turbines.perUnitPower) }} FE/t</li>
+          <li>Per turbine output: {{ formatPower(data.turbines.perUnitPower) }}</li>
         </ul>
         @if (data.turbines.construction; as turbineBuild) {
           <div class="planner__construction">
