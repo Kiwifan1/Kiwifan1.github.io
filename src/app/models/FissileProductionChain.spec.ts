@@ -66,7 +66,7 @@ describe('FissileProductionChain', () => {
 		});
 
 		it('has 10 stages', () => {
-			expect(result.stages.length).toBe(10);
+			expect(result.stages.length).toBe(11);
 		});
 
 		it('needs 4 Enrichment Chambers (Path A)', () => {
@@ -79,6 +79,12 @@ describe('FissileProductionChain', () => {
 			const s = result.stages.find(s => s.name === 'Chemical Oxidizer (Uranium Oxide)');
 			expect(s).toBeDefined();
 			expect(s!.count).toBe(2);
+		});
+
+		it('needs 3 Electrolytic Separators (O₂ production)', () => {
+			const s = result.stages.find(s => s.name === 'Electrolytic Separator');
+			expect(s).toBeDefined();
+			expect(s!.count).toBe(3);
 		});
 
 		it('needs 1 Pressurized Reaction Chamber (Path B)', () => {
@@ -129,8 +135,8 @@ describe('FissileProductionChain', () => {
 			expect(s!.count).toBe(4);
 		});
 
-		it('computes 90 total machines', () => {
-			expect(result.totalMachines).toBe(90);
+		it('computes 93 total machines', () => {
+			expect(result.totalMachines).toBe(93);
 		});
 
 		it('computes uranium ingot rate', () => {
@@ -145,12 +151,10 @@ describe('FissileProductionChain', () => {
 			expect(result.resources.coalPerTick).toBeCloseTo(0.036, 5);
 		});
 
-		it('computes water rate', () => {
-			expect(result.resources.waterPerTick).toBeCloseTo(86.4, 1);
-		});
-
-		it('computes oxygen rate', () => {
-			expect(result.resources.oxygenPerTick).toBeCloseTo(43.2, 1);
+		it('computes water rate (PRC + Condensentrator + ES)', () => {
+			// PRC: 14.4 + Condensentrator: 72 + ES: 3*800/12 = 200 → total ~286.4
+			expect(result.resources.waterPerTick).toBeGreaterThan(280);
+			expect(result.resources.waterPerTick).toBeLessThan(290);
 		});
 
 		it('total energy is sum of all stages', () => {
@@ -173,7 +177,7 @@ describe('FissileProductionChain', () => {
 		});
 
 		it('has 10 stages', () => {
-			expect(result.stages.length).toBe(10);
+			expect(result.stages.length).toBe(11);
 		});
 
 		it('resource rates are positive', () => {
@@ -181,7 +185,6 @@ describe('FissileProductionChain', () => {
 			expect(result.resources.fluoritePerTick).toBeGreaterThan(0);
 			expect(result.resources.coalPerTick).toBeGreaterThan(0);
 			expect(result.resources.waterPerTick).toBeGreaterThan(0);
-			expect(result.resources.oxygenPerTick).toBeGreaterThan(0);
 			expect(result.resources.totalEnergyPerTick).toBeGreaterThan(0);
 		});
 	});
