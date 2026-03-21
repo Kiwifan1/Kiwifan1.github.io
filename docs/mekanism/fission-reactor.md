@@ -127,9 +127,9 @@ so at $T = 0\,\text{K}$ the structure heals at 0.2% per second.
 
 ```mermaid
 flowchart TD
-    T{"Temperature?"} -->|"$$T < 1200K$$"| Repair["$$\text{Repair: } \frac{1200-T}{120{,}000}\%\text{/tick}$$"]
+    T{"Temperature?"} -->|"$$T \lt 1200K$$"| Repair["$$\text{Repair: } \frac{1200-T}{120{,}000}\%\text{/tick}$$"]
     T -->|"$$T \geq 1200K$$"| Damage["$$\text{Damage: } \frac{\min(T,1800)}{12{,}000}\%\text{/tick}$$"]
-    Damage --> Check{"$$D > 100\%$$?"}
+    Damage --> Check{"$$D \gt 100\%$$?"}
     Check -->|"No"| Accumulate["Damage accumulates"]
     Check -->|"Yes"| Roll{"$$p_{melt} = \frac{D}{1000}$$ per tick"}
     Roll -->|"Pass"| Accumulate

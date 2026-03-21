@@ -99,7 +99,7 @@ flowchart TD
     Sweep --> Fblade["$$F_{blade} = \frac{2r}{\phi}$$"]
     Fsteam --> Power["$$P = \varepsilon \cdot F_{blade} \cdot F_{steam}$$"]
     Fblade --> Power
-    Power --> Best{"$$P > P_{best}$$?"}
+    Power --> Best{"$$P \gt P_{best}$$?"}
     Best -->|"Yes"| Update["$$P_{best} = P$$"]
     Best -->|"No"| Next["Next $$r$$"]
     Update --> Next
@@ -361,7 +361,7 @@ flowchart LR
     end
 
     subgraph Optimization
-        r["$$r = \Big\lceil\frac{4Bh+A}{8B}\Big\rceil$$"]
+        r["$$r = \lceil (4Bh+A)\, /\, 8B \rceil$$"]
     end
 
     subgraph Output
