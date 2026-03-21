@@ -1,27 +1,55 @@
-<section class="planner fuel-chain">
-  <form [formGroup]="form" class="planner__form" aria-label="Fuel chain planner">
-    <fieldset class="planner__field-set">
-      <legend>Production target</legend>
-      <div class="planner__grid">
-        <label>
-          Target fuel rate (mB/t)
-          <input type="number" formControlName="fuelRate" min="0.1" max="10000" step="0.1" />
-        </label>
-        <label class="fuel-chain__slider-label">
-          Speed upgrades: <strong>{{ form.value.speedUpgrades }}</strong>
-          <input type="range" formControlName="speedUpgrades" min="0" max="8" step="1" />
-        </label>
-      </div>
-      <p class="planner__hint">
-        Fuel rate range: 0.1 - 10,000 mB/t. Speed upgrades (0-8) reduce machine processing time.
-      </p>
-    </fieldset>
-
-    <div class="planner__actions">
-      <button type="button" class="planner__submit" [disabled]="form.invalid" (click)="computeChain()">
-        Calculate
-      </button>
+<section class="fuel-chain">
+  <form [formGroup]="form" class="fuel-chain__form" aria-label="Fuel chain planner">
+    <div class="fuel-chain__form-header">
+      <h2 class="fuel-chain__form-title">Production Target</h2>
+      <p class="fuel-chain__form-desc">Configure how much fissile fuel your reactor needs.</p>
     </div>
+
+    <div class="fuel-chain__inputs">
+      <div class="fuel-chain__input-group">
+        <label class="fuel-chain__label" for="fuelRate">Fuel rate</label>
+        <div class="fuel-chain__input-wrapper">
+          <input
+            id="fuelRate"
+            type="number"
+            formControlName="fuelRate"
+            min="0.1"
+            max="10000"
+            step="0.1"
+            class="fuel-chain__number-input"
+          />
+          <span class="fuel-chain__input-unit">mB/t</span>
+        </div>
+        <span class="fuel-chain__input-hint">0.1 – 10,000</span>
+      </div>
+
+      <div class="fuel-chain__input-group">
+        <label class="fuel-chain__label">
+          Speed upgrades
+          <span class="fuel-chain__upgrade-value">{{ form.value.speedUpgrades }}</span>
+        </label>
+        <input
+          type="range"
+          formControlName="speedUpgrades"
+          min="0"
+          max="8"
+          step="1"
+          class="fuel-chain__range-input"
+        />
+        <div class="fuel-chain__range-ticks">
+          <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="fuel-chain__calculate"
+      [disabled]="form.invalid"
+      (click)="computeChain()"
+    >
+      Calculate Production Chain
+    </button>
   </form>
 
   @if (error(); as err) {
@@ -29,21 +57,24 @@
       <p class="planner__error">{{ err }}</p>
     </div>
   } @else if (result(); as data) {
-    <div class="planner__results">
+    <div class="fuel-chain__results">
 
-      <!-- Summary card -->
-      <section class="planner__card fuel-chain__summary-card">
-        <h2>Summary</h2>
-        <ul>
-          <li><strong>Target fuel rate:</strong> {{ asDecimal(data.targetFuelRate) }} mB/t</li>
-          <li><strong>Speed upgrades:</strong> {{ data.speedUpgrades }}</li>
-          <li><strong>Total machines:</strong> {{ asNumber(data.totalMachines) }}</li>
-          <li><strong>Total energy:</strong> {{ formatEnergy(data.resources.totalEnergyPerTick) }}</li>
-        </ul>
-      </section>
+      <div class="fuel-chain__stats-row">
+        <div class="fuel-chain__stat">
+          <span class="fuel-chain__stat-value">{{ asNumber(data.totalMachines) }}</span>
+          <span class="fuel-chain__stat-label">Total Machines</span>
+        </div>
+        <div class="fuel-chain__stat">
+          <span class="fuel-chain__stat-value">{{ formatEnergy(data.resources.totalEnergyPerTick) }}</span>
+          <span class="fuel-chain__stat-label">Total Energy</span>
+        </div>
+        <div class="fuel-chain__stat">
+          <span class="fuel-chain__stat-value">{{ asDecimal(data.targetFuelRate) }}</span>
+          <span class="fuel-chain__stat-label">mB/t Fissile Fuel</span>
+        </div>
+      </div>
 
-      <!-- Resources card -->
-      <section class="planner__card fuel-chain__resources-card">
+      <section class="fuel-chain__card">
         <h2>Resource Requirements</h2>
         <div class="fuel-chain__resource-grid">
           <div class="fuel-chain__resource">
@@ -65,34 +96,36 @@
         </div>
       </section>
 
-      <!-- Chain flow visualization -->
-      <section class="planner__card fuel-chain__flow-card">
+      <section class="fuel-chain__card fuel-chain__card--wide">
         <h2>Chain Flow</h2>
         <app-chain-flow [result]="data"></app-chain-flow>
       </section>
 
-      <!-- Machine breakdown -->
-      <section class="planner__card fuel-chain__machines-card">
+      <section class="fuel-chain__card fuel-chain__card--wide">
         <h2>Machine Breakdown</h2>
-        <ul class="fuel-chain__machine-list">
+        <div class="fuel-chain__machine-grid">
           @for (stage of data.stages; track stage.name) {
-            <li class="fuel-chain__machine-item">
-              <span class="fuel-chain__machine-name">{{ stage.name }}</span>
-              <span class="fuel-chain__machine-detail">
+            <div class="fuel-chain__machine-item" [class.fuel-chain__machine-item--flow]="stage.type === 'flow'">
+              <div class="fuel-chain__machine-header">
+                <span class="fuel-chain__machine-name">{{ stage.name }}</span>
                 @if (stage.type === 'batch') {
-                  {{ stage.count === 1 ? '1 machine' : asNumber(stage.count) + ' machines' }} &middot;
-                  {{ asDecimal(stage.opsPerTick, 4) }} ops/t &middot;
-                  {{ asNumber(stage.ticksPerOp) }} ticks/op &middot;
-                  {{ formatEnergy(stage.energyPerTick) }}
+                  <span class="fuel-chain__machine-badge">{{ stage.count === 1 ? '×1' : '×' + asNumber(stage.count) }}</span>
                 } @else {
-                  1 machine (flow) &middot;
-                  {{ asDecimal(stage.flowRateMbPerTick, 2) }} mB/t &middot;
-                  {{ formatEnergy(stage.energyPerTick) }}
+                  <span class="fuel-chain__machine-badge fuel-chain__machine-badge--flow">flow</span>
                 }
-              </span>
-            </li>
+              </div>
+              <div class="fuel-chain__machine-stats">
+                @if (stage.type === 'batch') {
+                  <span>{{ asDecimal(stage.opsPerTick, 4) }} ops/t</span>
+                  <span>{{ asNumber(stage.ticksPerOp) }} ticks/op</span>
+                } @else {
+                  <span>{{ asDecimal(stage.flowRateMbPerTick, 2) }} mB/t</span>
+                }
+                <span>{{ formatEnergy(stage.energyPerTick) }}</span>
+              </div>
+            </div>
           }
-        </ul>
+        </div>
       </section>
 
     </div>
