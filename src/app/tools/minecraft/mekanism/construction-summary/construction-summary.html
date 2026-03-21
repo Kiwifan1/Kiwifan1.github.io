@@ -1,0 +1,22 @@
+<div>
+  <h3>{{ title }}</h3>
+  <ul class="construction-list">
+    <li>
+      Shell casing (solid): {{ format(shell.solid.casing) }}
+    </li>
+    <li>
+      Glass-ready faces: {{ format(shell.withGlass.casing) }} casing &middot;
+      {{ format(shell.withGlass.glass) }} glass
+    </li>
+    @for (item of items; track item.label) {
+      <li>{{ item.label }}: {{ format(item.value) }}</li>
+    }
+  </ul>
+  @if (geometryNotes && geometryNotes.length > 0) {
+    <p class="construction-note">
+      @for (note of geometryNotes; track note.label; let last = $last) {
+        {{ note.label }}: {{ note.value }}{{ last ? '' : ' · ' }}
+      }
+    </p>
+  }
+</div>
