@@ -6,11 +6,13 @@ The Fusion Reactor is a fixed-size multiblock structure in Mekanism that combine
 
 ```mermaid
 flowchart LR
-    D["Deuterium"] --> CI["Chemical Infuser"]
-    T["Tritium"] --> CI
+    D["Deuterium"] -->|"Injection mode"| FR
+    T["Tritium"] -->|"Injection mode"| FR
+    D2["Deuterium"] --> CI["Chemical Infuser"]
+    T2["Tritium"] --> CI
     CI --> F["D-T Fuel"]
-    F --> FR["Fusion Reactor"]
-    L["Laser Amplifier"] -->|"Ignition"| FR
+    F -->|"D-T Fuel mode"| FR["Fusion Reactor"]
+    L["Laser / Resistive"] -->|"Ignition"| FR
     FR -->|"Passive"| TC["Thermocouple Energy (FE)"]
     FR -->|"Active"| S["Steam"]
     S --> TU["Industrial Turbine"]
@@ -21,9 +23,19 @@ flowchart LR
 
 The Fusion Reactor is a **fixed-size** multiblock. There are no variable dimensions to choose — you build the one prescribed structure. The frame is constructed from Fusion Reactor Frames, with Fusion Reactor Ports for I/O and a Fusion Reactor Controller as the central interface block. Reactor Glass can fill any non-edge face position.
 
-### Laser Ignition
+> **Danger:** An active fusion reactor deals **50,000 magic damage per second** to any entity inside the reactor structure. Do not enter a running reactor.
 
-The reactor requires a **Laser Amplifier** to reach ignition temperature before the fusion process begins. A laser beam must be directed at the reactor's Laser Focus Matrix block. The energy delivered by the laser heats the plasma until it crosses the ignition threshold.
+### Ignition Methods
+
+The reactor must reach a plasma temperature of **100 MK (1 × 10⁸ K)** before the fusion reaction can self-sustain. Two ignition methods are available:
+
+#### Laser Ignition (recommended)
+
+Fire a laser carrying **≥ 1 GFE** of energy at the reactor's **Laser Focus Matrix** block. The Hohlraum must be charged and inserted into the Laser Focus Matrix before firing. A single sufficiently-powered pulse is enough to ignite the plasma.
+
+#### Resistive Heating
+
+The reactor can also be ignited by resistive heating, which requires delivering approximately **18 GFE** of total electrical energy to the reactor. This is significantly more energy than laser ignition and is generally not preferred.
 
 ## Fuel System
 
@@ -45,6 +57,17 @@ $$\text{Tritium consumed} = \frac{\text{injectionRate}}{2} \;\text{mB/t}$$
 | 10                     | 5                 | 5               |
 | 50                     | 25                | 25              |
 | 98                     | 49                | 49              |
+
+### D-T Fuel Mode (Pre-mixed)
+
+As an alternative to feeding Deuterium and Tritium separately via the injection rate, you can supply **pre-mixed D-T Fuel** directly to the reactor. This is a distinct operating mode:
+
+- Each tick, the reactor consumes the **entire contents** of its D-T Fuel tank (up to **1,000 mB** per tick).
+- At full tank consumption, this mode produces approximately **200 MFE/t** — roughly 10× the output of the injection-rate mode at max rate.
+- D-T Fuel is produced by combining Deuterium and Tritium in a **Chemical Infuser** (see the flowchart above).
+- Because the entire tank is drained each tick, you need a large, fast supply of D-T Fuel to sustain this mode continuously.
+
+> **When to use D-T Fuel mode:** Use this mode when you need maximum energy output and can supply pre-mixed fuel fast enough to keep up. The injection-rate mode (separate D and T) is easier to sustain at moderate rates.
 
 ### Tank Capacities
 
@@ -146,21 +169,9 @@ The steam is routed to an Industrial Turbine. Energy output depends on the turbi
 
 ## Ignition Temperature
 
-The reactor requires a minimum plasma temperature before the fusion reaction sustains itself. The ignition temperature is derived from the injection rate:
+The reactor requires a plasma temperature above **1 × 10⁸ K (100 MK)** before the fusion burn occurs. This is a fixed threshold — the burn formula only produces heat when $T_{\text{plasma}} > 1 \times 10^8$ K.
 
-$$T_{\text{ignition}} = 1 \times 10^8 \times \frac{1}{\text{burnRatio}}$$
-
-where $\text{burnRatio} = \tfrac{\text{injectionRate}}{2}$.
-
-For injection rate 2 (burnRatio = 1):
-
-$$T_{\text{ignition}} = 1 \times 10^8 \;\text{K}$$
-
-For injection rate 98 (burnRatio = 49):
-
-$$T_{\text{ignition}} = \frac{1 \times 10^8}{49} \approx 2{,}040{,}816 \;\text{K}$$
-
-> Note: Higher injection rates require less laser energy to reach ignition because the burn ratio is higher, meaning the threshold effective temperature is lower relative to the burn temperature.
+Once burning begins, the plasma temperature stabilises at a steady state determined by the balance of energy input from fusion and heat loss to the casing. Higher injection rates produce more heat per tick, driving the plasma to a higher equilibrium temperature, but the ignition threshold itself is always 100 MK regardless of injection rate.
 
 ## Worked Example
 
@@ -180,9 +191,15 @@ $$\text{Steam capacity} = 98 \times 100{,}000{,}000 = 9{,}800{,}000{,}000 \;\tex
 
 ### Passive Mode (Thermocouple)
 
-Assume steady-state case temperature of $T_{\text{case}} = 5{,}000{,}000 \;\text{K}$:
+At maximum injection rate (98 mB/t), the reactor in passive mode produces approximately **20 MFE/t** (≈ 50 MJ/t) at steady state.
+
+To verify: the formula $P_{\text{passive}} = 0.01333 \times (T_{\text{case}} - 300)$ J/t requires a steady-state case temperature of roughly **3.75 GK** to reach 50 MJ/t. This illustrates that the casing runs extremely hot at max injection rate.
+
+As a lower-injection-rate illustration, assume $T_{\text{case}} = 5{,}000{,}000 \;\text{K}$:
 
 $$P_{\text{passive}} = 0.04 \times 0.333\overline{3} \times (5{,}000{,}000 - 300) \approx 66{,}662 \;\text{J/t} \approx 1{,}333{,}240 \;\text{J/s}$$
+
+This illustrative case temp is well below equilibrium for injection 98 — in practice, passive output at full rate is far higher.
 
 ### Active Mode (Steam)
 
@@ -195,7 +212,7 @@ This steam is then processed by an Industrial Turbine for significantly higher e
 ```mermaid
 flowchart TD
     subgraph Passive Mode
-        FR1["Fusion Reactor"] -->|"Thermocouple"| E1["~66,662 J/t"]
+        FR1["Fusion Reactor"] -->|"Thermocouple"| E1["~20 MFE/t at max rate"]
     end
     subgraph Active Mode
         FR2["Fusion Reactor"] -->|"Steam ~1.36M mB/t"| T2["Industrial Turbine"]
