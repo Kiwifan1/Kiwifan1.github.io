@@ -228,6 +228,21 @@
   letter-spacing: 0.04em;
 }
 
+/* ── Alt note ── */
+
+.chain-flow__alt-note {
+  font-size: 0.75rem;
+  color: var(--tool-muted);
+  padding: 0.4rem 0.75rem;
+  border-left: 2px solid var(--tool-border);
+  margin-top: 0.25rem;
+  opacity: 0.8;
+}
+
+.chain-flow__alt-note strong {
+  color: var(--flow-b);
+}
+
 /* ── Responsive ── */
 
 @media (max-width: 700px) {

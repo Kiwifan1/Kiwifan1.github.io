@@ -278,6 +278,48 @@ flowchart LR
     end
 ```
 
+## Alternative Sulfur Production — HCl + Gunpowder Path
+
+Instead of using Coal in the Pressurized Reaction Chamber, sulfur can be produced from **Hydrogen Chloride + Gunpowder** via the **Chemical Injection Chamber** (CIC). This path leverages the Thermal Evaporation Plant for brine production and avoids coal entirely.
+
+```mermaid
+flowchart LR
+    subgraph Brine["Brine Production"]
+        W1["Water"] --> TEP["Thermal Evaporation Plant"]
+        TEP --> Br["Brine"]
+    end
+
+    subgraph HCl["HCl Synthesis"]
+        Br --> ES1["ES (Brine)"]
+        ES1 --> Cl["Chlorine"]
+        W2["Water"] --> ES2["ES (Water)"]
+        ES2 --> H2["Hydrogen"]
+        Cl --> CI["Chemical Infuser"]
+        H2 --> CI
+        CI --> HC["Hydrogen Chloride"]
+    end
+
+    subgraph Sulfur["Sulfur Production"]
+        HC --> CIC["Chemical Injection Chamber"]
+        GP["Gunpowder"] --> CIC
+        CIC --> SD["Sulfur Dust"]
+    end
+```
+
+### Comparison
+
+| | Coal / PRC Path | HCl / Gunpowder Path |
+|---|---|---|
+| **Key Input** | Coal | Gunpowder (from crushing Flint) |
+| **Machines** | PRC (1 machine) | Thermal Evap + 2 ES + CI + CIC (5+ machines) |
+| **Complexity** | Simple | Complex |
+| **Byproduct** | 100 mB H₂ per op | Sodium (from brine ES), Oxygen (from water ES) |
+| **Best when** | Coal is abundant | Already running an evaporation plant |
+
+> **Note:** The rest of the chain (Sulfur → SO₂ → SO₃ → H₂SO₄ → HF → UF₆ → Fissile Fuel) is identical regardless of which sulfur path is used.
+
+---
+
 ## Resource Input Rates
 
 ### Uranium Ingot Consumption
