@@ -130,10 +130,10 @@ $$\text{rate} = \left\lfloor 277.5 \times H \right\rfloor \quad \text{mB/t}.$$
 
 ```mermaid
 flowchart LR
-    Solar["Solar Panels"] -->|"Q_in = 120n"| Heat["Heat Accumulation"]
-    Heat -->|"clamp at 3000K"| TM["Temp Multiplier"]
-    TM -->|"m = tempDelta × 1.85 × H/18"| Rate["Production Rate"]
-    Rate --> Output["floor(m) mB/t"]
+    Solar["Heat Source"] -->|"$$Q_{in}$$"| Heat["Heat Accumulation"]
+    Heat -->|"capped at 3000K"| TM["$$T_{eff}$$"]
+    TM --> Rate["$$m = \Delta T \times 1.85 \times H/18$$"]
+    Rate --> Output["$$\lfloor m \rfloor \text{ mB/t}$$"]
 ```
 
 ## Tank Capacity
@@ -236,12 +236,12 @@ Confirming $Q_{\text{in}} = Q_{\text{out}} = 480$. ✓
 
 ```mermaid
 flowchart TD
-    Start["H = 18, n = 4 solars"] --> Heat["Q_in = 480 / tick"]
-    Heat --> Temp["T_ss = 576,000,300"]
-    Temp --> Clamp["T_eff = min(3000, T_ss) = 3000"]
-    Clamp --> Mult["m = 2700 × 1.85 × 18/18 = 4995"]
+    Start["$$H = 18, \; n = 4$$"] --> Heat["$$Q_{in} = 480 \text{ /tick}$$"]
+    Heat --> Temp["$$T_{ss} = 576{,}000{,}300$$"]
+    Temp --> Clamp["$$T_{eff} = \min(3000, T_{ss}) = 3000$$"]
+    Clamp --> Mult["$$m = 2700 \times 1.85 \times 1 = 4995$$"]
     Mult --> Rate["Rate = 4995 mB/t"]
-    Rate --> Brine["Brine output = 7492 mB/t"]
+    Rate --> Brine["Brine = 7492 mB/t"]
 ```
 
 ## Practical Notes
