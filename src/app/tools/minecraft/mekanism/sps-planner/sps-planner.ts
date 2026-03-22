@@ -28,7 +28,7 @@ export class SPSPlanner {
       [
         Validators.required,
         Validators.min(0.001),
-        Validators.max(10),
+        Validators.max(2),
       ],
     ],
   });
