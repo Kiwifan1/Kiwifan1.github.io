@@ -5,239 +5,36 @@
   --flow-b-bg: rgba(255, 152, 0, 0.06);
   --flow-final: #1995ff;
   --flow-final-bg: rgba(25, 149, 255, 0.08);
-}
+  --conn-width: 2px;
+  --node-radius: 0.5rem;
 
-.chain-flow {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-/* ── Sections ── */
-
-.chain-flow__section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  padding: 1.25rem 1.5rem;
-  border-radius: 0.75rem;
+  display: block;
   position: relative;
 }
 
-.chain-flow__section--a {
-  background: var(--flow-a-bg);
-  border: 1px solid rgba(42, 134, 42, 0.2);
-}
+/* ================================================================
+   Waterfall container
+   ================================================================ */
 
-.chain-flow__section--b {
-  background: var(--flow-b-bg);
-  border: 1px solid rgba(255, 152, 0, 0.15);
-  margin-top: 0.75rem;
-}
-
-.chain-flow__section--final {
-  background: var(--flow-final-bg);
-  border: 1px solid rgba(25, 149, 255, 0.2);
-  margin-top: 0.75rem;
-}
-
-/* Connector lines between sections */
-.chain-flow__section--b::before,
-.chain-flow__section--final::before {
-  content: '';
-  position: absolute;
-  top: -0.75rem;
-  left: 50%;
-  width: 2px;
-  height: 0.75rem;
-  background: var(--tool-border);
-}
-
-.chain-flow__section-title {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.chain-flow__section--a .chain-flow__section-title { color: var(--flow-a); }
-.chain-flow__section--b .chain-flow__section-title { color: var(--flow-b); }
-.chain-flow__section--final .chain-flow__section-title { color: var(--flow-final); }
-
-/* ── Pipeline row ── */
-
-.chain-flow__pipeline {
+.wf {
   display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.chain-flow__pipeline + .chain-flow__pipeline {
-  margin-top: 0.5rem;
-}
-
-/* ── Arrow connector ── */
-
-.chain-flow__arrow {
-  display: flex;
-  align-items: center;
-  height: 2px;
-  min-width: 24px;
-  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 1.25rem;
   position: relative;
 }
 
-.chain-flow__arrow::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 6px;
-  height: 2px;
-}
+/* ================================================================
+   Sulfur path toggle
+   ================================================================ */
 
-.chain-flow__arrow::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: -4px;
-  width: 0;
-  height: 0;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-}
-
-.chain-flow__section--a .chain-flow__arrow::before { background: var(--flow-a); }
-.chain-flow__section--a .chain-flow__arrow::after { border-left: 7px solid var(--flow-a); }
-
-.chain-flow__section--b .chain-flow__arrow::before { background: var(--flow-b); }
-.chain-flow__section--b .chain-flow__arrow::after { border-left: 7px solid var(--flow-b); }
-
-.chain-flow__section--final .chain-flow__arrow::before { background: var(--flow-final); }
-.chain-flow__section--final .chain-flow__arrow::after { border-left: 7px solid var(--flow-final); }
-
-/* ── Input pill ── */
-
-.chain-flow__input {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  color: var(--tool-text);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 0.35rem 0.85rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.chain-flow__input--merge {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  border-radius: 0.6rem;
-}
-
-.chain-flow__merge-plus {
-  color: var(--tool-muted);
-  font-weight: 800;
-  font-size: 0.85rem;
-}
-
-/* ── Product pill ── */
-
-.chain-flow__product {
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.35rem 0.85rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.chain-flow__product--a {
-  background: rgba(42, 134, 42, 0.2);
-  border: 1px solid var(--flow-a);
-  color: #8bc34a;
-}
-
-.chain-flow__product--b {
-  background: rgba(255, 152, 0, 0.2);
-  border: 1px solid var(--flow-b);
-  color: #ffb74d;
-}
-
-.chain-flow__product--final {
-  background: rgba(25, 149, 255, 0.25);
-  border: 1px solid var(--flow-final);
-  color: #64b5f6;
-}
-
-/* ── Machine node ── */
-
-.chain-flow__node {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.4rem 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 3px solid;
-  border-radius: 0.5rem;
-  flex-shrink: 0;
-  transition: background 120ms ease;
-}
-
-.chain-flow__node:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.chain-flow__node--a { border-left-color: var(--flow-a); }
-.chain-flow__node--b { border-left-color: var(--flow-b); }
-.chain-flow__node--final { border-left-color: var(--flow-final); }
-
-.chain-flow__node-name {
-  color: var(--tool-text);
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* ── Badge ── */
-
-.chain-flow__node-badge {
-  border-radius: 999px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0.2rem 0.45rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.chain-flow__node-badge--solid {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--tool-text);
-}
-
-.chain-flow__node-badge--outline {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--tool-muted);
-  font-size: 0.6rem;
-  letter-spacing: 0.04em;
-}
-
-/* ── Path toggle ── */
-
-.chain-flow__path-toggle {
+.wf__toggle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.chain-flow__path-label {
+.wf__toggle-label {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--tool-muted);
@@ -245,7 +42,7 @@
   letter-spacing: 0.06em;
 }
 
-.chain-flow__path-btn {
+.wf__toggle-btn {
   background: transparent;
   border: 1px solid var(--tool-border);
   border-radius: 999px;
@@ -258,30 +55,564 @@
   transition: background 100ms ease, border-color 100ms ease, color 100ms ease;
 }
 
-.chain-flow__path-btn:hover {
+.wf__toggle-btn:hover {
   border-color: var(--flow-b);
   color: var(--tool-text);
 }
 
-.chain-flow__path-btn--active {
+.wf__toggle-btn--active {
   background: var(--flow-b);
   border-color: var(--flow-b);
   color: #0a0f14;
 }
 
-/* ── Responsive ── */
+/* ================================================================
+   CSS Grid — Coal path layout
+   ================================================================
 
-@media (max-width: 700px) {
-  .chain-flow__section {
-    padding: 1rem;
+   The grid uses named areas so each node, connection, and label
+   gets an explicit placement. Connection cells are narrow rows
+   between the node rows.
+
+   Columns:
+     [lbl]  [col1]  [c1]  [col2]  [c2]  [col3]  [c3]  [col4]  [c4]  [col5]
+
+   "lbl" is for path labels, colN for nodes/inputs, cN for connectors
+   between columns.
+   ================================================================ */
+
+.wf__grid--coal {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr 0.6rem 1fr 0.6rem 1fr 0.6rem 1fr 0.6rem 1fr;
+  grid-template-rows:
+    /* r-input   */ auto
+    /* c-row-1   */ 1.2rem
+    /* r-tier1   */ auto
+    /* c-row-2   */ 1.2rem
+    /* r-tier2   */ auto
+    /* c-row-3   */ 1.2rem
+    /* r-tier3   */ auto
+    /* c-row-4   */ 1.2rem
+    /* r-tier4   */ auto
+    /* c-row-5   */ 1.2rem
+    /* r-tier5   */ auto
+    /* c-row-6   */ 1.2rem
+    /* r-tier6   */ auto
+    /* c-row-7   */ 1.2rem
+    /* r-output  */ auto;
+  gap: 0;
+  align-items: center;
+  justify-items: center;
+
+  grid-template-areas:
+    /* Row: inputs */
+    "lbl-a     i-uranium   .          i-coal       .          i-water-es  .          i-water-rc  .          i-fluorite  "
+    /* Conn: input->tier1 */
+    ".         c-i-enr     .          c-i-prc      .          c-i-es      .          c-i-rc      .          .           "
+    /* Row: tier 1 — Enrichment, PRC, ES, RC */
+    ".         n-enrichment .         n-prc        .          n-es        .          n-rc        .          .           "
+    /* Conn: tier1->tier2 */
+    ".         c-enr-oxuo  .          c-prc-oxso2  .          .           .          .           .          .           "
+    /* Row: tier 2 — Ox UO, Ox SO2, (ES/RC feed down) */
+    ".         n-ox-uo     .          n-ox-so2     .          .           .          .           .          .           "
+    /* Conn: tier2->tier3 */
+    ".         .           .          c-oxso2-so3  .          c-es-so3    .          c-rc-h2so4  .          .           "
+    /* Row: tier 3 — SO3, H2SO4 */
+    ".         .           .          .            .          n-so3       .          n-h2so4     .          .           "
+    /* Conn: tier3->tier4 */
+    ".         .           .          .            .          c-so3-h2so4 .          .           .          .           "
+    /* Row: tier 4 — H2SO4 merges with fluorite -> Dissolution */
+    "lbl-b     .           .          .            .          n-h2so4-x   .          .           .          .           "
+    /* Conn: tier4->tier5 */
+    ".         .           .          .            .          c-h2so4-diss .         .           .          .           "
+    /* Row: tier 5 — Dissolution */
+    ".         .           .          .            .          n-diss      .          .           .          .           "
+    /* Conn: tier5->tier6 */
+    ".         c-oxuo-uf6  .          .            .          c-diss-uf6  .          .           .          .           "
+    /* Row: tier 6 — UF6 Infuser, Centrifuge */
+    "lbl-final .           .          n-uf6        .          .           .          .           .          .           "
+    /* Conn: tier6->output */
+    ".         .           .          c-uf6-cent   .          .           .          .           .          .           "
+    /* Row: tier 7 — Centrifuge + output */
+    ".         .           .          n-cent       .          .           .          .           .          .           ";
+}
+
+/* Override: re-arrange some areas for the coal grid to make the flow cleaner.
+   The SO3 infuser merges SO2 (from col2/3) + O2 (from ES col3).
+   H2SO4 merges SO3 + Water Vapor (from RC col4).
+   Then dissolution takes H2SO4 + Fluorite.
+   UF6 merges UO (from col1) + HF (from dissolution). */
+
+/* Actually, let's redo the coal grid with a cleaner approach
+   that avoids the problematic area definitions above. We'll use
+   a simpler row-based approach. */
+
+.wf__grid--coal {
+  grid-template-columns: 3.2rem 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: repeat(15, auto);
+  grid-template-areas:
+    "lbl-a     i-uranium    i-coal       i-water-es   i-water-rc   i-fluorite  "
+    ".         c-i-enr      c-i-prc      c-i-es       c-i-rc       .           "
+    ".         n-enrichment n-prc        n-es         n-rc         .           "
+    ".         c-enr-oxuo   c-prc-oxso2  .            .            .           "
+    ".         n-ox-uo      n-ox-so2     .            .            .           "
+    "lbl-b     .            c-oxso2-so3  c-es-so3     c-rc-h2so4   .           "
+    ".         .            .            n-so3        n-h2so4      .           "
+    ".         .            .            c-so3-h2so4  .            .           "
+    ".         .            .            n-h2so4-x    .            .           "
+    ".         .            .            c-h2so4-diss .            .           "
+    ".         .            .            n-diss       .            .           "
+    ".         c-oxuo-uf6   .            c-diss-uf6   .            .           "
+    "lbl-final .            n-uf6        .            .            .           "
+    ".         .            c-uf6-cent   .            .            .           "
+    ".         .            n-cent       .            .            .           ";
+  gap: 0.2rem 0.5rem;
+}
+
+/* Re-place the output after centrifuge */
+.wf__grid--coal .wf__output {
+  grid-column: 3;
+  grid-row: 16;
+}
+.wf__grid--coal .wf__conn[style*="c-cent-fuel"] {
+  grid-column: 3;
+  grid-row: 16;
+  display: none; /* Output is directly after centrifuge */
+}
+
+/* Merge H2SO4 node into correct position — row 9 is a duplicate label;
+   we just re-use row 7's n-h2so4 for the actual infuser. Row 9 "n-h2so4-x"
+   is hidden since the real h2so4 node is at row 7. */
+.wf__grid--coal [style*="n-h2so4-x"] {
+  display: none;
+}
+
+/* ================================================================
+   CSS Grid — HCl path layout
+   ================================================================ */
+
+.wf__grid--hcl {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: repeat(19, auto);
+  grid-template-areas:
+    "lbl-a     i-uranium    i-water-evap i-water-es2  i-gunpowder  i-water-es   i-water-rc  "
+    ".         c-i-enr      c-i-evap     c-i-esw      .            c-i-es       c-i-rc      "
+    ".         n-enrichment n-evap       n-es-water   .            n-es         n-rc        "
+    ".         c-enr-oxuo   c-evap-esbr  .            .            .            .           "
+    ".         n-ox-uo      n-es-brine   .            .            .            .           "
+    ".         .            c-esbr-ci    c-esw-ci     .            .            .           "
+    ".         .            .            n-ci-hcl     .            .            .           "
+    ".         .            .            c-ci-cic     i-gunpowder  .            .           "
+    "lbl-b     .            .            n-cic        c-i-gp       .            .           "
+    ".         .            .            c-cic-oxso2  .            .            .           "
+    ".         .            .            n-ox-so2     .            .            .           "
+    ".         .            .            c-oxso2-so3  .            c-es-so3     c-rc-h2so4  "
+    ".         .            .            .            .            n-so3        n-h2so4     "
+    ".         .            .            .            .            c-so3-h2so4  .           "
+    ".         .            .            .            .            n-h2so4-x    .           "
+    ".         .            .            .            .            c-h2so4-diss .           "
+    ".         .            .            .            .            n-diss       .           "
+    ".         c-oxuo-uf6   .            .            .            c-diss-uf6   .           "
+    "lbl-final .            .            n-uf6        .            .            .           ";
+  gap: 0.2rem 0.4rem;
+}
+
+/* Additional rows for centrifuge + output in HCl grid */
+.wf__grid--hcl .wf__node[style*="n-cent"] {
+  grid-column: 4;
+  grid-row: 21;
+}
+.wf__grid--hcl .wf__conn[style*="c-uf6-cent"] {
+  grid-column: 4;
+  grid-row: 20;
+}
+.wf__grid--hcl .wf__conn[style*="c-cent-fuel"] {
+  display: none;
+}
+.wf__grid--hcl .wf__output {
+  grid-column: 4;
+  grid-row: 22;
+}
+
+/* Hide the duplicate gunpowder input at row 8 (placed via grid area) */
+.wf__grid--hcl [style*="i-gunpowder"]:nth-of-type(2) {
+  display: none;
+}
+
+/* Hide H2SO4-x placeholder in HCl grid too */
+.wf__grid--hcl [style*="n-h2so4-x"] {
+  display: none;
+}
+
+/* ================================================================
+   Node styling
+   ================================================================ */
+
+.wf__node {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid;
+  border-radius: var(--node-radius);
+  cursor: pointer;
+  transition: opacity 180ms ease, background 120ms ease, box-shadow 180ms ease;
+  white-space: nowrap;
+  justify-self: stretch;
+  min-width: 0;
+}
+
+.wf__node:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.wf__node--a { border-left-color: var(--flow-a); }
+.wf__node--b { border-left-color: var(--flow-b); }
+.wf__node--final { border-left-color: var(--flow-final); }
+
+.wf__node--highlight {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.wf__node--selected {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.wf__node--selected.wf__node--a { box-shadow: 0 0 0 2px var(--flow-a); }
+.wf__node--selected.wf__node--b { box-shadow: 0 0 0 2px var(--flow-b); }
+.wf__node--selected.wf__node--final { box-shadow: 0 0 0 2px var(--flow-final); }
+
+/* Dim non-highlighted nodes when hovering */
+.wf--has-hover .wf__node:not(.wf__node--highlight) {
+  opacity: 0.3;
+}
+
+.wf__node-name {
+  color: var(--tool-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wf__node-count {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: var(--tool-text);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: auto;
+  padding: 0.18rem 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ================================================================
+   Input / Output pills
+   ================================================================ */
+
+.wf__input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: var(--tool-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  text-align: center;
+  white-space: nowrap;
+  justify-self: center;
+}
+
+.wf__output {
+  background: rgba(25, 149, 255, 0.2);
+  border: 2px solid var(--flow-final);
+  border-radius: 999px;
+  color: #64b5f6;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 1.2rem;
+  text-align: center;
+  justify-self: center;
+}
+
+/* ================================================================
+   Connection lines (vertical connectors between rows)
+   ================================================================ */
+
+.wf__conn {
+  justify-self: center;
+  transition: opacity 180ms ease;
+}
+
+.wf__conn--v {
+  width: var(--conn-width);
+  height: 100%;
+  min-height: 0.8rem;
+  position: relative;
+}
+
+/* The line itself */
+.wf__conn--v::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 4px;
+  width: var(--conn-width);
+  transform: translateX(-50%);
+}
+
+/* Arrow tip */
+.wf__conn--v::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+}
+
+.wf__conn--v-long {
+  width: var(--conn-width);
+  height: 100%;
+  min-height: 0.8rem;
+  position: relative;
+}
+
+.wf__conn--v-long::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 4px;
+  width: var(--conn-width);
+  transform: translateX(-50%);
+}
+
+.wf__conn--v-long::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+}
+
+/* Colors */
+.wf__conn--a::before { background: var(--flow-a); }
+.wf__conn--a::after  { border-top: 6px solid var(--flow-a); }
+
+.wf__conn--b::before { background: var(--flow-b); }
+.wf__conn--b::after  { border-top: 6px solid var(--flow-b); }
+
+.wf__conn--final::before { background: var(--flow-final); }
+.wf__conn--final::after  { border-top: 6px solid var(--flow-final); }
+
+/* Dim connections when not part of highlighted path */
+.wf__conn--dim {
+  opacity: 0.15;
+}
+
+/* ================================================================
+   Path labels
+   ================================================================ */
+
+.wf__path-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  justify-self: center;
+  align-self: center;
+  user-select: none;
+}
+
+.wf__path-label--a     { color: var(--flow-a); }
+.wf__path-label--b     { color: var(--flow-b); }
+.wf__path-label--final { color: var(--flow-final); }
+
+/* ================================================================
+   Detail Popover
+   ================================================================ */
+
+.wf__popover {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.75rem;
+  background: #1a1f28;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 220px;
+  max-width: 320px;
+  padding: 1rem;
+  z-index: 100;
+  animation: wf-pop-in 150ms ease-out;
+}
+
+@keyframes wf-pop-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.wf__popover-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.wf__popover-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.wf__popover-title--a     { color: var(--flow-a); }
+.wf__popover-title--b     { color: var(--flow-b); }
+.wf__popover-title--final { color: var(--flow-final); }
+
+.wf__popover-close {
+  background: transparent;
+  border: none;
+  color: var(--tool-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.15rem;
+}
+
+.wf__popover-close:hover {
+  color: var(--tool-text);
+}
+
+.wf__popover-desc {
+  color: var(--tool-muted);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  margin: 0 0 0.75rem;
+}
+
+.wf__popover-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.75rem;
+}
+
+.wf__popover-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.wf__popover-stat-label {
+  color: var(--tool-muted);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wf__popover-stat-value {
+  color: var(--tool-text);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* ================================================================
+   Responsive
+   ================================================================ */
+
+@media (max-width: 800px) {
+  .wf__grid--coal {
+    grid-template-columns: 2.2rem repeat(5, 1fr);
+    gap: 0.15rem 0.3rem;
   }
 
-  .chain-flow__pipeline {
-    flex-wrap: wrap;
-    gap: 0.35rem;
+  .wf__grid--hcl {
+    grid-template-columns: 2.2rem repeat(6, 1fr);
+    gap: 0.15rem 0.25rem;
   }
 
-  .chain-flow__arrow {
-    min-width: 16px;
+  .wf__node {
+    padding: 0.3rem 0.45rem;
+    gap: 0.25rem;
+  }
+
+  .wf__node-name {
+    font-size: 0.65rem;
+  }
+
+  .wf__node-count {
+    font-size: 0.55rem;
+    padding: 0.15rem 0.3rem;
+  }
+
+  .wf__input {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .wf__path-label {
+    font-size: 0.5rem;
+  }
+
+  .wf__popover {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    transform: none;
+    margin-bottom: 0;
+    max-width: none;
+  }
+
+  @keyframes wf-pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (max-width: 500px) {
+  .wf__grid--coal,
+  .wf__grid--hcl {
+    overflow-x: auto;
+    min-width: 480px;
+  }
+
+  .wf {
+    overflow-x: auto;
   }
 }

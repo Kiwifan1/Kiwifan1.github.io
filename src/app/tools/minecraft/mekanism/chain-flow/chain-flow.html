@@ -1,224 +1,526 @@
-<div class="chain-flow">
+<div class="wf" [class.wf--has-hover]="hoveredNode() !== null">
 
-  <!-- ===== Path A — Uranium Oxide ===== -->
-  <div class="chain-flow__section chain-flow__section--a">
-    <h3 class="chain-flow__section-title">Path A &mdash; Uranium Oxide</h3>
-    <div class="chain-flow__pipeline">
-      <div class="chain-flow__input">Uranium Ingots</div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__node chain-flow__node--batch chain-flow__node--a">
-        <span class="chain-flow__node-name">Enrichment Chamber</span>
-        <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Enrichment Chamber') }}</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__node chain-flow__node--batch chain-flow__node--a">
-        <span class="chain-flow__node-name">Chemical Oxidizer</span>
-        <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Chemical Oxidizer (Uranium Oxide)') }}</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__product chain-flow__product--a">Uranium Oxide</div>
-    </div>
+  <!-- ===== Sulfur Path Toggle ===== -->
+  <div class="wf__toggle">
+    <span class="wf__toggle-label">Sulfur path:</span>
+    <button class="wf__toggle-btn"
+      [class.wf__toggle-btn--active]="sulfurPath() === 'coal'"
+      (click)="setSulfurPath('coal')">Coal / PRC</button>
+    <button class="wf__toggle-btn"
+      [class.wf__toggle-btn--active]="sulfurPath() === 'hcl'"
+      (click)="setSulfurPath('hcl')">HCl / Gunpowder</button>
   </div>
 
-  <!-- ===== Path B — Hydrofluoric Acid ===== -->
-  <div class="chain-flow__section chain-flow__section--b">
-    <h3 class="chain-flow__section-title">Path B &mdash; Hydrofluoric Acid</h3>
+  <!-- ===== COAL PATH WATERFALL ===== -->
+  @if (sulfurPath() === 'coal') {
+  <div class="wf__grid wf__grid--coal">
 
-    <!-- Sulfur path toggle -->
-    <div class="chain-flow__path-toggle">
-      <span class="chain-flow__path-label">Sulfur path:</span>
-      <button class="chain-flow__path-btn"
-        [class.chain-flow__path-btn--active]="sulfurPath() === 'coal'"
-        (click)="setSulfurPath('coal')">Coal / PRC</button>
-      <button class="chain-flow__path-btn"
-        [class.chain-flow__path-btn--active]="sulfurPath() === 'hcl'"
-        (click)="setSulfurPath('hcl')">HCl / Gunpowder</button>
+    <!-- Row 1: Input labels -->
+    <div class="wf__input" style="grid-area: i-uranium;">Uranium Ingots</div>
+    <div class="wf__input" style="grid-area: i-coal;">Coal + Water + O&#x2082;</div>
+    <div class="wf__input" style="grid-area: i-water-es;">Water</div>
+    <div class="wf__input" style="grid-area: i-water-rc;">Water</div>
+    <div class="wf__input" style="grid-area: i-fluorite;">Fluorite</div>
+
+    <!-- Row 2: First machines -->
+    <div class="wf__node wf__node--a"
+         [class.wf__node--highlight]="isNodeHighlighted('enrichment')"
+         [class.wf__node--selected]="selectedNode() === 'enrichment'"
+         (mouseenter)="onNodeHover('enrichment')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('enrichment'); $event.stopPropagation()"
+         style="grid-area: n-enrichment;">
+      <span class="wf__node-name">Enrichment Chamber</span>
+      <span class="wf__node-count">&times;{{ machineCount('Enrichment Chamber') }}</span>
     </div>
 
-    @if (sulfurPath() === 'coal') {
-      <!-- Oxygen production -->
-      <div class="chain-flow__pipeline">
-        <div class="chain-flow__input">Water</div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
-          <span class="chain-flow__node-name">Electrolytic Separator</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ machineCount('Electrolytic Separator') }}</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">O&#x2082;</div>
-      </div>
-
-      <!-- Coal + Water + O₂ → PRC → Sulfur → SO₂ -->
-      <div class="chain-flow__pipeline">
-        <div class="chain-flow__input chain-flow__input--merge">
-          <span>Coal</span>
-          <span class="chain-flow__merge-plus">+</span>
-          <span>Water</span>
-          <span class="chain-flow__merge-plus">+</span>
-          <span>O&#x2082;</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
-          <span class="chain-flow__node-name">PRC</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Pressurized Reaction Chamber') }}</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">Sulfur Dust</div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
-          <span class="chain-flow__node-name">Chemical Oxidizer</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Chemical Oxidizer (Sulfur Dioxide)') }}</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">SO&#x2082;</div>
-      </div>
-    } @else {
-      <!-- HCl/Gunpowder path: Water → Evap → Brine → ES → Cl + H₂ → CI → HCl → CIC + Gunpowder → Sulfur -->
-      <div class="chain-flow__pipeline">
-        <div class="chain-flow__input">Water</div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
-          <span class="chain-flow__node-name">Thermal Evap Plant</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--solid">tower</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">Brine</div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
-          <span class="chain-flow__node-name">ES (Brine)</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ altPathMachineCount('es-brine') }}</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">Chlorine</div>
-      </div>
-
-      <div class="chain-flow__pipeline">
-        <div class="chain-flow__input">Water</div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
-          <span class="chain-flow__node-name">ES (Water)</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ altPathMachineCount('es-water') }}</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">Hydrogen</div>
-      </div>
-
-      <div class="chain-flow__pipeline">
-        <div class="chain-flow__input chain-flow__input--merge">
-          <span>Chlorine</span>
-          <span class="chain-flow__merge-plus">+</span>
-          <span>Hydrogen</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
-          <span class="chain-flow__node-name">Chemical Infuser (HCl)</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ altPathMachineCount('ci-hcl') }}</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">HCl</div>
-      </div>
-
-      <div class="chain-flow__pipeline">
-        <div class="chain-flow__input chain-flow__input--merge">
-          <span>HCl</span>
-          <span class="chain-flow__merge-plus">+</span>
-          <span>Gunpowder</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
-          <span class="chain-flow__node-name">Chem. Injection Chamber</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ altPathMachineCount('cic') }}</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">Sulfur Dust</div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
-          <span class="chain-flow__node-name">Chemical Oxidizer</span>
-          <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Chemical Oxidizer (Sulfur Dioxide)') }}</span>
-        </div>
-        <div class="chain-flow__arrow"></div>
-        <div class="chain-flow__product chain-flow__product--b">SO&#x2082;</div>
-      </div>
-    }
-
-    <!-- SO₃ production: SO₂ + O₂ → SO₃ -->
-    <div class="chain-flow__pipeline">
-      <div class="chain-flow__input chain-flow__input--merge">
-        <span>SO&#x2082;</span>
-        <span class="chain-flow__merge-plus">+</span>
-        <span>O&#x2082;</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
-        <span class="chain-flow__node-name">Chemical Infuser (SO&#x2083;)</span>
-        <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ machineCount('Chemical Infuser (SO\u2083)') }}</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__product chain-flow__product--b">SO&#x2083;</div>
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('prc')"
+         [class.wf__node--selected]="selectedNode() === 'prc'"
+         (mouseenter)="onNodeHover('prc')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('prc'); $event.stopPropagation()"
+         style="grid-area: n-prc;">
+      <span class="wf__node-name">PRC</span>
+      <span class="wf__node-count">&times;{{ machineCount('Pressurized Reaction Chamber') }}</span>
     </div>
 
-    <!-- H₂SO₄ production: SO₃ + Water Vapor → H₂SO₄ -->
-    <div class="chain-flow__pipeline">
-      <div class="chain-flow__input">Water</div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
-        <span class="chain-flow__node-name">Rotary Condensentrator</span>
-        <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ machineCount('Rotary Condensentrator') }}</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__input chain-flow__input--merge">
-        <span>SO&#x2083;</span>
-        <span class="chain-flow__merge-plus">+</span>
-        <span>Water Vapor</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__node chain-flow__node--flow chain-flow__node--b">
-        <span class="chain-flow__node-name">Chemical Infuser (H&#x2082;SO&#x2084;)</span>
-        <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ machineCount('Chemical Infuser (H\u2082SO\u2084)') }}</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__product chain-flow__product--b">H&#x2082;SO&#x2084;</div>
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('es')"
+         [class.wf__node--selected]="selectedNode() === 'es'"
+         (mouseenter)="onNodeHover('es')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('es'); $event.stopPropagation()"
+         style="grid-area: n-es;">
+      <span class="wf__node-name">Electrolytic Separator</span>
+      <span class="wf__node-count">&times;{{ machineCount('Electrolytic Separator') }}</span>
     </div>
 
-    <!-- HF production: Fluorite + H₂SO₄ → HF -->
-    <div class="chain-flow__pipeline">
-      <div class="chain-flow__input chain-flow__input--merge">
-        <span>Fluorite</span>
-        <span class="chain-flow__merge-plus">+</span>
-        <span>H&#x2082;SO&#x2084;</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__node chain-flow__node--batch chain-flow__node--b">
-        <span class="chain-flow__node-name">Dissolution Chamber</span>
-        <span class="chain-flow__node-badge chain-flow__node-badge--solid">&times;{{ machineCount('Chemical Dissolution Chamber') }}</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__product chain-flow__product--b">Hydrofluoric Acid</div>
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('rc')"
+         [class.wf__node--selected]="selectedNode() === 'rc'"
+         (mouseenter)="onNodeHover('rc')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('rc'); $event.stopPropagation()"
+         style="grid-area: n-rc;">
+      <span class="wf__node-name">Rotary Condensentrator</span>
+      <span class="wf__node-count">&times;{{ machineCount('Rotary Condensentrator') }}</span>
     </div>
+
+    <!-- Row 3: Second level -->
+    <div class="wf__node wf__node--a"
+         [class.wf__node--highlight]="isNodeHighlighted('oxidizer-uo')"
+         [class.wf__node--selected]="selectedNode() === 'oxidizer-uo'"
+         (mouseenter)="onNodeHover('oxidizer-uo')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('oxidizer-uo'); $event.stopPropagation()"
+         style="grid-area: n-ox-uo;">
+      <span class="wf__node-name">Chemical Oxidizer (UO)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Oxidizer (Uranium Oxide)') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('oxidizer-so2')"
+         [class.wf__node--selected]="selectedNode() === 'oxidizer-so2'"
+         (mouseenter)="onNodeHover('oxidizer-so2')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('oxidizer-so2'); $event.stopPropagation()"
+         style="grid-area: n-ox-so2;">
+      <span class="wf__node-name">Chemical Oxidizer (SO&#x2082;)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Oxidizer (Sulfur Dioxide)') }}</span>
+    </div>
+
+    <!-- Row 4: SO3 + H2SO4 -->
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('infuser-so3')"
+         [class.wf__node--selected]="selectedNode() === 'infuser-so3'"
+         (mouseenter)="onNodeHover('infuser-so3')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('infuser-so3'); $event.stopPropagation()"
+         style="grid-area: n-so3;">
+      <span class="wf__node-name">Chem. Infuser (SO&#x2083;)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Infuser (SO\u2083)') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('infuser-h2so4')"
+         [class.wf__node--selected]="selectedNode() === 'infuser-h2so4'"
+         (mouseenter)="onNodeHover('infuser-h2so4')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('infuser-h2so4'); $event.stopPropagation()"
+         style="grid-area: n-h2so4;">
+      <span class="wf__node-name">Chem. Infuser (H&#x2082;SO&#x2084;)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Infuser (H\u2082SO\u2084)') }}</span>
+    </div>
+
+    <!-- Row 5: Dissolution -->
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('dissolution')"
+         [class.wf__node--selected]="selectedNode() === 'dissolution'"
+         (mouseenter)="onNodeHover('dissolution')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('dissolution'); $event.stopPropagation()"
+         style="grid-area: n-diss;">
+      <span class="wf__node-name">Dissolution Chamber</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Dissolution Chamber') }}</span>
+    </div>
+
+    <!-- Row 6: UF6 Infuser -->
+    <div class="wf__node wf__node--final"
+         [class.wf__node--highlight]="isNodeHighlighted('infuser-uf6')"
+         [class.wf__node--selected]="selectedNode() === 'infuser-uf6'"
+         (mouseenter)="onNodeHover('infuser-uf6')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('infuser-uf6'); $event.stopPropagation()"
+         style="grid-area: n-uf6;">
+      <span class="wf__node-name">Chem. Infuser (UF&#x2086;)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Infuser (UF\u2086)') }}</span>
+    </div>
+
+    <!-- Row 7: Centrifuge -->
+    <div class="wf__node wf__node--final"
+         [class.wf__node--highlight]="isNodeHighlighted('centrifuge')"
+         [class.wf__node--selected]="selectedNode() === 'centrifuge'"
+         (mouseenter)="onNodeHover('centrifuge')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('centrifuge'); $event.stopPropagation()"
+         style="grid-area: n-cent;">
+      <span class="wf__node-name">Isotopic Centrifuge</span>
+      <span class="wf__node-count">&times;{{ machineCount('Isotopic Centrifuge') }}</span>
+    </div>
+
+    <!-- Row 8: Output -->
+    <div class="wf__output" style="grid-area: o-fuel;">Fissile Fuel</div>
+
+    <!-- ===== Connection lines (CSS-based vertical/horizontal) ===== -->
+    <!-- Path A vertical: input -> enrichment -> oxidizer-uo -> uf6 -->
+    <div class="wf__conn wf__conn--v wf__conn--a"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('enrichment', 'enrichment')"
+         style="grid-area: c-i-enr;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--a"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('enrichment', 'oxidizer-uo')"
+         style="grid-area: c-enr-oxuo;"></div>
+    <div class="wf__conn wf__conn--v-long wf__conn--a"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('oxidizer-uo', 'infuser-uf6')"
+         style="grid-area: c-oxuo-uf6;"></div>
+
+    <!-- Path B vertical connections -->
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('prc', 'prc')"
+         style="grid-area: c-i-prc;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('prc', 'oxidizer-so2')"
+         style="grid-area: c-prc-oxso2;"></div>
+
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('es', 'es')"
+         style="grid-area: c-i-es;"></div>
+
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('rc', 'rc')"
+         style="grid-area: c-i-rc;"></div>
+
+    <!-- SO2 + O2 -> SO3 -->
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('oxidizer-so2', 'infuser-so3')"
+         style="grid-area: c-oxso2-so3;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('es', 'infuser-so3')"
+         style="grid-area: c-es-so3;"></div>
+
+    <!-- SO3 -> H2SO4 -->
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('infuser-so3', 'infuser-h2so4')"
+         style="grid-area: c-so3-h2so4;"></div>
+
+    <!-- RC -> H2SO4 -->
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('rc', 'infuser-h2so4')"
+         style="grid-area: c-rc-h2so4;"></div>
+
+    <!-- H2SO4 + Fluorite -> Dissolution -->
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('infuser-h2so4', 'dissolution')"
+         style="grid-area: c-h2so4-diss;"></div>
+
+    <!-- Dissolution -> UF6 -->
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('dissolution', 'infuser-uf6')"
+         style="grid-area: c-diss-uf6;"></div>
+
+    <!-- UF6 -> Centrifuge -->
+    <div class="wf__conn wf__conn--v wf__conn--final"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('infuser-uf6', 'centrifuge')"
+         style="grid-area: c-uf6-cent;"></div>
+
+    <!-- Centrifuge -> Output -->
+    <div class="wf__conn wf__conn--v wf__conn--final"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('centrifuge', 'centrifuge')"
+         style="grid-area: c-cent-fuel;"></div>
+
+    <!-- Path labels in the grid -->
+    <div class="wf__path-label wf__path-label--a" style="grid-area: lbl-a;">Path A</div>
+    <div class="wf__path-label wf__path-label--b" style="grid-area: lbl-b;">Path B</div>
+    <div class="wf__path-label wf__path-label--final" style="grid-area: lbl-final;">Final</div>
   </div>
+  }
 
-  <!-- ===== Final Assembly — Fissile Fuel ===== -->
-  <div class="chain-flow__section chain-flow__section--final">
-    <h3 class="chain-flow__section-title">Final Assembly &mdash; Fissile Fuel</h3>
-    <div class="chain-flow__pipeline">
-      <div class="chain-flow__input chain-flow__input--merge">
-        <span>Uranium Oxide</span>
-        <span class="chain-flow__merge-plus">+</span>
-        <span>Hydrofluoric Acid</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__node chain-flow__node--flow chain-flow__node--final">
-        <span class="chain-flow__node-name">Chemical Infuser (UF&#x2086;)</span>
-        <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ machineCount('Chemical Infuser (UF\u2086)') }}</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__node chain-flow__node--flow chain-flow__node--final">
-        <span class="chain-flow__node-name">Isotopic Centrifuge</span>
-        <span class="chain-flow__node-badge chain-flow__node-badge--outline">&times;{{ machineCount('Isotopic Centrifuge') }}</span>
-      </div>
-      <div class="chain-flow__arrow"></div>
-      <div class="chain-flow__product chain-flow__product--final">Fissile Fuel</div>
+  <!-- ===== HCL PATH WATERFALL ===== -->
+  @if (sulfurPath() === 'hcl') {
+  <div class="wf__grid wf__grid--hcl">
+
+    <!-- Row 1: Input labels -->
+    <div class="wf__input" style="grid-area: i-uranium;">Uranium Ingots</div>
+    <div class="wf__input" style="grid-area: i-water-evap;">Water</div>
+    <div class="wf__input" style="grid-area: i-water-es2;">Water</div>
+    <div class="wf__input" style="grid-area: i-gunpowder;">Gunpowder</div>
+    <div class="wf__input" style="grid-area: i-water-es;">Water</div>
+    <div class="wf__input" style="grid-area: i-water-rc;">Water</div>
+    <div class="wf__input" style="grid-area: i-fluorite;">Fluorite</div>
+
+    <!-- Path A machines -->
+    <div class="wf__node wf__node--a"
+         [class.wf__node--highlight]="isNodeHighlighted('enrichment')"
+         [class.wf__node--selected]="selectedNode() === 'enrichment'"
+         (mouseenter)="onNodeHover('enrichment')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('enrichment'); $event.stopPropagation()"
+         style="grid-area: n-enrichment;">
+      <span class="wf__node-name">Enrichment Chamber</span>
+      <span class="wf__node-count">&times;{{ machineCount('Enrichment Chamber') }}</span>
     </div>
+
+    <div class="wf__node wf__node--a"
+         [class.wf__node--highlight]="isNodeHighlighted('oxidizer-uo')"
+         [class.wf__node--selected]="selectedNode() === 'oxidizer-uo'"
+         (mouseenter)="onNodeHover('oxidizer-uo')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('oxidizer-uo'); $event.stopPropagation()"
+         style="grid-area: n-ox-uo;">
+      <span class="wf__node-name">Chemical Oxidizer (UO)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Oxidizer (Uranium Oxide)') }}</span>
+    </div>
+
+    <!-- HCl sub-path -->
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('evap')"
+         [class.wf__node--selected]="selectedNode() === 'evap'"
+         (mouseenter)="onNodeHover('evap')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('evap'); $event.stopPropagation()"
+         style="grid-area: n-evap;">
+      <span class="wf__node-name">Thermal Evap Plant</span>
+      <span class="wf__node-count">tower</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('es-brine')"
+         [class.wf__node--selected]="selectedNode() === 'es-brine'"
+         (mouseenter)="onNodeHover('es-brine')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('es-brine'); $event.stopPropagation()"
+         style="grid-area: n-es-brine;">
+      <span class="wf__node-name">ES (Brine)</span>
+      <span class="wf__node-count">&times;{{ altPathMachineCount('es-brine') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('es-water')"
+         [class.wf__node--selected]="selectedNode() === 'es-water'"
+         (mouseenter)="onNodeHover('es-water')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('es-water'); $event.stopPropagation()"
+         style="grid-area: n-es-water;">
+      <span class="wf__node-name">ES (Water)</span>
+      <span class="wf__node-count">&times;{{ altPathMachineCount('es-water') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('ci-hcl')"
+         [class.wf__node--selected]="selectedNode() === 'ci-hcl'"
+         (mouseenter)="onNodeHover('ci-hcl')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('ci-hcl'); $event.stopPropagation()"
+         style="grid-area: n-ci-hcl;">
+      <span class="wf__node-name">Chem. Infuser (HCl)</span>
+      <span class="wf__node-count">&times;{{ altPathMachineCount('ci-hcl') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('cic')"
+         [class.wf__node--selected]="selectedNode() === 'cic'"
+         (mouseenter)="onNodeHover('cic')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('cic'); $event.stopPropagation()"
+         style="grid-area: n-cic;">
+      <span class="wf__node-name">Chem. Injection Chamber</span>
+      <span class="wf__node-count">&times;{{ altPathMachineCount('cic') }}</span>
+    </div>
+
+    <!-- Shared B-path machines -->
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('oxidizer-so2')"
+         [class.wf__node--selected]="selectedNode() === 'oxidizer-so2'"
+         (mouseenter)="onNodeHover('oxidizer-so2')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('oxidizer-so2'); $event.stopPropagation()"
+         style="grid-area: n-ox-so2;">
+      <span class="wf__node-name">Chem. Oxidizer (SO&#x2082;)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Oxidizer (Sulfur Dioxide)') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('es')"
+         [class.wf__node--selected]="selectedNode() === 'es'"
+         (mouseenter)="onNodeHover('es')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('es'); $event.stopPropagation()"
+         style="grid-area: n-es;">
+      <span class="wf__node-name">Electrolytic Separator</span>
+      <span class="wf__node-count">&times;{{ machineCount('Electrolytic Separator') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('infuser-so3')"
+         [class.wf__node--selected]="selectedNode() === 'infuser-so3'"
+         (mouseenter)="onNodeHover('infuser-so3')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('infuser-so3'); $event.stopPropagation()"
+         style="grid-area: n-so3;">
+      <span class="wf__node-name">Chem. Infuser (SO&#x2083;)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Infuser (SO\u2083)') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('rc')"
+         [class.wf__node--selected]="selectedNode() === 'rc'"
+         (mouseenter)="onNodeHover('rc')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('rc'); $event.stopPropagation()"
+         style="grid-area: n-rc;">
+      <span class="wf__node-name">Rotary Condensentrator</span>
+      <span class="wf__node-count">&times;{{ machineCount('Rotary Condensentrator') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('infuser-h2so4')"
+         [class.wf__node--selected]="selectedNode() === 'infuser-h2so4'"
+         (mouseenter)="onNodeHover('infuser-h2so4')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('infuser-h2so4'); $event.stopPropagation()"
+         style="grid-area: n-h2so4;">
+      <span class="wf__node-name">Chem. Infuser (H&#x2082;SO&#x2084;)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Infuser (H\u2082SO\u2084)') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--b"
+         [class.wf__node--highlight]="isNodeHighlighted('dissolution')"
+         [class.wf__node--selected]="selectedNode() === 'dissolution'"
+         (mouseenter)="onNodeHover('dissolution')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('dissolution'); $event.stopPropagation()"
+         style="grid-area: n-diss;">
+      <span class="wf__node-name">Dissolution Chamber</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Dissolution Chamber') }}</span>
+    </div>
+
+    <!-- Final machines -->
+    <div class="wf__node wf__node--final"
+         [class.wf__node--highlight]="isNodeHighlighted('infuser-uf6')"
+         [class.wf__node--selected]="selectedNode() === 'infuser-uf6'"
+         (mouseenter)="onNodeHover('infuser-uf6')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('infuser-uf6'); $event.stopPropagation()"
+         style="grid-area: n-uf6;">
+      <span class="wf__node-name">Chem. Infuser (UF&#x2086;)</span>
+      <span class="wf__node-count">&times;{{ machineCount('Chemical Infuser (UF\u2086)') }}</span>
+    </div>
+
+    <div class="wf__node wf__node--final"
+         [class.wf__node--highlight]="isNodeHighlighted('centrifuge')"
+         [class.wf__node--selected]="selectedNode() === 'centrifuge'"
+         (mouseenter)="onNodeHover('centrifuge')"
+         (mouseleave)="onNodeLeave()"
+         (click)="onNodeClick('centrifuge'); $event.stopPropagation()"
+         style="grid-area: n-cent;">
+      <span class="wf__node-name">Isotopic Centrifuge</span>
+      <span class="wf__node-count">&times;{{ machineCount('Isotopic Centrifuge') }}</span>
+    </div>
+
+    <div class="wf__output" style="grid-area: o-fuel;">Fissile Fuel</div>
+
+    <!-- Connection lines for HCl path -->
+    <div class="wf__conn wf__conn--v wf__conn--a"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('enrichment', 'enrichment')"
+         style="grid-area: c-i-enr;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--a"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('enrichment', 'oxidizer-uo')"
+         style="grid-area: c-enr-oxuo;"></div>
+    <div class="wf__conn wf__conn--v-long wf__conn--a"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('oxidizer-uo', 'infuser-uf6')"
+         style="grid-area: c-oxuo-uf6;"></div>
+
+    <!-- HCl sub-path connections -->
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('evap', 'evap')"
+         style="grid-area: c-i-evap;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('evap', 'es-brine')"
+         style="grid-area: c-evap-esbr;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('es-water', 'es-water')"
+         style="grid-area: c-i-esw;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('es-brine', 'ci-hcl')"
+         style="grid-area: c-esbr-ci;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('es-water', 'ci-hcl')"
+         style="grid-area: c-esw-ci;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('ci-hcl', 'cic')"
+         style="grid-area: c-ci-cic;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('cic', 'cic')"
+         style="grid-area: c-i-gp;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('cic', 'oxidizer-so2')"
+         style="grid-area: c-cic-oxso2;"></div>
+
+    <!-- Shared B connections -->
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('es', 'es')"
+         style="grid-area: c-i-es;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('rc', 'rc')"
+         style="grid-area: c-i-rc;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('oxidizer-so2', 'infuser-so3')"
+         style="grid-area: c-oxso2-so3;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('es', 'infuser-so3')"
+         style="grid-area: c-es-so3;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('infuser-so3', 'infuser-h2so4')"
+         style="grid-area: c-so3-h2so4;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('rc', 'infuser-h2so4')"
+         style="grid-area: c-rc-h2so4;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('infuser-h2so4', 'dissolution')"
+         style="grid-area: c-h2so4-diss;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--b"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('dissolution', 'infuser-uf6')"
+         style="grid-area: c-diss-uf6;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--final"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('infuser-uf6', 'centrifuge')"
+         style="grid-area: c-uf6-cent;"></div>
+    <div class="wf__conn wf__conn--v wf__conn--final"
+         [class.wf__conn--dim]="hoveredNode() !== null && !isConnectionHighlighted('centrifuge', 'centrifuge')"
+         style="grid-area: c-cent-fuel;"></div>
+
+    <!-- Path labels -->
+    <div class="wf__path-label wf__path-label--a" style="grid-area: lbl-a;">Path A</div>
+    <div class="wf__path-label wf__path-label--b" style="grid-area: lbl-b;">Path B</div>
+    <div class="wf__path-label wf__path-label--final" style="grid-area: lbl-final;">Final</div>
   </div>
+  }
+
+  <!-- ===== Detail Popover ===== -->
+  @if (getSelectedNodeInfo(); as info) {
+    <div class="wf__popover" (click)="$event.stopPropagation()">
+      <div class="wf__popover-header">
+        <span class="wf__popover-title"
+              [class.wf__popover-title--a]="info.node.path === 'a'"
+              [class.wf__popover-title--b]="info.node.path === 'b'"
+              [class.wf__popover-title--final]="info.node.path === 'final'">
+          {{ info.node.label }}
+        </span>
+        <button class="wf__popover-close" (click)="selectedNode.set(null)">&times;</button>
+      </div>
+      <p class="wf__popover-desc">{{ info.node.description }}</p>
+      <div class="wf__popover-stats">
+        <div class="wf__popover-stat">
+          <span class="wf__popover-stat-label">Machines</span>
+          <span class="wf__popover-stat-value">{{ info.count }}</span>
+        </div>
+        @if (info.stage) {
+          <div class="wf__popover-stat">
+            <span class="wf__popover-stat-label">Throughput</span>
+            <span class="wf__popover-stat-value">{{ getThroughput(info.stage) }}</span>
+          </div>
+          <div class="wf__popover-stat">
+            <span class="wf__popover-stat-label">Energy</span>
+            <span class="wf__popover-stat-value">{{ formatEnergy(info.stage.energyPerTick) }}</span>
+          </div>
+          @if (info.stage.type === 'batch') {
+            <div class="wf__popover-stat">
+              <span class="wf__popover-stat-label">Ticks/Op</span>
+              <span class="wf__popover-stat-value">{{ info.stage.ticksPerOp }}</span>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
 
 </div>
