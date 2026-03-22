@@ -1,0 +1,100 @@
+<section class="sps">
+  <form [formGroup]="form" class="sps__form" aria-label="SPS planner">
+    <div class="sps__form-header">
+      <h2 class="sps__form-title">SPS Configuration</h2>
+      <p class="sps__form-desc">Set your target antimatter production rate.</p>
+    </div>
+
+    <div class="sps__inputs">
+      <div class="sps__input-group">
+        <label class="sps__label" for="targetRate">Target antimatter rate</label>
+        <div class="sps__input-wrapper">
+          <input
+            id="targetRate"
+            type="number"
+            formControlName="targetRate"
+            min="0.001"
+            max="10"
+            step="0.001"
+            class="sps__number-input"
+          />
+          <span class="sps__input-unit">mB/t</span>
+        </div>
+        <span class="sps__input-hint">0.001 – 10</span>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="sps__calculate"
+      [disabled]="form.invalid"
+      (click)="computePlan()"
+    >
+      Calculate SPS Plan
+    </button>
+  </form>
+
+  @if (error(); as err) {
+    <div class="sps__feedback">
+      <p class="sps__error">{{ err }}</p>
+    </div>
+  } @else if (result(); as data) {
+    <div class="sps__results">
+
+      <div class="sps__stats-row">
+        <div class="sps__stat">
+          <span class="sps__stat-value">{{ data.antimatterRate }} mB/t</span>
+          <span class="sps__stat-label">Antimatter Output</span>
+        </div>
+        <div class="sps__stat">
+          <span class="sps__stat-value">{{ data.poloniumDemand }} mB/t</span>
+          <span class="sps__stat-label">Polonium Demand</span>
+        </div>
+        <div class="sps__stat">
+          <span class="sps__stat-value">{{ formatEnergy(data.energyDemand) }}</span>
+          <span class="sps__stat-label">Energy Demand</span>
+        </div>
+      </div>
+
+      <div class="sps__card">
+        <h3 class="sps__card-title">Sourcing Chain</h3>
+        <div class="sps__chain">
+          <div class="sps__chain-step">
+            <span class="sps__chain-label">Nuclear Waste</span>
+          </div>
+          <span class="sps__chain-arrow">&#x2192;</span>
+          <div class="sps__chain-step">
+            <span class="sps__chain-label">Solar Neutron Activator</span>
+          </div>
+          <span class="sps__chain-arrow">&#x2192;</span>
+          <div class="sps__chain-step">
+            <span class="sps__chain-label">Polonium</span>
+          </div>
+          <span class="sps__chain-arrow">&#x2192;</span>
+          <div class="sps__chain-step sps__chain-step--highlight">
+            <span class="sps__chain-label">SPS</span>
+          </div>
+          <span class="sps__chain-arrow">&#x2192;</span>
+          <div class="sps__chain-step">
+            <span class="sps__chain-label">Antimatter</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sps__card">
+        <h3 class="sps__card-title">Tank Capacities</h3>
+        <div class="sps__capacities">
+          <div class="sps__capacity">
+            <span class="sps__capacity-label">Input Tank (Polonium)</span>
+            <span class="sps__capacity-value">{{ data.inputCapacity }} mB</span>
+          </div>
+          <div class="sps__capacity">
+            <span class="sps__capacity-label">Output Tank (Antimatter)</span>
+            <span class="sps__capacity-value">{{ data.outputCapacity }} mB</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  }
+</section>

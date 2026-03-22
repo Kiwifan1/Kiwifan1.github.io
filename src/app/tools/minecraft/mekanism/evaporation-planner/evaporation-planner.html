@@ -1,0 +1,161 @@
+<section class="evap">
+  <form [formGroup]="form" class="evap__form" aria-label="Thermal Evaporation planner">
+    <div class="evap__form-header">
+      <h2 class="evap__form-title">Thermal Evaporation Plant</h2>
+      <p class="evap__form-desc">Configure your plant height and heat source to calculate production rates.</p>
+    </div>
+
+    <div class="evap__inputs">
+      <!-- Height slider -->
+      <div class="evap__input-group">
+        <label class="evap__label">
+          Height
+          <span class="evap__upgrade-value">{{ form.value.height }}</span>
+        </label>
+        <input
+          type="range"
+          formControlName="height"
+          min="3"
+          max="18"
+          step="1"
+          class="evap__range-input"
+        />
+        <div class="evap__range-ticks">
+          <span>3</span><span>6</span><span>9</span><span>12</span><span>15</span><span>18</span>
+        </div>
+      </div>
+
+      <!-- Heat source radio -->
+      <div class="evap__input-group">
+        <label class="evap__label">Heat Source</label>
+        <div class="evap__radio-group">
+          <label class="evap__radio-option">
+            <input type="radio" formControlName="heatSource" value="solar" (change)="computePlan()" />
+            <span>Solar Panels</span>
+          </label>
+          <label class="evap__radio-option">
+            <input type="radio" formControlName="heatSource" value="custom" (change)="computePlan()" />
+            <span>Custom Heat</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Conditional: Solar panels slider -->
+      @if (form.value.heatSource === 'solar') {
+        <div class="evap__input-group">
+          <label class="evap__label">
+            Solar Panels
+            <span class="evap__upgrade-value evap__upgrade-value--solar">{{ form.value.solarPanels }}</span>
+          </label>
+          <input
+            type="range"
+            formControlName="solarPanels"
+            min="0"
+            max="4"
+            step="1"
+            class="evap__range-input"
+          />
+          <div class="evap__range-ticks">
+            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span>
+          </div>
+        </div>
+      }
+
+      <!-- Conditional: Custom heat input -->
+      @if (form.value.heatSource === 'custom') {
+        <div class="evap__input-group">
+          <label class="evap__label" for="customHeat">Heat Input</label>
+          <div class="evap__input-wrapper">
+            <input
+              id="customHeat"
+              type="number"
+              formControlName="customHeat"
+              min="0"
+              step="1"
+              class="evap__number-input"
+            />
+            <span class="evap__input-unit">heat/t</span>
+          </div>
+          <span class="evap__input-hint">Heat added per tick from external sources</span>
+        </div>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="evap__calculate"
+      [disabled]="form.invalid"
+      (click)="computePlan()"
+    >
+      Calculate Production
+    </button>
+  </form>
+
+  @if (error(); as err) {
+    <div class="planner__feedback">
+      <p class="planner__error">{{ err }}</p>
+    </div>
+  } @else if (result(); as data) {
+    <div class="evap__results">
+
+      <!-- Stats row -->
+      <div class="evap__stats-row">
+        <div class="evap__stat">
+          <span class="evap__stat-value">{{ asDecimal(data.temp, 1) }} K</span>
+          <span class="evap__stat-label">Steady-State Temp</span>
+        </div>
+        <div class="evap__stat">
+          <span class="evap__stat-value">{{ asDecimal(data.productionRate, 2) }} mB/t</span>
+          <span class="evap__stat-label">Production Rate</span>
+        </div>
+        <div class="evap__stat">
+          <span class="evap__stat-value">{{ asNumber(data.inputCapacity) }} mB</span>
+          <span class="evap__stat-label">Input Capacity</span>
+        </div>
+      </div>
+
+      <!-- Heat balance card -->
+      <div class="evap__card">
+        <h2>Heat Balance</h2>
+        <div class="evap__heat-grid">
+          <div class="evap__heat-item">
+            <span class="evap__heat-label">Heat Input</span>
+            <span class="evap__heat-value evap__heat-value--positive">+{{ asDecimal(data.heatInput, 2) }}/t</span>
+          </div>
+          <div class="evap__heat-item">
+            <span class="evap__heat-label">Dissipation at Steady State</span>
+            <span class="evap__heat-value evap__heat-value--negative">-{{ asDecimal(data.heatDissipation, 2) }}/t</span>
+          </div>
+          <div class="evap__heat-item">
+            <span class="evap__heat-label">Net at Equilibrium</span>
+            <span class="evap__heat-value">{{ asDecimal(data.heatInput - data.heatDissipation, 4) }}/t</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Height optimization table -->
+      <div class="evap__card">
+        <h2>Height Optimization</h2>
+        <div class="evap__table-wrapper">
+          <table class="evap__table">
+            <thead>
+              <tr>
+                <th>Height</th>
+                <th>Production Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of data.heightTable; track row.height) {
+                <tr [class.evap__table-row--active]="row.height === form.value.height">
+                  <td>{{ row.height }}</td>
+                  <td>{{ asDecimal(row.rate, 2) }} mB/t</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  }
+</section>
