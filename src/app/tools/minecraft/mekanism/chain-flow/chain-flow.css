@@ -228,19 +228,45 @@
   letter-spacing: 0.04em;
 }
 
-/* ── Alt note ── */
+/* ── Path toggle ── */
 
-.chain-flow__alt-note {
-  font-size: 0.75rem;
-  color: var(--tool-muted);
-  padding: 0.4rem 0.75rem;
-  border-left: 2px solid var(--tool-border);
-  margin-top: 0.25rem;
-  opacity: 0.8;
+.chain-flow__path-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.chain-flow__alt-note strong {
-  color: var(--flow-b);
+.chain-flow__path-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tool-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.chain-flow__path-btn {
+  background: transparent;
+  border: 1px solid var(--tool-border);
+  border-radius: 999px;
+  color: var(--tool-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.7rem;
+  transition: background 100ms ease, border-color 100ms ease, color 100ms ease;
+}
+
+.chain-flow__path-btn:hover {
+  border-color: var(--flow-b);
+  color: var(--tool-text);
+}
+
+.chain-flow__path-btn--active {
+  background: var(--flow-b);
+  border-color: var(--flow-b);
+  color: #0a0f14;
 }
 
 /* ── Responsive ── */

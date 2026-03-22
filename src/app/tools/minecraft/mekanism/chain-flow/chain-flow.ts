@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import {
   ProductionChainResult,
   MachineStage,
 } from '../../../../models/FissileProductionChain';
+
+export type SulfurPath = 'coal' | 'hcl';
 
 @Component({
   selector: 'app-chain-flow',
@@ -14,6 +16,12 @@ import {
 })
 export class ChainFlow {
   @Input({ required: true }) result!: ProductionChainResult;
+
+  sulfurPath = signal<SulfurPath>('coal');
+
+  setSulfurPath(path: SulfurPath): void {
+    this.sulfurPath.set(path);
+  }
 
   getStage(name: string): MachineStage | undefined {
     return this.result.stages.find(s => s.name === name);
