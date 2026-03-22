@@ -1,0 +1,134 @@
+<section class="fusion">
+  <form [formGroup]="form" class="fusion__form" aria-label="Fusion reactor planner">
+    <div class="fusion__form-header">
+      <h2 class="fusion__form-title">Fusion Configuration</h2>
+      <p class="fusion__form-desc">Configure the fusion reactor injection rate and cooling mode.</p>
+    </div>
+
+    <div class="fusion__inputs">
+      <div class="fusion__input-group">
+        <label class="fusion__label">
+          Injection rate
+          <span class="fusion__upgrade-value">{{ form.value.injectionRate }}</span>
+        </label>
+        <input
+          type="range"
+          formControlName="injectionRate"
+          min="0"
+          max="98"
+          step="2"
+          class="fusion__range-input"
+        />
+        <div class="fusion__range-ticks">
+          <span>0</span><span>24</span><span>48</span><span>72</span><span>98</span>
+        </div>
+      </div>
+
+      <div class="fusion__input-group">
+        <label class="fusion__label">Cooling mode</label>
+        <div class="fusion__radio-group">
+          <label class="fusion__radio" [class.fusion__radio--active]="form.value.coolingMode === 'passive'">
+            <input type="radio" formControlName="coolingMode" value="passive" />
+            Passive
+          </label>
+          <label class="fusion__radio" [class.fusion__radio--active]="form.value.coolingMode === 'active'">
+            <input type="radio" formControlName="coolingMode" value="active" />
+            Active
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="fusion__calculate"
+      [disabled]="form.invalid"
+      (click)="computePlan()"
+    >
+      Calculate Fusion Plan
+    </button>
+  </form>
+
+  @if (error(); as err) {
+    <div class="planner__feedback">
+      <p class="planner__error">{{ err }}</p>
+    </div>
+  } @else if (result(); as reactor) {
+    <div class="fusion__results">
+
+      <div class="fusion__stats-row">
+        <div class="fusion__stat">
+          <span class="fusion__stat-value">{{ asDecimal(reactor.injectionRate, 0) }} mB/t</span>
+          <span class="fusion__stat-label">Fuel Consumption</span>
+        </div>
+        <div class="fusion__stat">
+          @if (reactor.coolingMode === 'passive') {
+            <span class="fusion__stat-value">{{ formatEnergy(reactor.getSteadyStateEnergyOutput()) }}</span>
+          } @else {
+            <span class="fusion__stat-value">{{ asDecimal(reactor.getSteadyStateEnergyOutput(), 2) }} mB/t</span>
+          }
+          <span class="fusion__stat-label">
+            @if (reactor.coolingMode === 'passive') {
+              Energy Output
+            } @else {
+              Steam Output
+            }
+          </span>
+        </div>
+        <div class="fusion__stat">
+          <span class="fusion__stat-value">{{ reactor.coolingMode === 'passive' ? 'Thermocouple' : 'Steam' }}</span>
+          <span class="fusion__stat-label">Cooling Output</span>
+        </div>
+      </div>
+
+      <div class="fusion__card">
+        <h2>Resources</h2>
+        <div class="fusion__resource-grid">
+          <div class="fusion__resource">
+            <span class="fusion__resource-label">Deuterium</span>
+            <span class="fusion__resource-value">{{ asDecimal(reactor.getDeuteriumRate(), 2) }} mB/t</span>
+          </div>
+          <div class="fusion__resource">
+            <span class="fusion__resource-label">Tritium</span>
+            <span class="fusion__resource-value">{{ asDecimal(reactor.getTritiumRate(), 2) }} mB/t</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fusion__card">
+        <h2>Heat</h2>
+        <div class="fusion__resource-grid">
+          <div class="fusion__resource">
+            <span class="fusion__resource-label">Ignition Temp</span>
+            <span class="fusion__resource-value">{{ asNumber(reactor.getIgnitionTemperature()) }} K</span>
+          </div>
+          <div class="fusion__resource">
+            <span class="fusion__resource-label">Steady-State Case Temp</span>
+            <span class="fusion__resource-value">{{ asNumber(reactor.getSteadyStateCaseTemp()) }} K</span>
+          </div>
+        </div>
+      </div>
+
+      @if (reactor.coolingMode === 'active') {
+        <div class="fusion__card">
+          <h2>Steam Output</h2>
+          <div class="fusion__resource-grid">
+            <div class="fusion__resource">
+              <span class="fusion__resource-label">Steam</span>
+              <span class="fusion__resource-value">{{ asDecimal(reactor.getSteamOutput(reactor.getSteadyStateCaseTemp()), 2) }} mB/t</span>
+            </div>
+            <div class="fusion__resource">
+              <span class="fusion__resource-label">Water Capacity</span>
+              <span class="fusion__resource-value">{{ asNumber(reactor.getWaterCapacity()) }} mB</span>
+            </div>
+            <div class="fusion__resource">
+              <span class="fusion__resource-label">Steam Capacity</span>
+              <span class="fusion__resource-value">{{ asNumber(reactor.getSteamCapacity()) }} mB</span>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+</section>

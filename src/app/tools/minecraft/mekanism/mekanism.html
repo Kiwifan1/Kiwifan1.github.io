@@ -21,12 +21,39 @@
 		>
 			Fuel Production
 		</button>
+		<button
+			class="mekanism__tab"
+			[class.mekanism__tab--active]="activeTab() === 'fusion'"
+			(click)="switchTab('fusion')"
+		>
+			Fusion Reactor
+		</button>
+		<button
+			class="mekanism__tab"
+			[class.mekanism__tab--active]="activeTab() === 'evaporation'"
+			(click)="switchTab('evaporation')"
+		>
+			Evaporation
+		</button>
+		<button
+			class="mekanism__tab"
+			[class.mekanism__tab--active]="activeTab() === 'sps'"
+			(click)="switchTab('sps')"
+		>
+			SPS
+		</button>
 	</nav>
 
 	@if (activeTab() === 'fission') {
 		<app-fission-planner></app-fission-planner>
-	} @else {
+	} @else if (activeTab() === 'fuel-chain') {
 		<app-fuel-chain-planner></app-fuel-chain-planner>
+	} @else if (activeTab() === 'fusion') {
+		<app-fusion-planner></app-fusion-planner>
+	} @else if (activeTab() === 'evaporation') {
+		<app-evaporation-planner></app-evaporation-planner>
+	} @else if (activeTab() === 'sps') {
+		<app-sps-planner></app-sps-planner>
 	}
 
 	<div class="mekanism__callout">
@@ -34,7 +61,7 @@
 		<ul>
 			<li>Advanced turbine tuning for smaller footprints</li>
 			<li>Shopping lists with material breakdowns</li>
-			<li>Fusion reactor planner</li>
+			<li>Ore processing tier calculator</li>
 		</ul>
 		<p>
 			Have a feature in mind? <a routerLink="/links">Share feedback</a> so it can be prioritised.
