@@ -50,10 +50,10 @@ These symbols reference `src/app/models/constants.ts` under `EVAP_PLANT`:
 |--------|----------|-------|
 | $d$ | `HEAT_DISSIPATION` | $0.02$ |
 | $\sigma$ | `SOLAR_MULTIPLIER` | $0.2$ |
-| $\mu$ | `TEMP_MULTIPLIER` | $1.85$ |
-| $c$ | `HEAT_CAPACITY` | $600.0$ |
-| $\tau$ | `FLUID_PER_TANK` | $128{,}000$ |
-| $\tau_o$ | `OUTPUT_TANK_CAPACITY` | $64{,}000$ |
+| $\mu$ | `TEMP_MULTIPLIER` | $0.4$ |
+| $c$ | `HEAT_CAPACITY` | $100.0$ |
+| $\tau$ | `FLUID_PER_TANK` | $64{,}000$ |
+| $\tau_o$ | `OUTPUT_TANK_CAPACITY` | $10{,}000$ |
 
 The ambient (baseline) temperature is $T_{\text{amb}} = 300$ (Kelvin-like units used by Mekanism internally).
 
@@ -63,7 +63,7 @@ The ambient (baseline) temperature is $T_{\text{amb}} = 300$ (Kelvin-like units 
 
 Each Advanced Solar Generator on top of the structure contributes heat every tick. With $n$ active solar panels:
 
-$$Q_{\text{in}} = n \times \sigma \times c = n \times 0.2 \times 600 = 120n \quad \text{per tick.}$$
+$$Q_{\text{in}} = n \times \sigma \times c = n \times 0.2 \times 100 = 20n \quad \text{per tick.}$$
 
 Solar panels only produce heat during daytime and clear weather. At night or during rain, $Q_{\text{in}} = 0$.
 
@@ -81,23 +81,23 @@ At equilibrium, heat input equals heat dissipation:
 
 $$Q_{\text{in}} = Q_{\text{out}}(T_{\text{ss}})$$
 
-$$120n = 0.02 \sqrt{T_{\text{ss}} - 300}$$
+$$20n = 0.02 \sqrt{T_{\text{ss}} - 300}$$
 
 Solving for $T_{\text{ss}}$:
 
-$$\sqrt{T_{\text{ss}} - 300} = \frac{120n}{0.02} = 6000n$$
+$$\sqrt{T_{\text{ss}} - 300} = \frac{20n}{0.02} = 1000n$$
 
-$$T_{\text{ss}} = 300 + (6000n)^2 = 300 + 36{,}000{,}000 \, n^2.$$
+$$T_{\text{ss}} = 300 + (1000n)^2 = 300 + 1{,}000{,}000 \, n^2.$$
 
 For common configurations:
 
 | Solar Panels ($n$) | $T_{\text{ss}}$ |
 |---------------------|-----------------|
 | 0 | 300 (ambient) |
-| 1 | 36,000,300 |
-| 2 | 144,000,300 |
-| 3 | 324,000,300 |
-| 4 | 576,000,300 |
+| 1 | 1,000,300 |
+| 2 | 4,000,300 |
+| 3 | 9,000,300 |
+| 4 | 16,000,300 |
 
 Note that $T_{\text{ss}}$ grows quadratically with the number of solar panels, but the production rate caps the effective temperature at $3{,}000$ (see below).
 
@@ -109,11 +109,11 @@ The production speed depends on a temperature multiplier that also scales linear
 
 $$m = \left(\min(3000,\; T) - T_{\text{amb}}\right) \times \mu \times \frac{H}{H_{\max}}$$
 
-$$m = \left(\min(3000,\; T) - 300\right) \times 1.85 \times \frac{H}{18}.$$
+$$m = \left(\min(3000,\; T) - 300\right) \times 0.4 \times \frac{H}{18}.$$
 
 Because $T_{\text{ss}} \gg 3000$ for any $n \ge 1$, the effective temperature is clamped at $3{,}000$ whenever at least one solar panel is active:
 
-$$m_{\text{capped}} = (3000 - 300) \times 1.85 \times \frac{H}{18} = 2700 \times 1.85 \times \frac{H}{18} = 4995 \times \frac{H}{18} = 277.5H.$$
+$$m_{\text{capped}} = (3000 - 300) \times 0.4 \times \frac{H}{18} = 2700 \times 0.4 \times \frac{H}{18} = 1080 \times \frac{H}{18} = 60H.$$
 
 ### Output Behaviour
 
@@ -122,17 +122,17 @@ The multiplier $m$ determines fluid output in one of two modes:
 - **If $m \ge 1$**: the plant produces $\lfloor m \rfloor$ mB of output per tick.
 - **If $0 < m < 1$**: the plant produces 1 mB of output every $\lceil 1/m \rceil$ ticks.
 
-With at least one solar panel and any valid height ($H \ge 3$), we have $m \ge 277.5 \times 3 = 832.5$, so the plant always operates in the first mode when solar-heated.
+With at least one solar panel and any valid height ($H \ge 3$), we have $m \ge 60 \times 3 = 180$, so the plant always operates in the first mode when solar-heated.
 
 ### Production Formula (Solar Active)
 
-$$\text{rate} = \left\lfloor 277.5 \times H \right\rfloor \quad \text{mB/t}.$$
+$$\text{rate} = \left\lfloor 60 \times H \right\rfloor \quad \text{mB/t}.$$
 
 ```mermaid
 flowchart LR
     Solar["Heat Source"] -->|"$$Q_{in}$$"| Heat["Heat Accumulation"]
     Heat -->|"capped at 3000K"| TM["$$T_{eff}$$"]
-    TM --> Rate["$$m = \Delta T \times 1.85 \times H/18$$"]
+    TM --> Rate["$$m = \Delta T \times 0.4 \times H/18$$"]
     Rate --> Output["$$\lfloor m \rfloor \text{ mB/t}$$"]
 ```
 
@@ -140,11 +140,11 @@ flowchart LR
 
 The input tank capacity is determined by the structure's total volume divided by 4, multiplied by the per-tank constant:
 
-$$C_{\text{input}} = \frac{V_{\text{total}}}{4} \times \tau = \frac{4 \times 4 \times H}{4} \times 128{,}000 = 4H \times 128{,}000 = 512{,}000 \, H \quad \text{mB}.$$
+$$C_{\text{input}} = \frac{V_{\text{total}}}{4} \times \tau = \frac{4 \times 4 \times H}{4} \times 64{,}000 = 4H \times 64{,}000 = 256{,}000 \, H \quad \text{mB}.$$
 
 The output tank has a fixed capacity:
 
-$$C_{\text{output}} = \tau_o = 64{,}000 \quad \text{mB}.$$
+$$C_{\text{output}} = \tau_o = 10{,}000 \quad \text{mB}.$$
 
 ## Recipes
 
@@ -168,18 +168,18 @@ This is a much lower yield and typically requires dedicated plants or longer run
 
 Since the production rate scales linearly with $H$:
 
-$$\text{rate}(H) = \lfloor 277.5 H \rfloor \quad \text{mB/t (with solar)},$$
+$$\text{rate}(H) = \lfloor 60 H \rfloor \quad \text{mB/t (with solar)},$$
 
-the relationship is strictly linear — there are **no diminishing returns** per block of height when solar panels are active. Each additional block of height adds a constant $\approx 277.5$ mB/t to the output.
+the relationship is strictly linear — there are **no diminishing returns** per block of height when solar panels are active. Each additional block of height adds a constant $60$ mB/t to the output.
 
 However, the **cost per block of height** is constant (each ring requires 12 Thermal Evaporation Blocks for the 4 × 4 shell), so the build is also linearly more expensive. The practical trade-off is:
 
 | Height $H$ | Rate (mB/t) | Blocks per ring | Total shell blocks |
 |-------------|-------------|-----------------|-------------------|
-| 3 | 832 | 12 | ~56 |
-| 6 | 1,665 | 12 | ~104 |
-| 12 | 3,330 | 12 | ~200 |
-| 18 | 4,995 | 12 | ~296 |
+| 3 | 180 | 12 | ~56 |
+| 6 | 360 | 12 | ~104 |
+| 12 | 720 | 12 | ~200 |
+| 18 | 1,080 | 12 | ~296 |
 
 The maximum height of $H = 18$ provides the best absolute throughput. For resource-constrained builds, any height is equally efficient per block invested.
 
@@ -189,37 +189,37 @@ The maximum height of $H = 18$ provides the best absolute throughput. For resour
 
 ### Step 1: Heat Input
 
-$$Q_{\text{in}} = 4 \times 0.2 \times 600 = 480 \quad \text{per tick.}$$
+$$Q_{\text{in}} = 4 \times 0.2 \times 100 = 80 \quad \text{per tick.}$$
 
 ### Step 2: Steady-State Temperature
 
-$$T_{\text{ss}} = 300 + \left(\frac{480}{0.02}\right)^2 = 300 + 24{,}000^2 = 300 + 576{,}000{,}000 = 576{,}000{,}300.$$
+$$T_{\text{ss}} = 300 + \left(\frac{80}{0.02}\right)^2 = 300 + 4{,}000^2 = 300 + 16{,}000{,}000 = 16{,}000{,}300.$$
 
 This far exceeds the cap of $3{,}000$, so the effective temperature is $T_{\text{eff}} = 3{,}000$.
 
 ### Step 3: Temperature Multiplier
 
-$$m = (3000 - 300) \times 1.85 \times \frac{18}{18} = 2700 \times 1.85 \times 1 = 4{,}995.$$
+$$m = (3000 - 300) \times 0.4 \times \frac{18}{18} = 2700 \times 0.4 \times 1 = 1{,}080.$$
 
 ### Step 4: Production Rate
 
-$$\text{rate} = \lfloor 4995 \rfloor = 4{,}995 \quad \text{mB/t}.$$
+$$\text{rate} = \lfloor 1080 \rfloor = 1{,}080 \quad \text{mB/t}.$$
 
 For Water → Brine (1.5x multiplier):
 
-$$\text{Brine output} = 4{,}995 \times 1.5 = 7{,}492.5 \quad \text{mB/t}.$$
+$$\text{Brine output} = 1{,}080 \times 1.5 = 1{,}620 \quad \text{mB/t}.$$
 
 ### Step 5: Tank Capacities
 
-$$C_{\text{input}} = \frac{4 \times 4 \times 18}{4} \times 128{,}000 = 72 \times 128{,}000 = 9{,}216{,}000 \quad \text{mB}.$$
+$$C_{\text{input}} = \frac{4 \times 4 \times 18}{4} \times 64{,}000 = 72 \times 64{,}000 = 4{,}608{,}000 \quad \text{mB}.$$
 
-$$C_{\text{output}} = 64{,}000 \quad \text{mB}.$$
+$$C_{\text{output}} = 10{,}000 \quad \text{mB}.$$
 
 ### Step 6: Dissipation at Steady State
 
-$$Q_{\text{out}} = 0.02 \times \sqrt{576{,}000{,}300 - 300} = 0.02 \times 24{,}000 = 480.$$
+$$Q_{\text{out}} = 0.02 \times \sqrt{16{,}000{,}300 - 300} = 0.02 \times 4{,}000 = 80.$$
 
-Confirming $Q_{\text{in}} = Q_{\text{out}} = 480$. ✓
+Confirming $Q_{\text{in}} = Q_{\text{out}} = 80$. ✓
 
 ### Summary
 
@@ -227,26 +227,26 @@ Confirming $Q_{\text{in}} = Q_{\text{out}} = 480$. ✓
 |-----------|-------|
 | Height | 18 blocks |
 | Solar panels | 4 |
-| Steady-state temp | 576,000,300 |
+| Steady-state temp | 16,000,300 |
 | Effective temp | 3,000 (capped) |
-| Temp multiplier | 4,995 |
-| Base production | 4,995 mB/t |
-| Input tank | 9,216,000 mB |
-| Output tank | 64,000 mB |
+| Temp multiplier | 1,080 |
+| Base production | 1,080 mB/t |
+| Input tank | 4,608,000 mB |
+| Output tank | 10,000 mB |
 
 ```mermaid
 flowchart TD
-    Start["$$H = 18, \; n = 4$$"] --> Heat["$$Q_{in} = 480 \text{ /tick}$$"]
-    Heat --> Temp["$$T_{ss} = 576{,}000{,}300$$"]
+    Start["$$H = 18, \; n = 4$$"] --> Heat["$$Q_{in} = 80 \text{ /tick}$$"]
+    Heat --> Temp["$$T_{ss} = 16{,}000{,}300$$"]
     Temp --> Clamp["$$T_{eff} = \min(3000, T_{ss}) = 3000$$"]
-    Clamp --> Mult["$$m = 2700 \times 1.85 \times 1 = 4995$$"]
-    Mult --> Rate["Rate = 4995 mB/t"]
-    Rate --> Brine["Brine = 7492 mB/t"]
+    Clamp --> Mult["$$m = 2700 \times 0.4 \times 1 = 1080$$"]
+    Mult --> Rate["Rate = 1080 mB/t"]
+    Rate --> Brine["Brine = 1620 mB/t"]
 ```
 
 ## Practical Notes
 
 - Even a single solar panel pushes the temperature well beyond the 3,000 cap, so adding more panels only affects warm-up time, not steady-state production.
-- The output tank (64,000 mB) is relatively small — ensure you pipe products out quickly to avoid backing up the plant.
+- The output tank (10,000 mB) is relatively small — ensure you pipe products out quickly to avoid backing up the plant.
 - For Brine production, the 1.5x recipe multiplier makes the Thermal Evaporation Plant surprisingly productive at max height.
 - Multiple plants can be built side-by-side for parallel production of different fluids (e.g., one for Brine, one for Lithium).
