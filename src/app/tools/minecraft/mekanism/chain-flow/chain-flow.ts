@@ -1,5 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, Input, signal } from '@angular/core';
+import {
+  Component, ElementRef, HostListener, Input, signal,
+  viewChild, afterNextRender, effect, OnDestroy,
+} from '@angular/core';
 import {
   ProductionChainResult,
   MachineStage,
@@ -14,11 +17,29 @@ export interface NodeInfo {
   label: string;
   stageName: string;
   path: 'a' | 'b' | 'final';
-  /** IDs of nodes this node connects TO (downstream) */
   connectsTo: string[];
-  /** IDs of nodes that connect TO this node (upstream) */
   connectsFrom: string[];
   description: string;
+}
+
+export interface ConnectionInfo {
+  id: string;
+  fromNodeId: string;
+  toNodeId: string;
+  label: string;
+  path: 'a' | 'b' | 'final';
+  shape: 'vertical' | 'l-shaped' | 'long-vertical' | 'horizontal';
+}
+
+interface RenderedConnection {
+  info: ConnectionInfo;
+  pathD: string;
+  color: string;
+  dashed: boolean;
+  labelX: number;
+  labelY: number;
+  labelWidth: number;
+  labelAnchor: 'middle' | 'end';
 }
 
 @Component({
@@ -28,12 +49,21 @@ export interface NodeInfo {
   templateUrl: './chain-flow.html',
   styleUrl: './chain-flow.css',
 })
-export class ChainFlow {
+export class ChainFlow implements OnDestroy {
   @Input({ required: true }) result!: ProductionChainResult;
 
   sulfurPath = signal<SulfurPath>('coal');
   hoveredNode = signal<string | null>(null);
   selectedNode = signal<string | null>(null);
+
+  /* SVG overlay state */
+  svgWidth = signal(0);
+  svgHeight = signal(0);
+  renderedConnections = signal<RenderedConnection[]>([]);
+
+  private readonly colorMap: Record<string, string> = {
+    a: '#2a862a', b: '#ff9800', final: '#1995ff',
+  };
 
   /** All node definitions for the coal path */
   private readonly coalNodes: NodeInfo[] = [
@@ -277,7 +307,139 @@ export class ChainFlow {
     },
   ];
 
-  constructor(private elRef: ElementRef) {}
+  private readonly coalConnections: ConnectionInfo[] = [
+    { id: 'enr->ox-uo', fromNodeId: 'enrichment', toNodeId: 'oxidizer-uo', label: 'Yellow Cake', path: 'a', shape: 'vertical' },
+    { id: 'ox-uo->uf6', fromNodeId: 'oxidizer-uo', toNodeId: 'infuser-uf6', label: 'UO', path: 'a', shape: 'long-vertical' },
+    { id: 'prc->ox-so2', fromNodeId: 'prc', toNodeId: 'oxidizer-so2', label: 'Sulfur', path: 'b', shape: 'vertical' },
+    { id: 'ox-so2->so3', fromNodeId: 'oxidizer-so2', toNodeId: 'infuser-so3', label: 'SO\u2082', path: 'b', shape: 'vertical' },
+    { id: 'es->so3', fromNodeId: 'es', toNodeId: 'infuser-so3', label: 'O\u2082', path: 'b', shape: 'l-shaped' },
+    { id: 'so3->h2so4', fromNodeId: 'infuser-so3', toNodeId: 'infuser-h2so4', label: 'SO\u2083', path: 'b', shape: 'vertical' },
+    { id: 'rc->h2so4', fromNodeId: 'rc', toNodeId: 'infuser-h2so4', label: 'H\u2082O Vapor', path: 'b', shape: 'l-shaped' },
+    { id: 'h2so4->diss', fromNodeId: 'infuser-h2so4', toNodeId: 'dissolution', label: 'H\u2082SO\u2084', path: 'b', shape: 'vertical' },
+    { id: 'fluorite->diss', fromNodeId: 'input-fluorite', toNodeId: 'dissolution', label: 'Fluorite', path: 'b', shape: 'horizontal' },
+    { id: 'diss->uf6', fromNodeId: 'dissolution', toNodeId: 'infuser-uf6', label: 'HF', path: 'b', shape: 'l-shaped' },
+    { id: 'uf6->cent', fromNodeId: 'infuser-uf6', toNodeId: 'centrifuge', label: 'UF\u2086', path: 'final', shape: 'vertical' },
+  ];
+
+  private readonly hclConnections: ConnectionInfo[] = [
+    { id: 'enr->ox-uo', fromNodeId: 'enrichment', toNodeId: 'oxidizer-uo', label: 'Yellow Cake', path: 'a', shape: 'vertical' },
+    { id: 'ox-uo->uf6', fromNodeId: 'oxidizer-uo', toNodeId: 'infuser-uf6', label: 'UO', path: 'a', shape: 'long-vertical' },
+    { id: 'evap->es-br', fromNodeId: 'evap', toNodeId: 'es-brine', label: 'Brine', path: 'b', shape: 'vertical' },
+    { id: 'es-br->ci', fromNodeId: 'es-brine', toNodeId: 'ci-hcl', label: 'Cl\u2082', path: 'b', shape: 'vertical' },
+    { id: 'es-w->ci', fromNodeId: 'es-water', toNodeId: 'ci-hcl', label: 'H\u2082', path: 'b', shape: 'l-shaped' },
+    { id: 'ci->cic', fromNodeId: 'ci-hcl', toNodeId: 'cic', label: 'HCl', path: 'b', shape: 'vertical' },
+    { id: 'gp->cic', fromNodeId: 'input-gunpowder', toNodeId: 'cic', label: 'Gunpowder', path: 'b', shape: 'l-shaped' },
+    { id: 'cic->ox-so2', fromNodeId: 'cic', toNodeId: 'oxidizer-so2', label: 'Sulfur', path: 'b', shape: 'vertical' },
+    { id: 'ox-so2->so3', fromNodeId: 'oxidizer-so2', toNodeId: 'infuser-so3', label: 'SO\u2082', path: 'b', shape: 'vertical' },
+    { id: 'es->so3', fromNodeId: 'es', toNodeId: 'infuser-so3', label: 'O\u2082', path: 'b', shape: 'l-shaped' },
+    { id: 'so3->h2so4', fromNodeId: 'infuser-so3', toNodeId: 'infuser-h2so4', label: 'SO\u2083', path: 'b', shape: 'vertical' },
+    { id: 'rc->h2so4', fromNodeId: 'rc', toNodeId: 'infuser-h2so4', label: 'H\u2082O Vapor', path: 'b', shape: 'l-shaped' },
+    { id: 'h2so4->diss', fromNodeId: 'infuser-h2so4', toNodeId: 'dissolution', label: 'H\u2082SO\u2084', path: 'b', shape: 'vertical' },
+    { id: 'fluorite->diss-hcl', fromNodeId: 'input-fluorite-hcl', toNodeId: 'dissolution', label: 'Fluorite', path: 'b', shape: 'horizontal' },
+    { id: 'diss->uf6-hcl', fromNodeId: 'dissolution', toNodeId: 'infuser-uf6', label: 'HF', path: 'b', shape: 'l-shaped' },
+    { id: 'uf6->cent-hcl', fromNodeId: 'infuser-uf6', toNodeId: 'centrifuge', label: 'UF\u2086', path: 'final', shape: 'vertical' },
+  ];
+
+  get connections(): ConnectionInfo[] {
+    return this.sulfurPath() === 'coal' ? this.coalConnections : this.hclConnections;
+  }
+
+  private resizeObserver: ResizeObserver | null = null;
+
+  constructor(private elRef: ElementRef) {
+    afterNextRender(() => {
+      this.calculateConnections();
+      this.setupResizeObserver();
+    });
+
+    effect(() => {
+      this.sulfurPath(); // track signal
+      // Double rAF ensures the @if block's new DOM has rendered
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => this.calculateConnections());
+      });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+  }
+
+  private setupResizeObserver(): void {
+    const grid = this.elRef.nativeElement.querySelector('.wf__grid--coal, .wf__grid--hcl');
+    if (!grid) return;
+    this.resizeObserver = new ResizeObserver(() => this.calculateConnections());
+    this.resizeObserver.observe(grid);
+  }
+
+  calculateConnections(): void {
+    const grid = this.elRef.nativeElement.querySelector('.wf__grid--coal, .wf__grid--hcl') as HTMLElement;
+    if (!grid) { this.renderedConnections.set([]); return; }
+
+    const gridRect = grid.getBoundingClientRect();
+    this.svgWidth.set(grid.scrollWidth);
+    this.svgHeight.set(grid.scrollHeight);
+
+    const rendered: RenderedConnection[] = [];
+    for (const conn of this.connections) {
+      const fromEl = grid.querySelector(`[data-node-id="${conn.fromNodeId}"]`) as HTMLElement;
+      const toEl = grid.querySelector(`[data-node-id="${conn.toNodeId}"]`) as HTMLElement;
+      if (!fromEl || !toEl) continue;
+
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
+
+      // Source: bottom-center
+      const sx = fromRect.left + fromRect.width / 2 - gridRect.left;
+      const sy = fromRect.bottom - gridRect.top;
+
+      let pathD: string;
+      let labelX: number;
+      let labelY: number;
+      let labelAnchor: 'middle' | 'end' = 'middle';
+
+      if (conn.shape === 'horizontal') {
+        const fromX = fromRect.left - gridRect.left - 4;
+        const fromY = fromRect.top + fromRect.height / 2 - gridRect.top;
+        const tx = toRect.right - gridRect.left + 4;
+        const ty = toRect.top + toRect.height / 2 - gridRect.top;
+        pathD = `M ${fromX} ${fromY} L ${tx} ${ty}`;
+        labelX = (fromX + tx) / 2;
+        labelY = Math.min(fromY, ty) - 10;
+      } else if (conn.shape === 'l-shaped') {
+        const tx = toRect.right - gridRect.left + 4;
+        const ty = toRect.top + toRect.height / 2 - gridRect.top;
+        const elbowY = ty;
+        pathD = `M ${sx} ${sy} L ${sx} ${elbowY} L ${tx} ${elbowY}`;
+        labelX = (sx + tx) / 2;
+        labelY = elbowY - 10;
+      } else {
+        // Vertical: use text-anchor="end" so text grows leftward from the anchor
+        const tx = toRect.left + toRect.width / 2 - gridRect.left;
+        const ty = toRect.top - gridRect.top;
+        pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+        labelAnchor = 'end';
+        labelX = Math.min(sx, tx) - 8;
+        labelY = (sy + ty) / 2 + 4;
+      }
+
+      rendered.push({
+        info: conn,
+        pathD,
+        color: this.colorMap[conn.path],
+        dashed: conn.shape === 'long-vertical',
+        labelX,
+        labelY,
+        labelWidth: conn.label.length * 7 + 8,
+        labelAnchor,
+      });
+    }
+    this.renderedConnections.set(rendered);
+  }
+
+  onConnHover(conn: ConnectionInfo): void {
+    this.hoveredNode.set(conn.fromNodeId);
+  }
 
   get nodes(): NodeInfo[] {
     return this.sulfurPath() === 'coal' ? this.coalNodes : this.hclNodes;

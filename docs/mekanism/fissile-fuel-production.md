@@ -306,17 +306,42 @@ flowchart LR
     end
 ```
 
-### Comparison
+### Efficiency Comparison
 
-| | Coal / PRC Path | HCl / Gunpowder Path |
+Both paths produce Sulfur Dust, which then follows the same SO₂ → SO₃ → H₂SO₄ → HF → UF₆ → Fissile Fuel chain. The difference is only in how Sulfur is obtained.
+
+| Metric | Coal / PRC | HCl / Gunpowder |
 |---|---|---|
-| **Key Input** | Coal | Gunpowder (from crushing Flint) |
-| **Machines** | PRC (1 machine) | Thermal Evap + 2 ES + CI + CIC (5+ machines) |
-| **Complexity** | Simple | Complex |
-| **Byproduct** | 100 mB H₂ per op | Sodium (from brine ES), Oxygen (from water ES) |
-| **Best when** | Coal is abundant | Already running an evaporation plant |
+| **Unique input** | Coal (mineable, common) | Gunpowder (mob drop / craftable) |
+| **Machine types** | 11 | 15 (+4 for HCl sub-chain) |
+| **Water usage** | Lower | Higher (Evap Plant consumes water continuously) |
+| **Energy draw** | Lower | ~20–30% more (extra machines) |
+| **Infrastructure** | Simple (single-block machines) | Requires Thermal Evaporation Plant (multiblock) |
+| **Byproduct** | H₂ from PRC (100 mB per Sulfur) | Na from ES Brine (useful for other recipes) |
+| **Renewability** | Coal is finite but abundant | Gunpowder is renewable via Creeper farms |
+| **Best when** | Coal is available — simpler, cheaper, fewer machines | Evaporation Plant already exists, or avoiding mining |
 
-> **Note:** The rest of the chain (Sulfur → SO₂ → SO₃ → H₂SO₄ → HF → UF₆ → Fissile Fuel) is identical regardless of which sulfur path is used.
+#### Per 1 mB/t of Fissile Fuel — Resource Breakdown
+
+**Shared across both paths:**
+- 0.001 Uranium Ingots/t
+- 0.0005 Fluorite/t
+- 0.05 mB/t Water (for Rotary Condensentrator → H₂O Vapor)
+- 0.05 mB/t Water (for ES → O₂ for SO₃ Infuser)
+
+**Coal/PRC path additionally needs:**
+- 0.0005 Coal/t
+- 0.05 mB/t Water (PRC input)
+- 0.1 mB/t Water (ES → O₂ for PRC)
+- **Total Water: ~0.25 mB/t**
+
+**HCl/Gunpowder path additionally needs:**
+- 0.0005 Gunpowder/t
+- Water for Thermal Evaporation (continuous)
+- Water for ES (Brine → Cl₂) and ES (Water → H₂)
+- **Total Water: significantly higher (Evap Plant + 2 extra ES units)**
+
+> **Verdict:** Coal/PRC is more efficient by every metric. Choose HCl/Gunpowder only if you already have Evaporation infrastructure or specifically need Sodium as a byproduct.
 
 ---
 
