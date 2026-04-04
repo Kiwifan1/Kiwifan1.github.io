@@ -42,4 +42,16 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
+# Claude Code
 .claude/
+.playwright-mcp/
+*.jsonl
+
+# Playwright screenshots (temporary testing artifacts)
+check-*.png
+svg-*.png
+waterfall-*.png
+comparison-*.png
+
+# Local settings
+settings.local.json
