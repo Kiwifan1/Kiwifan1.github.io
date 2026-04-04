@@ -5,7 +5,6 @@
   --flow-b-bg: rgba(255, 152, 0, 0.06);
   --flow-final: #1995ff;
   --flow-final-bg: rgba(25, 149, 255, 0.08);
-  --conn-width: 2px;
   --node-radius: 0.5rem;
 
   display: block;
@@ -67,182 +66,96 @@
 }
 
 /* ================================================================
-   CSS Grid — Coal path layout
-   ================================================================
+   Path Comparison Table
+   ================================================================ */
 
-   The grid uses named areas so each node, connection, and label
-   gets an explicit placement. Connection cells are narrow rows
-   between the node rows.
+.wf__compare {
+  overflow-x: auto;
+}
 
-   Columns:
-     [lbl]  [col1]  [c1]  [col2]  [c2]  [col3]  [c3]  [col4]  [c4]  [col5]
+.wf__compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
 
-   "lbl" is for path labels, colN for nodes/inputs, cN for connectors
-   between columns.
+.wf__compare-table th,
+.wf__compare-table td {
+  padding: 0.35rem 0.6rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.wf__compare-table th {
+  color: var(--tool-muted);
+  font-weight: 700;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.wf__compare-table td {
+  color: var(--tool-muted);
+}
+
+.wf__compare-label {
+  text-align: right !important;
+  font-weight: 600;
+  color: var(--tool-text) !important;
+  white-space: nowrap;
+}
+
+.wf__compare-active {
+  color: var(--flow-b) !important;
+}
+
+/* ================================================================
+   CSS Grid — Coal path (simplified: nodes only, no connector rows)
    ================================================================ */
 
 .wf__grid--coal {
   display: grid;
-  grid-template-columns: 3.2rem 1fr 0.6rem 1fr 0.6rem 1fr 0.6rem 1fr 0.6rem 1fr;
-  grid-template-rows:
-    /* r-input   */ auto
-    /* c-row-1   */ 1.2rem
-    /* r-tier1   */ auto
-    /* c-row-2   */ 1.2rem
-    /* r-tier2   */ auto
-    /* c-row-3   */ 1.2rem
-    /* r-tier3   */ auto
-    /* c-row-4   */ 1.2rem
-    /* r-tier4   */ auto
-    /* c-row-5   */ 1.2rem
-    /* r-tier5   */ auto
-    /* c-row-6   */ 1.2rem
-    /* r-tier6   */ auto
-    /* c-row-7   */ 1.2rem
-    /* r-output  */ auto;
-  gap: 0;
+  position: relative;
+  grid-template-columns: 2.8rem repeat(4, minmax(8rem, 1fr));
+  grid-template-areas:
+    "lbl-a     i-uranium    i-coal       i-water-es   i-water-rc  "
+    ".         n-enrichment n-prc        n-es         n-rc        "
+    ".         n-ox-uo      n-ox-so2     .            .           "
+    "lbl-b     .            n-so3        .            .           "
+    ".         .            n-h2so4      .            .           "
+    ".         .            n-diss       i-fluorite   .           "
+    "lbl-final n-uf6        .            .            .           "
+    ".         n-cent       .            .            .           "
+    ".         o-fuel       .            .            .           ";
+  gap: 1.8rem 0.6rem;
   align-items: center;
   justify-items: center;
-
-  grid-template-areas:
-    /* Row: inputs */
-    "lbl-a     i-uranium   .          i-coal       .          i-water-es  .          i-water-rc  .          i-fluorite  "
-    /* Conn: input->tier1 */
-    ".         c-i-enr     .          c-i-prc      .          c-i-es      .          c-i-rc      .          .           "
-    /* Row: tier 1 — Enrichment, PRC, ES, RC */
-    ".         n-enrichment .         n-prc        .          n-es        .          n-rc        .          .           "
-    /* Conn: tier1->tier2 */
-    ".         c-enr-oxuo  .          c-prc-oxso2  .          .           .          .           .          .           "
-    /* Row: tier 2 — Ox UO, Ox SO2, (ES/RC feed down) */
-    ".         n-ox-uo     .          n-ox-so2     .          .           .          .           .          .           "
-    /* Conn: tier2->tier3 */
-    ".         .           .          c-oxso2-so3  .          c-es-so3    .          c-rc-h2so4  .          .           "
-    /* Row: tier 3 — SO3, H2SO4 */
-    ".         .           .          .            .          n-so3       .          n-h2so4     .          .           "
-    /* Conn: tier3->tier4 */
-    ".         .           .          .            .          c-so3-h2so4 .          .           .          .           "
-    /* Row: tier 4 — H2SO4 merges with fluorite -> Dissolution */
-    "lbl-b     .           .          .            .          n-h2so4-x   .          .           .          .           "
-    /* Conn: tier4->tier5 */
-    ".         .           .          .            .          c-h2so4-diss .         .           .          .           "
-    /* Row: tier 5 — Dissolution */
-    ".         .           .          .            .          n-diss      .          .           .          .           "
-    /* Conn: tier5->tier6 */
-    ".         c-oxuo-uf6  .          .            .          c-diss-uf6  .          .           .          .           "
-    /* Row: tier 6 — UF6 Infuser, Centrifuge */
-    "lbl-final .           .          n-uf6        .          .           .          .           .          .           "
-    /* Conn: tier6->output */
-    ".         .           .          c-uf6-cent   .          .           .          .           .          .           "
-    /* Row: tier 7 — Centrifuge + output */
-    ".         .           .          n-cent       .          .           .          .           .          .           ";
-}
-
-/* Override: re-arrange some areas for the coal grid to make the flow cleaner.
-   The SO3 infuser merges SO2 (from col2/3) + O2 (from ES col3).
-   H2SO4 merges SO3 + Water Vapor (from RC col4).
-   Then dissolution takes H2SO4 + Fluorite.
-   UF6 merges UO (from col1) + HF (from dissolution). */
-
-/* Actually, let's redo the coal grid with a cleaner approach
-   that avoids the problematic area definitions above. We'll use
-   a simpler row-based approach. */
-
-.wf__grid--coal {
-  grid-template-columns: 3.2rem 1fr 1fr 1fr 1fr 1fr;
-  grid-template-rows: repeat(15, auto);
-  grid-template-areas:
-    "lbl-a     i-uranium    i-coal       i-water-es   i-water-rc   i-fluorite  "
-    ".         c-i-enr      c-i-prc      c-i-es       c-i-rc       .           "
-    ".         n-enrichment n-prc        n-es         n-rc         .           "
-    ".         c-enr-oxuo   c-prc-oxso2  .            .            .           "
-    ".         n-ox-uo      n-ox-so2     .            .            .           "
-    "lbl-b     .            c-oxso2-so3  c-es-so3     c-rc-h2so4   .           "
-    ".         .            .            n-so3        n-h2so4      .           "
-    ".         .            .            c-so3-h2so4  .            .           "
-    ".         .            .            n-h2so4-x    .            .           "
-    ".         .            .            c-h2so4-diss .            .           "
-    ".         .            .            n-diss       .            .           "
-    ".         c-oxuo-uf6   .            c-diss-uf6   .            .           "
-    "lbl-final .            n-uf6        .            .            .           "
-    ".         .            c-uf6-cent   .            .            .           "
-    ".         .            n-cent       .            .            .           ";
-  gap: 0.2rem 0.5rem;
-}
-
-/* Re-place the output after centrifuge */
-.wf__grid--coal .wf__output {
-  grid-column: 3;
-  grid-row: 16;
-}
-.wf__grid--coal .wf__conn[style*="c-cent-fuel"] {
-  grid-column: 3;
-  grid-row: 16;
-  display: none; /* Output is directly after centrifuge */
-}
-
-/* Merge H2SO4 node into correct position — row 9 is a duplicate label;
-   we just re-use row 7's n-h2so4 for the actual infuser. Row 9 "n-h2so4-x"
-   is hidden since the real h2so4 node is at row 7. */
-.wf__grid--coal [style*="n-h2so4-x"] {
-  display: none;
 }
 
 /* ================================================================
-   CSS Grid — HCl path layout
+   CSS Grid — HCl path (simplified: nodes only)
    ================================================================ */
 
 .wf__grid--hcl {
   display: grid;
-  grid-template-columns: 3.2rem 1fr 1fr 1fr 1fr 1fr 1fr;
-  grid-template-rows: repeat(19, auto);
+  position: relative;
+  grid-template-columns: 2.8rem repeat(6, minmax(7rem, 1fr));
   grid-template-areas:
     "lbl-a     i-uranium    i-water-evap i-water-es2  i-gunpowder  i-water-es   i-water-rc  "
-    ".         c-i-enr      c-i-evap     c-i-esw      .            c-i-es       c-i-rc      "
     ".         n-enrichment n-evap       n-es-water   .            n-es         n-rc        "
-    ".         c-enr-oxuo   c-evap-esbr  .            .            .            .           "
     ".         n-ox-uo      n-es-brine   .            .            .            .           "
-    ".         .            c-esbr-ci    c-esw-ci     .            .            .           "
-    ".         .            .            n-ci-hcl     .            .            .           "
-    ".         .            .            c-ci-cic     i-gunpowder  .            .           "
-    "lbl-b     .            .            n-cic        c-i-gp       .            .           "
-    ".         .            .            c-cic-oxso2  .            .            .           "
-    ".         .            .            n-ox-so2     .            .            .           "
-    ".         .            .            c-oxso2-so3  .            c-es-so3     c-rc-h2so4  "
-    ".         .            .            .            .            n-so3        n-h2so4     "
-    ".         .            .            .            .            c-so3-h2so4  .           "
-    ".         .            .            .            .            n-h2so4-x    .           "
-    ".         .            .            .            .            c-h2so4-diss .           "
-    ".         .            .            .            .            n-diss       .           "
-    ".         c-oxuo-uf6   .            .            .            c-diss-uf6   .           "
-    "lbl-final .            .            n-uf6        .            .            .           ";
-  gap: 0.2rem 0.4rem;
-}
-
-/* Additional rows for centrifuge + output in HCl grid */
-.wf__grid--hcl .wf__node[style*="n-cent"] {
-  grid-column: 4;
-  grid-row: 21;
-}
-.wf__grid--hcl .wf__conn[style*="c-uf6-cent"] {
-  grid-column: 4;
-  grid-row: 20;
-}
-.wf__grid--hcl .wf__conn[style*="c-cent-fuel"] {
-  display: none;
-}
-.wf__grid--hcl .wf__output {
-  grid-column: 4;
-  grid-row: 22;
-}
-
-/* Hide the duplicate gunpowder input at row 8 (placed via grid area) */
-.wf__grid--hcl [style*="i-gunpowder"]:nth-of-type(2) {
-  display: none;
-}
-
-/* Hide H2SO4-x placeholder in HCl grid too */
-.wf__grid--hcl [style*="n-h2so4-x"] {
-  display: none;
+    ".         .            n-ci-hcl     .            .            .            .           "
+    "lbl-b     .            n-cic        .            .            .            .           "
+    ".         .            n-ox-so2     .            .            .            .           "
+    ".         .            n-so3        .            .            .            .           "
+    ".         .            n-h2so4      .            .            .            .           "
+    ".         .            n-diss       i-fluorite   .            .            .           "
+    "lbl-final n-uf6        .            .            .            .            .           "
+    ".         n-cent       .            .            .            .            .           "
+    ".         o-fuel       .            .            .            .            .           ";
+  gap: 1.8rem 0.4rem;
+  align-items: center;
+  justify-items: center;
 }
 
 /* ================================================================
@@ -260,9 +173,10 @@
   border-radius: var(--node-radius);
   cursor: pointer;
   transition: opacity 180ms ease, background 120ms ease, box-shadow 180ms ease;
-  white-space: nowrap;
   justify-self: stretch;
   min-width: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .wf__node:hover {
@@ -297,8 +211,6 @@
   color: var(--tool-text);
   font-size: 0.75rem;
   font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .wf__node-count {
@@ -329,6 +241,8 @@
   text-align: center;
   white-space: nowrap;
   justify-self: center;
+  position: relative;
+  z-index: 1;
 }
 
 .wf__output {
@@ -342,90 +256,37 @@
   padding: 0.4rem 1.2rem;
   text-align: center;
   justify-self: center;
+  position: relative;
+  z-index: 1;
 }
 
 /* ================================================================
-   Connection lines (vertical connectors between rows)
+   SVG Connection Overlay
    ================================================================ */
 
-.wf__conn {
-  justify-self: center;
+.wf__svg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+.wf__svg-conn {
+  pointer-events: auto;
   transition: opacity 180ms ease;
 }
 
-.wf__conn--v {
-  width: var(--conn-width);
-  height: 100%;
-  min-height: 0.8rem;
-  position: relative;
-}
-
-/* The line itself */
-.wf__conn--v::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 4px;
-  width: var(--conn-width);
-  transform: translateX(-50%);
-}
-
-/* Arrow tip */
-.wf__conn--v::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-}
-
-.wf__conn--v-long {
-  width: var(--conn-width);
-  height: 100%;
-  min-height: 0.8rem;
-  position: relative;
-}
-
-.wf__conn--v-long::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 4px;
-  width: var(--conn-width);
-  transform: translateX(-50%);
-}
-
-.wf__conn--v-long::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-}
-
-/* Colors */
-.wf__conn--a::before { background: var(--flow-a); }
-.wf__conn--a::after  { border-top: 6px solid var(--flow-a); }
-
-.wf__conn--b::before { background: var(--flow-b); }
-.wf__conn--b::after  { border-top: 6px solid var(--flow-b); }
-
-.wf__conn--final::before { background: var(--flow-final); }
-.wf__conn--final::after  { border-top: 6px solid var(--flow-final); }
-
-/* Dim connections when not part of highlighted path */
-.wf__conn--dim {
+.wf__svg-conn--dim {
   opacity: 0.15;
+}
+
+.wf__svg-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  pointer-events: none;
 }
 
 /* ================================================================
@@ -443,6 +304,8 @@
   justify-self: center;
   align-self: center;
   user-select: none;
+  position: relative;
+  z-index: 1;
 }
 
 .wf__path-label--a     { color: var(--flow-a); }
@@ -454,18 +317,14 @@
    ================================================================ */
 
 .wf__popover {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 0.75rem;
   background: #1a1f28;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.75rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   min-width: 220px;
-  max-width: 320px;
+  max-width: 400px;
   padding: 1rem;
+  margin-top: 0.75rem;
   z-index: 100;
   animation: wf-pop-in 150ms ease-out;
 }
@@ -473,11 +332,11 @@
 @keyframes wf-pop-in {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(6px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
 
@@ -520,9 +379,9 @@
 }
 
 .wf__popover-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
 }
 
 .wf__popover-stat {
@@ -551,13 +410,13 @@
 
 @media (max-width: 800px) {
   .wf__grid--coal {
-    grid-template-columns: 2.2rem repeat(5, 1fr);
-    gap: 0.15rem 0.3rem;
+    grid-template-columns: 2.2rem repeat(4, minmax(6rem, 1fr));
+    gap: 1.2rem 0.3rem;
   }
 
   .wf__grid--hcl {
-    grid-template-columns: 2.2rem repeat(6, 1fr);
-    gap: 0.15rem 0.25rem;
+    grid-template-columns: 2.2rem repeat(6, minmax(5rem, 1fr));
+    gap: 1.2rem 0.25rem;
   }
 
   .wf__node {
@@ -584,24 +443,7 @@
   }
 
   .wf__popover {
-    position: fixed;
-    bottom: 1rem;
-    left: 1rem;
-    right: 1rem;
-    transform: none;
-    margin-bottom: 0;
     max-width: none;
-  }
-
-  @keyframes wf-pop-in {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 }
 
